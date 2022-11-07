@@ -23,25 +23,19 @@
 
     The Great Rift Valley Software Company: https://riftvalleysoftware.com
 */
-    defined( 'LGV_MeetingServer_Files' ) or die ( 'Cannot Execute Directly' );	// Makes sure that this file is in the correct context.
+defined( 'LGV_MeetingServer_Files' ) or die ( 'Cannot Execute Directly' );	// Makes sure that this file is in the correct context.
 
-    require_once($config_file_path);
+require_once($config_file_path);
 
-    define( 'LGV_DB_CATCHER', 1 );
+define( 'LGV_DB_CATCHER', 1 );
 
-    require_once(dirname(__FILE__).'/LGV_MeetingServer_PDO.class.php');
+require_once(dirname(__FILE__).'/LGV_MeetingServer_PDO.class.php');
 
-    global $g_PDOInstance;
-    
+global $g_PDOInstance;
+
+try {
     $g_PDOInstance = new LGV_MeetingServer_PDO($_dbName, $_dbLogin, $_dbPassword, $_dbType, $_dbHost, $_dbPort);
-
-?><!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <title>LGV_MeetingServer</title>
-    </head>
-    <body>
-        <h1>LGV_MeetingServer</h1>
-    </body>
-</html>
+} catch (Exception $exception) {
+    echo('<h1 style="color:red">ERROR WHILE TRYING TO INITIALIZE DATABASE CONNECTION!</h1>');
+    die('<pre>'.htmlspecialchars(print_r($exception, true)).'</pre>');
+}
