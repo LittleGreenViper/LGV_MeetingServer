@@ -1,7 +1,7 @@
 <?php
 /***************************************************************************************************************************/
 /**
-    This is the main entrypoint file for the LGV_MeetingServer basic server-level unit tests.
+    This is the main entrypoint file for the LGV_MeetingServer server.
     
     © Copyright 2022, <a href="https://littlegreenviper.com">Little Green Viper Software Development LLC</a>
     
@@ -23,17 +23,25 @@
 
     The Great Rift Valley Software Company: https://riftvalleysoftware.com
 */
-    define( 'LGV_MeetingServer_Files', 1 );
-    $config_file_path = dirname(__FILE__).'/config/LGV_MeetingServer-Config.php';
-    require_once(dirname(dirname(__FILE__)).'/Sources/LGV_MeetingServer.php');
+    defined( 'LGV_MeetingServer_Files' ) or die ( 'Cannot Execute Directly' );	// Makes sure that this file is in the correct context.
+
+    require_once($config_file_path);
+
+    define( 'LGV_DB_CATCHER', 1 );
+
+    require_once(dirname(__FILE__).'/LGV_MeetingServer_PDO.class.php');
+
+    global $g_PDOInstance;
+    
+    $g_PDOInstance = new LGV_MeetingServer_PDO($_dbName, $_dbLogin, $_dbPassword, $_dbType, $_dbHost, $_dbPort);
 
 ?><!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="utf-8" />
-        <title>LGV_MeetingServer Test Host</title>
+        <title>LGV_MeetingServer</title>
     </head>
     <body>
-        <h1>LGV_MeetingServer Test Host</h1>
+        <h1>LGV_MeetingServer</h1>
     </body>
 </html>
