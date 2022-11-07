@@ -41,6 +41,7 @@
         <h1>LGV_MeetingServer Test Host</h1>
         <pre><?php
             echo('<h2>Initializing to fresh database.</h2>');
+
             try {
                 $g_PDOInstance = new LGV_MeetingServer_PDO($_dbName, $_dbLogin, $_dbPassword, $_dbType, $_dbHost, $_dbPort);
                 $g_PDOInstance->preparedExec($sql_init);

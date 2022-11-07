@@ -3,10 +3,10 @@
 /**
     This is a PDO abstraction class, derived from the Badger Hardened Baseline Database Component
     
-    This uses transactions, and defaults to a standard localhost MySQL server (can be other types of servers).
+    This defaults to a standard localhost MySQL server (can be other types of servers).
     
     © <a href="https://github.com/RiftValleySoftware/badger/blob/master/db/co_pdo.class.php">Original Copyright 2021, The Great Rift Valley Software Company</a>
-    © Copyright 2022, <a href="https://littlegreenviper.com">Little Green Viper Software Development LLC</a>
+    © <a href="https://littlegreenviper.com">Copyright 2022, Little Green Viper Software Development LLC</a>
     
     LICENSE:
     
@@ -40,9 +40,6 @@ class LGV_MeetingServer_PDO {
 	/// \brief This holds the integer ID of the last AUTO_INCREMENT insert.
 	var $last_insert = NULL;
     
-	/// \brief Default fetch mode for internal PDOStatements
-	private $fetchMode = PDO::FETCH_ASSOC;
-
     /***********************************************************************************************************************/
     /***********************/
 	/**
@@ -66,7 +63,8 @@ class LGV_MeetingServer_PDO {
         $dsn = $driver . ':host=' . $host . ';dbname=' . $database . ';charset=utf8;port=' . strval($port);
         
 		try {
-            $this->_pdo = new PDO($dsn, $user, $password, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8'"));
+		echo("DSN: $dsn");
+            $this->_pdo = new PDO($dsn, $user, $password);
             $this->_pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->_pdo->setAttribute(PDO::ATTR_CASE, PDO::CASE_LOWER);
             $this->_pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
@@ -105,12 +103,6 @@ class LGV_MeetingServer_PDO {
 			}
 			
 			$sql = str_replace(' RETURNING id', '', $sql);
-			
-            $result = $this->_pdo->beginTransaction();
-            
-            if ( false == $result || -1 == $result ) {
-                throw new Exception(__METHOD__ . '()::' . __LINE__ . "\n" . print_r($this->_pdo->errorInfo(), true));
-            }
             
             $stmt = $this->_pdo->prepare($sql);
         
@@ -118,20 +110,10 @@ class LGV_MeetingServer_PDO {
                 throw new Exception(__METHOD__ . '()::' . __LINE__ . "\n" . print_r($stmt->errorInfo(), true));
             }
             
-            $result = $stmt->execute($params);
-
-            if ( false == $result || -1 == $result ) {
-                throw new Exception(__METHOD__ . '()::' . __LINE__ . "\n" . print_r($stmt->errorInfo(), true));
-            }
+            $stmt->execute($params);
             
             if ('pgsql' != $this->driver_type) {
                 $this->last_insert = $this->_pdo->lastInsertId();
-            }
-            
-            $result = $this->_pdo->commit();
-
-            if ( false == $result || -1 == $result ) {
-                throw new Exception(__METHOD__ . '()::' . __LINE__ . "\n" . print_r($this->_pdo->errorInfo(), true));
             }
         
             return true;
@@ -148,38 +130,23 @@ class LGV_MeetingServer_PDO {
 	/**
 		\brief Wrapper for preparing and executing a PDOStatement that returns a resultset e.g. SELECT SQL statements.
 
-		Returns a multidimensional array depending on internal fetch mode setting ($this->fetchMode)
-		See PDO documentation about prepared queries.
-
-		Fetching key pairs- when $fetchKeyPair is set to true, it will force the returned
-		array to be a one-dimensional array indexed on the first column in the query.
+		Returns a one-dimensional array indexed on the first column in the query.
 		Note- query may contain only two columns or an exception/error is thrown.
 		See PDO::PDO::FETCH_KEY_PAIR for more details
 
 		\throws Exception   thrown if internal PDO exception is thrown
 		\returns            associative array of results.
 	*/
-	public function preparedQuery(  $sql,					///< same as kind provided to PDO::prepare()
-									$params = array(),		///< same as kind provided to PDO::prepare()
-									$fetchKeyPair = false   ///< See description in method documentation
+	public function preparedQuery(  $sql,		        ///< same as kind provided to PDO::prepare()
+									$params = array()
 								) {
 		$this->last_insert = NULL;
 		try {
-            $this->_pdo->beginTransaction(); 
             $stmt = $this->_pdo->prepare($sql);
-            $stmt->setFetchMode($this->fetchMode);
+            $stmt->setFetchMode(PDO::FETCH_ASSOC);
             $stmt->execute($params);
-            $this->_pdo->commit();
             
-            $ret = NULL;
-            
-            if ($fetchKeyPair) {
-                $ret = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
-            } else {
-                $ret = $stmt->fetchAll();
-            }
-            
-            return $ret;
+            return $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
 		} catch (PDOException $exception) {
 		    $this->last_insert = NULL;
             $this->_pdo->rollback();
