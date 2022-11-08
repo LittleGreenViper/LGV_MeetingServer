@@ -165,13 +165,9 @@ function read_all_bmlt_server_meetings( $physical_only = false  ///< If true (de
     $all_meetings = [];
     $server_list = read_bmlt_server_list();
     foreach ( $server_list as $server ) {
-        $id = $server->id;
-        $name = $server->name;
-        $rootURL = $server->rootURL;
-        $dataURL = $rootURL."client_interface/json/?switcher=GetSearchResults&get_used_formats=1";
-        $semanticURL = $rootURL."semantic";
-        $meetings = read_bmlt_server_meetings($dataURL, $id, true);
-        array_push($all_meetings, $meetings);
+        $dataURL = $server->rootURL."client_interface/json/?switcher=GetSearchResults&get_used_formats=1";
+        $meetings = read_bmlt_server_meetings($dataURL, $server->id, $physical_only);
+        $all_meetings = array_merge($all_meetings, $meetings);
     }
     
     return $all_meetings;
