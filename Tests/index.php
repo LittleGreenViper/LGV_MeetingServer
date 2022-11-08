@@ -25,10 +25,11 @@
 */
     define( 'LGV_DB_CATCHER', 1 );
     
-    $sql_init = file_get_contents(dirname(__FILE__).'/config/LGV_MeetingServer-SQL.sql');
-    $sql_data = file_get_contents(dirname(__FILE__).'/config/LGV_MeetingServer-SQL-Rows.sql');
     require_once(dirname(__FILE__).'/config/LGV_MeetingServer-Config.php');
     require_once(dirname(dirname(__FILE__)).'/Sources/LGV_MeetingServer_PDO.class.php');
+
+    $sql_init = file_get_contents(dirname(dirname(__FILE__)).'/Sources/sql/LGV_MeetingServer-SQL.sql');
+    $sql_data = file_get_contents(dirname(__FILE__).'/config/LGV_MeetingServer-SQL-Rows.sql');
 
     $g_PDOInstance = NULL;    
     
