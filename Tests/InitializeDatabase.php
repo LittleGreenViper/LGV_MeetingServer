@@ -32,31 +32,30 @@ require_once(dirname(dirname(__FILE__)).'/Sources/LGV_MeetingServer_PDO.class.ph
 /**
 */
 function initialize_database() {
-    $g_PDOInstance = NULL;    
+    $_pdo_instance = NULL;    
     require_once(dirname(__FILE__).'/config/LGV_MeetingServer-Config.php');
 
     try {
         $sql_init = file_get_contents(dirname(dirname(__FILE__)).'/Sources/config/sql/LGV_MeetingServer-MySQL.sql');
         $sql_data = file_get_contents(dirname(__FILE__).'/config/LGV_MeetingServer-Rows-MySQL.sql');
 
-        $g_PDOInstance = new LGV_MeetingServer_PDO($_dbName, $_dbLogin, $_dbPassword, $_dbType, $_dbHost, $_dbPort);
-        if ( $g_PDOInstance->preparedStatement($sql_init) ) {
-            $data = $g_PDOInstance->preparedStatement("SELECT * FROM lgv_ms_meetings", [], true);
+        $_pdo_instance = new LGV_MeetingServer_PDO($_dbName, $_dbLogin, $_dbPassword, $_dbType, $_dbHost, $_dbPort);
+        if ( $_pdo_instance->preparedStatement($sql_init) ) {
+            $data = $_pdo_instance->preparedStatement("SELECT * FROM lgv_ms_meetings", [], true);
             if ( isset($data) && is_array($data) && 0 == count($data) ) {
                 echo('<h3 style="color:green">SUCCESSFUL DATABASE INIT:</h3>');
-                echo('<pre>'.htmlspecialchars(print_r($data, true)).'</pre>');
-                if ( $g_PDOInstance->preparedStatement($sql_data) ) {
-                    $data = $g_PDOInstance->preparedStatement("SELECT * FROM lgv_ms_meetings", [], true);
-    
-                    if ( isset($data) && is_array($data) && count($data) ) {
-                        echo('<h3 style="color:green">SUCCESSFUL DATA INIT:</h3>');
-                        echo('<pre>'.htmlspecialchars(print_r($data, true)).'</pre>');
-                    } else {
-                        echo('<h3 style="color:red">DATA INIT CHECK FAILED!</h3>');
-                    }
-                } else {
-                    echo('<h3 style="color:red">DATA INIT FAILED!</h3>');
-                }
+//                 if ( $_pdo_instance->preparedStatement($sql_data) ) {
+//                     $data = $_pdo_instance->preparedStatement("SELECT * FROM lgv_ms_meetings", [], true);
+//     
+//                     if ( isset($data) && is_array($data) && count($data) ) {
+//                         echo('<h3 style="color:green">SUCCESSFUL DATA INIT:</h3>');
+//                         echo('<pre>'.htmlspecialchars(print_r($data, true)).'</pre>');
+//                     } else {
+//                         echo('<h3 style="color:red">DATA INIT CHECK FAILED!</h3>');
+//                     }
+//                 } else {
+//                     echo('<h3 style="color:red">DATA INIT FAILED!</h3>');
+//                 }
             } else {
                 echo('<h3 style="color:red">DATABASE INIT CHECK FAILED!</h3>');
             }

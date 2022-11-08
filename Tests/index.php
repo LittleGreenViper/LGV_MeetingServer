@@ -25,6 +25,8 @@
 */
     define( 'LGV_TEST', 1 );
     require_once(dirname(__FILE__).'/InitializeDatabase.php');
+    define( 'LGV_MeetingServer_Files', 1 );
+    require_once(dirname(dirname(__FILE__)).'/Sources/LGV_MeetingServer_BMLT.php');
 ?><!DOCTYPE html>
 <html lang="en">
     <head>
@@ -37,6 +39,18 @@
         <?php 
             initialize_database();
         ?>
-
+        <h2>Reading BMLT Server List.</h2>
+        <?php 
+            $server_list = read_bmlt_server_list();
+            foreach ( $server_list as $server ) {
+                $id = $server->id;
+                $name = $server->name;
+                $rootURL = $server->rootURL;
+                $dataURL = $rootURL."client_interface/json/?switcher=GetSearchResults&get_used_formats=1";
+                $semanticURL = $rootURL."semantic";
+                echo("\n<li><h3>".htmlspecialchars($name)." ($id)</h3>".'<ul><li><h4><a href="'.htmlspecialchars($semanticURL).'" target="_blank">Open Semantic Workshop</a></h4></li><li><h4><a href="'.htmlspecialchars($dataURL).'" target="_blank">Get Data Dump</a></h4></li></ul></li>');
+            }
+        ?>
+        </ul>
     </body>
 </html>

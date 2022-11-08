@@ -25,12 +25,13 @@
 */
 defined( 'LGV_MeetingServer_Files' ) or die ( 'Cannot Execute Directly' );	// Makes sure that this file is in the correct context.
 
-require_once($config_file_path);
+require_once($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
 
 define( 'LGV_DB_CATCHER', 1 );
 
 require_once(dirname(__FILE__).'/LGV_MeetingServer_PDO.class.php');
 
+/// This will hold our PDO instance, initialized to the database, as set in the config.
 global $g_PDOInstance;
 
 try {
