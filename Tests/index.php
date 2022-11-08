@@ -23,6 +23,7 @@
 
     The Great Rift Valley Software Company: https://riftvalleysoftware.com
 */
+    set_time_limit(300);
     define( 'LGV_TEST', 1 );
     require_once(dirname(__FILE__).'/InitializeDatabase.php');
     define( 'LGV_MeetingServer_Files', 1 );
@@ -35,13 +36,11 @@
     </head>
     <body>
         <h1>LGV_MeetingServer Test Host</h1>
-        <h2>Initializing to fresh database.</h2>
         <?php 
+            echo("<h2>Initializing to fresh database.</h2>");
             initialize_database();
-        ?>
-        <h2>Reading BMLT Server List.</h2>
-        <?php 
-            $all_meetings = read_all_bmlt_server_meetings();
+            echo("<h2>Reading BMLT Server List (Physical-Only).</h2>");
+            $all_meetings = read_all_bmlt_server_meetings(true);
             echo("<pre>".count($all_meetings)." meetings found.</pre>");
         ?>
         </ul>

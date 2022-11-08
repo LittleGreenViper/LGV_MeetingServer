@@ -27,6 +27,8 @@ defined( 'LGV_MeetingServer_Files' ) or die ( 'Cannot Execute Directly' );	// Ma
 
 require_once($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
 
+require_once(dirname(__FILE__).'/LGV_MeetingServer_BMLT.php');
+
 define( 'LGV_DB_CATCHER', 1 );
 
 require_once(dirname(__FILE__).'/LGV_MeetingServer_PDO.class.php');
@@ -39,4 +41,11 @@ try {
 } catch (Exception $exception) {
     echo('<h1 style="color:red">ERROR WHILE TRYING TO INITIALIZE DATABASE CONNECTION!</h1>');
     die('<pre>'.htmlspecialchars(print_r($exception, true)).'</pre>');
+}
+
+/****************************************************************************************************************************/
+/**
+ */
+function update_database( $physical_only = false  ///< If true (default is false), then only meetings that have a physical location will be returned.
+                        ) {
 }

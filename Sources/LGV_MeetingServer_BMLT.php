@@ -24,9 +24,6 @@
     The Great Rift Valley Software Company: https://riftvalleysoftware.com
 */
 defined( 'LGV_MeetingServer_Files' ) or die ( 'Cannot Execute Directly' );	// Makes sure that this file is in the correct context.
-
-require_once(dirname(__FILE__).'/LGV_MeetingServer_PDO.class.php');
-
     
 /****************************************************************************************************************************/
 /**
@@ -82,14 +79,14 @@ function read_bmlt_server_meetings( $url,                   ///< REQIRED:   This
     foreach($meeting_objects as $meeting_object) {
         $meeting = [];
         $meeting["server_id"] = $server_id;
-        $meeting["meeting_id"] = $meeting_object->id_bigint;
+        $meeting["meeting_id"] = intval($meeting_object->id_bigint);
         if ( trim($meeting_object->meeting_name) ) {
             $meeting["name"] = trim($meeting_object->meeting_name);
         }
         $meeting["weekday"] = intval($meeting_object->weekday_tinyint);
-        $meeting["start_time"] = $meeting_object->start_time;
-        $meeting["duration"] = $meeting_object->duration_time;
-        $meeting["language"] = strtolower($meeting_object->lang_enum);
+        $meeting["start_time"] = trim($meeting_object->start_time);
+        $meeting["duration"] = trim($meeting_object->duration_time);
+        $meeting["language"] = strtolower(trim($meeting_object->lang_enum));
         if ( $meeting_object->comments ) {
             $meeting["comments"] = $meeting_object->comments;
         }
@@ -140,16 +137,16 @@ function read_bmlt_server_meetings( $url,                   ///< REQIRED:   This
         if ( !empty($id_list) ) {
             $meeting["formats"] = [];
             foreach($format_objects as $format) {
-                if ( in_array($format->id, $id_list)) {
-                    $format_ar["key"] = $format->key_string;
-                    $format_ar["name"] = $format->name_string;
-                    $format_ar["description"] = $format->description_string;
-                    $format_ar["language"] = strtolower($format->lang);
+                if ( in_array($format->id, $id_list) ) {
+                    $format_ar["key"] = trim($format->key_string);
+                    $format_ar["name"] = trim($format->name_string);
+                    $format_ar["description"] = trim($format->description_string);
+                    $format_ar["language"] = strtolower(trim($format->lang));
                     array_push($meeting["formats"], $format_ar);
                 }
             }
         }
-        if ( !$physical_only || isset($meeting["physical_location"]) ) {
+        if ( isset($meeting["physical_location"]) || !$physical_only ) {
             array_push($meetings, $meeting);
         }
     }
@@ -166,7 +163,7 @@ function read_all_bmlt_server_meetings( $physical_only = false  ///< If true (de
     $server_list = read_bmlt_server_list();
     foreach ( $server_list as $server ) {
         $dataURL = $server->rootURL."client_interface/json/?switcher=GetSearchResults&get_used_formats=1";
-        $meetings = read_bmlt_server_meetings($dataURL, $server->id, $physical_only);
+        $meetings = read_bmlt_server_meetings($dataURL, intval($server->id), $physical_only);
         $all_meetings = array_merge($all_meetings, $meetings);
     }
     

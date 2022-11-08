@@ -8,4 +8,5 @@ $_dbPort = 3306;
 $_dbType = "mysql";
 
 $_dbTableName = "lgv_ms_meetings";
+$_dbTempTableName = "lgv_ms_meetings_temp";
 ?>
