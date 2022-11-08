@@ -128,3 +128,5 @@ class LGV_MeetingServer_PDO {
         return false;
 	}
 };
+
+?>
