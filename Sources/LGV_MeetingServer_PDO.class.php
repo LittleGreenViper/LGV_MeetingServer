@@ -58,7 +58,6 @@ class LGV_MeetingServer_PDO {
 								) {
 		$this->_pdo = NULL;
 		$this->driver_type = $driver;
-		$this->last_insert = NULL;
 		
         $dsn = $driver . ':host=' . $host . ';dbname=' . $database . ';charset=utf8;port=' . strval($port);
         
@@ -75,18 +74,15 @@ class LGV_MeetingServer_PDO {
 
     /***********************/
 	/**
-		\brief Wrapper for preparing and executing a PDOStatement that does not return a resultset e.g. INSERT or UPDATE SQL statements
-
-		See PDO documentation about prepared queries.
-		
-		If there isn't already a database connection, it will "lazy load" the connection.
+		\brief Wrapper for preparing and executing a PDOStatement
 		
 		\throws Exception   thrown if internal PDO exception is thrown
-		\returns            true if execution is successful.
+		\returns            true if execution is successful (and fetchResponse is false), or an array of associative arrays of results, if fetchResponse is true.
 	*/
-	public function preparedExec(   $sql,				///< same as kind provided to PDO::prepare()
-								    $params = array()	///< same as kind provided to PDO::prepare()
-						        )
+	public function preparedStatement(  $sql,				    ///< SQL statement to send (with question mark placeholders).
+								        $params = array(),      ///< Data for the placeholders. Default is an empty array.
+								        $fetchResponse = false  ///< If true (default is false), then a fetch will be done, and a response returned.
+						            )
 	{
 		$this->last_insert = NULL;
 		if ( NULL == $this->_pdo ) {
@@ -94,63 +90,39 @@ class LGV_MeetingServer_PDO {
 		}
 		
 		try {
-			if ('pgsql' == $this->driver_type) {
-			    if (strpos($sql, 'RETURNING id;')) {
-			        $response = $this->preparedQuery($sql, $params);
-                    $this->last_insert = intval($response[0]['id']);
-			        return true;
-			    }
-			}
-			
-			$sql = str_replace(' RETURNING id', '', $sql);
-            
+            if ( !$this->_pdo->inTransaction() ) {
+		        $this->_pdo->beginTransaction();
+		    }
+		    
             $stmt = $this->_pdo->prepare($sql);
         
             if ( false == $stmt || -1 == $stmt ) {
                 throw new Exception(__METHOD__ . '()::' . __LINE__ . "\n" . print_r($stmt->errorInfo(), true));
             }
             
+            if ( $fetchResponse ) {
+                $stmt->setFetchMode(PDO::FETCH_ASSOC);
+            }
+            
             $stmt->execute($params);
             
-            if ('pgsql' != $this->driver_type) {
-                $this->last_insert = $this->_pdo->lastInsertId();
+            $ret = false;
+            
+            if ( $fetchResponse ) {
+                $ret = $stmt->fetchAll();
+            } else {
+                $ret = true;
             }
         
-            return true;
+            if ( $this->_pdo->inTransaction() ) {
+                $this->_pdo->commit();
+            }
+            
+            return $ret;
 		} catch (PDOException $exception) {
 		    $this->last_insert = NULL;
             $this->_pdo->rollback();
 			throw new Exception(__METHOD__ . '()::' . __LINE__ . "\n" . $exception->getMessage());
-		}
-		
-        return false;
-	}
-
-    /***********************/
-	/**
-		\brief Wrapper for preparing and executing a PDOStatement that returns a resultset e.g. SELECT SQL statements.
-
-		Returns a one-dimensional array indexed on the first column in the query.
-		Note- query may contain only two columns or an exception/error is thrown.
-		See PDO::PDO::FETCH_KEY_PAIR for more details
-
-		\throws Exception   thrown if internal PDO exception is thrown
-		\returns            associative array of results.
-	*/
-	public function preparedQuery(  $sql,		        ///< same as kind provided to PDO::prepare()
-									$params = array()
-								) {
-		$this->last_insert = NULL;
-		try {
-            $stmt = $this->_pdo->prepare($sql);
-            $stmt->setFetchMode(PDO::FETCH_ASSOC);
-            $stmt->execute($params);
-            
-            return $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
-		} catch (PDOException $exception) {
-		    $this->last_insert = NULL;
-            $this->_pdo->rollback();
-			throw new Exception(__METHOD__ . '() ' . $exception->getMessage());
 		}
 		
         return false;

@@ -26,6 +26,7 @@
     define( 'LGV_DB_CATCHER', 1 );
     
     $sql_init = file_get_contents(dirname(__FILE__).'/config/LGV_MeetingServer-SQL.sql');
+    $sql_data = file_get_contents(dirname(__FILE__).'/config/LGV_MeetingServer-SQL-Rows.sql');
     require_once(dirname(__FILE__).'/config/LGV_MeetingServer-Config.php');
     require_once(dirname(dirname(__FILE__)).'/Sources/LGV_MeetingServer_PDO.class.php');
 
@@ -44,8 +45,29 @@
 
             try {
                 $g_PDOInstance = new LGV_MeetingServer_PDO($_dbName, $_dbLogin, $_dbPassword, $_dbType, $_dbHost, $_dbPort);
-                $g_PDOInstance->preparedExec($sql_init);
-                echo('<h3>WOOT!</h3>');
+                if ( $g_PDOInstance->preparedStatement($sql_init) ) {
+                    $data = $g_PDOInstance->preparedStatement("SELECT * FROM lgv_ms_meetings", [], true);
+                    if ( isset($data) && is_array($data) && 0 == count($data) ) {
+                        echo('<h3 style="color:green">SUCCESSFUL DATABASE INIT:</h3>');
+                        echo('<pre>'.htmlspecialchars(print_r($data, true)).'</pre>');
+                        if ( $g_PDOInstance->preparedStatement($sql_data) ) {
+                            $data = $g_PDOInstance->preparedStatement("SELECT * FROM lgv_ms_meetings", [], true);
+                    
+                            if ( isset($data) && is_array($data) && count($data) ) {
+                                echo('<h3 style="color:green">SUCCESSFUL DATA INIT:</h3>');
+                                echo('<pre>'.htmlspecialchars(print_r($data, true)).'</pre>');
+                            } else {
+                                echo('<h3 style="color:red">DATA INIT CHECK FAILED!</h3>');
+                            }
+                        } else {
+                            echo('<h3 style="color:red">DATA INIT FAILED!</h3>');
+                        }
+                    } else {
+                        echo('<h3 style="color:red">DATABASE INIT CHECK FAILED!</h3>');
+                    }
+                } else {
+                    echo('<h3 style="color:red">DATABASE INIT FAILED!</h3>');
+                }
             } catch (Exception $exception) {
                 echo('<h3 style="color:red">ERROR WHILE TRYING TO INITIALIZE THE DATABASES</h3>');
                 echo('<pre>'.htmlspecialchars(print_r($exception->getMessage(), true)).'</pre>');

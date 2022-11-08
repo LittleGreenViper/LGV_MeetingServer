@@ -1,0 +1,3 @@
+INSERT INTO `lgv_ms_meetings` (`id`, `server_id`, `meeting_id`, `organization_key`, `name`, `start_time`, `weekday`, `single_occurrence_date`, `duration`, `longitude`, `latitude`, `tag0`, `tag1`, `tag2`, `tag3`, `tag4`, `tag5`, `tag6`, `tag7`, `tag8`, `tag9`, `comments`, `formats`, `physical_address`, `virtual_information`, `last_modified`) VALUES
+(1, 0, 0, 'na', 'Test 1', NULL, NULL, '2022-11-08 11:47:58', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2022-11-08 11:48:43'),
+(2, 0, 1, 'na', 'Test 2', NULL, NULL, '2022-11-08 11:47:58', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2022-11-08 11:48:43');
