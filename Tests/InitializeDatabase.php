@@ -36,8 +36,8 @@ function initialize_database() {
     require_once(dirname(__FILE__).'/config/LGV_MeetingServer-Config.php');
 
     try {
-        $sql_init = file_get_contents(dirname(dirname(__FILE__)).'/Sources/config/sql/LGV_MeetingServer-SQL.sql');
-        $sql_data = file_get_contents(dirname(__FILE__).'/config/LGV_MeetingServer-SQL-Rows.sql');
+        $sql_init = file_get_contents(dirname(dirname(__FILE__)).'/Sources/config/sql/LGV_MeetingServer-MySQL.sql');
+        $sql_data = file_get_contents(dirname(__FILE__).'/config/LGV_MeetingServer-Rows-MySQL.sql');
 
         $g_PDOInstance = new LGV_MeetingServer_PDO($_dbName, $_dbLogin, $_dbPassword, $_dbType, $_dbHost, $_dbPort);
         if ( $g_PDOInstance->preparedStatement($sql_init) ) {

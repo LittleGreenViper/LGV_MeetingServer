@@ -62,7 +62,6 @@ class LGV_MeetingServer_PDO {
         $dsn = $driver . ':host=' . $host . ';dbname=' . $database . ';charset=utf8;port=' . strval($port);
         
 		try {
-		echo("DSN: $dsn");
             $this->_pdo = new PDO($dsn, $user, $password);
             $this->_pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->_pdo->setAttribute(PDO::ATTR_CASE, PDO::CASE_LOWER);
