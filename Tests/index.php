@@ -48,7 +48,10 @@
                 $rootURL = $server->rootURL;
                 $dataURL = $rootURL."client_interface/json/?switcher=GetSearchResults&get_used_formats=1";
                 $semanticURL = $rootURL."semantic";
-                echo("\n<li><h3>".htmlspecialchars($name)." ($id)</h3>".'<ul><li><h4><a href="'.htmlspecialchars($semanticURL).'" target="_blank">Open Semantic Workshop</a></h4></li><li><h4><a href="'.htmlspecialchars($dataURL).'" target="_blank">Get Data Dump</a></h4></li></ul></li>');
+                echo("\n<li><h3>".htmlspecialchars($name)." ($id)</h3>".'<ul><li><h4><a href="'.htmlspecialchars($semanticURL).'" target="_blank">Open Semantic Workshop</a></h4></li><li><h4><a href="'.htmlspecialchars($dataURL).'" target="_blank">Get Data Dump</a></h4></li>');
+                $meetings = read_bmlt_server_meetings($dataURL, $id, true);
+                echo("<li>".htmlspecialchars(count($meetings))." meetings</li>");
+                echo("</ul></li>");
             }
         ?>
         </ul>

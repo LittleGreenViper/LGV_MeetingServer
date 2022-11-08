@@ -70,8 +70,109 @@ function read_bmlt_server_list() {
 /****************************************************************************************************************************/
 /**
  */
-function read_bmlt_server(  $url    ///< REQIRED:   This is the base URL for the server's API.
-                            ) {
+function read_bmlt_server_meetings( $url,                   ///< REQIRED:   This is the base URL for the server's API.
+                                    $server_id,             ///< REQUIRED: The integer ID of the server.
+                                    $physical_only = false  ///< If true (default is false), then only meetings that have a physical location will be returned.
+                                    ) {
     $json_data = call_URL("$url/client_interface/json/?switcher=GetSearchResults&get_used_formats=1");
-    return json_decode($json_data);
+    $decoded_json = json_decode($json_data);
+    $meeting_objects = $decoded_json->meetings;
+    $format_objects = $decoded_json->formats;
+    $meetings = [];
+    foreach($meeting_objects as $meeting_object) {
+        $meeting = [];
+        $meeting["server_id"] = $server_id;
+        $meeting["meeting_id"] = $meeting_object->id_bigint;
+        if ( trim($meeting_object->meeting_name) ) {
+            $meeting["name"] = trim($meeting_object->meeting_name);
+        }
+        $meeting["weekday"] = intval($meeting_object->weekday_tinyint);
+        $meeting["start_time"] = $meeting_object->start_time;
+        $meeting["duration"] = $meeting_object->duration_time;
+        $meeting["language"] = strtolower($meeting_object->lang_enum);
+        if ( $meeting_object->comments ) {
+            $meeting["comments"] = $meeting_object->comments;
+        }
+        if ( trim($meeting_object->location_street) && isset($meeting_object->longitude) && isset($meeting_object->latitude) ) {
+            $meeting["physical_location"]["longitude"] = $meeting_object->longitude;
+            $meeting["physical_location"]["latitude"] = $meeting_object->latitude;
+            $meeting["physical_location"]["street"] = $meeting_object->location_street;
+            if ( trim($meeting_object->location_text) ) {
+                $meeting["physical_location"]["name"] = trim($meeting_object->location_text);
+            }
+            if ( trim($meeting_object->location_neighborhood) ) {
+                $meeting["physical_location"]["neighborhood"] = trim($meeting_object->location_neighborhood);
+            }
+            if ( trim($meeting_object->location_city_subsection) ) {
+                $meeting["physical_location"]["city_subsection"] = trim($meeting_object->location_city_subsection);
+            }
+            if ( trim($meeting_object->location_municipality) ) {
+                $meeting["physical_location"]["city"] = trim($meeting_object->location_municipality);
+            }
+            if ( trim($meeting_object->location_sub_province) ) {
+                $meeting["physical_location"]["county"] = trim($meeting_object->location_sub_province);
+            }
+            if ( trim($meeting_object->location_province) ) {
+                $meeting["physical_location"]["province"] = trim($meeting_object->location_province);
+            }
+            if ( trim($meeting_object->location_postal_code_1) ) {
+                $meeting["physical_location"]["postal_code"] = trim($meeting_object->location_postal_code_1);
+            }
+            if ( trim($meeting_object->location_nation) ) {
+                $meeting["physical_location"]["nation"] = trim($meeting_object->location_nation);
+            }
+            if ( trim($meeting_object->location_info) ) {
+                $meeting["physical_location"]["info"] = trim($meeting_object->location_info);
+            }
+        }
+        
+        if ( trim($meeting_object->virtual_meeting_link) ) {
+            $meeting["virtual_meeting_info"]["url"] = trim($meeting_object->virtual_meeting_link);
+            if ( trim($meeting_object->virtual_meeting_additional_info) ) {
+                $meeting["virtual_meeting_info"]["info"] = trim($meeting_object->virtual_meeting_additional_info);
+            }
+            if ( trim($meeting_object->phone_meeting_number) ) {
+                $meeting["virtual_meeting_info"]["phone_number"] = trim($meeting_object->phone_meeting_number);
+            }
+        }
+        
+        $id_list = array_map('intval', explode(",", $meeting_object->format_shared_id_list));
+        if ( !empty($id_list) ) {
+            $meeting["formats"] = [];
+            foreach($format_objects as $format) {
+                if ( in_array($format->id, $id_list)) {
+                    $format_ar["key"] = $format->key_string;
+                    $format_ar["name"] = $format->name_string;
+                    $format_ar["description"] = $format->description_string;
+                    $format_ar["language"] = strtolower($format->lang);
+                    array_push($meeting["formats"], $format_ar);
+                }
+            }
+        }
+        if ( !$physical_only || isset($meeting["physical_location"]) ) {
+            array_push($meetings, $meeting);
+        }
+    }
+    
+    return $meetings;
+}
+
+/****************************************************************************************************************************/
+/**
+ */
+function read_all_bmlt_server_meetings( $physical_only = false  ///< If true (default is false), then only meetings that have a physical location will be returned.
+                                        ) {
+    $all_meetings = [];
+    $server_list = read_bmlt_server_list();
+    foreach ( $server_list as $server ) {
+        $id = $server->id;
+        $name = $server->name;
+        $rootURL = $server->rootURL;
+        $dataURL = $rootURL."client_interface/json/?switcher=GetSearchResults&get_used_formats=1";
+        $semanticURL = $rootURL."semantic";
+        $meetings = read_bmlt_server_meetings($dataURL, $id, true);
+        array_push($all_meetings, $meetings);
+    }
+    
+    return $all_meetings;
 }
