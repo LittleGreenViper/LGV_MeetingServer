@@ -33,7 +33,6 @@ This is a simple GET caller.
  */
 function _call_bmlt_URL($url    ///< REQIRED:   This is the base URL for the call. It should include the entire URI, including query arguments.
                         ) {
-    
     $curl = curl_init();                    // Initialize the cURL handle.
     curl_setopt($curl, CURLOPT_URL, $url);  // This is the URL we are calling.
     curl_setopt($curl, CURLOPT_HEADER, false);          // Do not return any headers, please.
@@ -54,7 +53,7 @@ This reads the BMLT Root Server JSON list, from its GitHub home.
 \returns a JSON-decoded PHP object, with the list as an Array. Each element has an ID (Integer), name (String), and Root Server entrypoint URI (String).
  */
 function _read_bmlt_server_list() {
-    require_once(dirname(__FILE__).'/config/LGV_MeetingServer-Config.php');
+    include(dirname(__FILE__).'/config/LGV_MeetingServer-Config.php');
     $json_data = _call_bmlt_URL($_tomato_server_list_file_uri);
     return json_decode($json_data);
 }

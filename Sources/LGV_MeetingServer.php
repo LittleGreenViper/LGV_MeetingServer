@@ -46,7 +46,6 @@ function update_database(   $dbFromTableName,       ///< The temporary table tha
         $number_of_meetings = process_all_bmlt_server_meetings($pdoInstance, $dbFromTableName, $physical_only);
         $rename_sql = "DROP TABLE IF EXISTS `$dbToTableName`;RENAME TABLE `$dbFromTableName` TO `$dbToTableName`;";
         $pdoInstance->preparedStatement($rename_sql);
-    
         return $number_of_meetings;
     } catch (Exception $exception) {
         return NULL;

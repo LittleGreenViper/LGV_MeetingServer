@@ -23,11 +23,10 @@
 
     The Great Rift Valley Software Company: https://riftvalleysoftware.com
 */
-    set_time_limit(300);
     global $config_file_path;
+    $config_file_path = dirname(__FILE__).'/config/LGV_MeetingServer-Config.php';
     
     $g_PDOInstance = NULL;
-    $config_file_path = dirname(__FILE__).'/config/LGV_MeetingServer-Config.php';
     include($config_file_path);
 
     define( 'LGV_TEST', 1 );
@@ -48,8 +47,11 @@
             $pdo_instance = initialize_database($_dbTempTableName);
             if ( $pdo_instance ) {
                 echo("<h2>Reading BMLT Server List (Physical-Only).</h2>");
-                $all_meetings = update_database($_dbTempTableName, $_dbTableName, true);
-                echo("<h4>$all_meetings meetings found.</h4>");
+                set_time_limit(300);
+                $start = microtime(true);
+                $number_of_meetings = update_database($_dbTempTableName, $_dbTableName, true);
+                $exchange_time = microtime(true) - $start;
+                echo("<h4>$number_of_meetings meetings processed in $exchange_time seconds.</h4>");
             }
         ?>
         </ul>
