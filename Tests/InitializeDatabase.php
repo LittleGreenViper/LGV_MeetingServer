@@ -30,36 +30,35 @@ require_once(dirname(dirname(__FILE__)).'/Sources/LGV_MeetingServer_PDO.class.ph
 
 /***********************/
 /**
-\returns: An initialized PDO instance.
+\returns true, if successful.
 */
-function initialize_database($dbTableName   ///< REQUIRED: The name of the table to receive the initialization
+function initialize_database(   $pdo_instance,  ///< REQUIRED: The PDO instance for this transaction.
+                                $dbTableName    ///< REQUIRED: The name of the table to receive the initialization
                             ) {
+    $sql_init = file_get_contents(dirname(dirname(__FILE__)).'/Sources/config/sql/LGV_MeetingServer-MySQL.sql');
+    
     global $config_file_path;
     include($config_file_path);
 
-    $pdo_instance = NULL;    
-
     try {
-        $sql_init = file_get_contents(dirname(dirname(__FILE__)).'/Sources/config/sql/LGV_MeetingServer-MySQL.sql');
+        echo("<h3>Creating the $dbTableName table.</h3>");
         $sql_init = str_replace("`TABLE-NAME`", "`$dbTableName`", $sql_init);
-        $pdo_instance = new LGV_MeetingServer_PDO($_dbName, $_dbLogin, $_dbPassword, $_dbType, $_dbHost, $_dbPort);
         if ( $pdo_instance->preparedStatement($sql_init) ) {
             $data = $pdo_instance->preparedStatement("SELECT * FROM `$dbTableName`", [], true);
             if ( isset($data) && is_array($data) && 0 == count($data) ) {
                 echo('<h3 style="color:green">SUCCESSFUL DATABASE INIT:</h3>');
+                return true;
             } else {
                 echo('<h3 style="color:red">DATABASE INIT CHECK FAILED!</h3>');
             }
         } else {
             echo('<h3 style="color:red">DATABASE INIT FAILED!</h3>');
         }
-        
-        return $pdo_instance;
     } catch (Exception $exception) {
         echo('<h3 style="color:red">ERROR WHILE TRYING TO INITIALIZE THE DATABASES</h3>');
         echo('<pre>'.htmlspecialchars(print_r($exception->getMessage(), true)).'</pre>');
     }
     
-    return NULL;
+    return false;
 }
 ?>

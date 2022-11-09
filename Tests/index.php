@@ -25,8 +25,6 @@
 */
     global $config_file_path;
     $config_file_path = dirname(__FILE__).'/config/LGV_MeetingServer-Config.php';
-    
-    $g_PDOInstance = NULL;
     include($config_file_path);
 
     define( 'LGV_TEST', 1 );
@@ -43,15 +41,27 @@
     <body>
         <h1>LGV_MeetingServer Test Host</h1>
         <?php 
-            echo("<h2>Initializing to fresh database.</h2>");
-            $pdo_instance = initialize_database($_dbTempTableName);
+            echo("<h2>Initializing meta table.</h2>");
+            $pdo_instance = new LGV_MeetingServer_PDO($_dbName, $_dbLogin, $_dbPassword, $_dbType, $_dbHost, $_dbPort);
             if ( $pdo_instance ) {
-                echo("<h2>Reading BMLT Server List (Physical-Only).</h2>");
-                set_time_limit(300);
-                $start = microtime(true);
-                $number_of_meetings = update_database($_dbTempTableName, $_dbTableName, true);
-                $exchange_time = microtime(true) - $start;
-                echo("<h4>$number_of_meetings meetings processed in $exchange_time seconds.</h4>");
+                if ( $pdo_instance->preparedStatement('DROP TABLE IF EXISTS `meta`;CREATE TABLE `meta` (`last_update` bigint(20) DEFAULT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;INSERT INTO `meta` (`last_update`) VALUES (0);') ) {
+                    echo("<h2>Initializing to fresh database.</h2>");
+                    if ( initialize_database($pdo_instance, $_dbTempTableName) ) {
+                        echo("<h2>Reading BMLT Server List (Physical-Only).</h2>");
+                        set_time_limit(300);
+                        $start = microtime(true);
+                        $number_of_meetings = update_database(true);
+                        $exchange_time = microtime(true) - $start;
+                        echo("<h4>$number_of_meetings meetings processed in $exchange_time seconds.</h4>");
+                    }
+            
+                    echo("<h2>Geo query Test</h2>");
+                    geo_query_database(-73.3432, 40.9009, 10000);
+                } else {
+                    echo('<h3 style="color:red">TEMP DATABASE INIT FAILED!</h3>');
+                }
+            } else {
+                echo('<h3 style="color:red">META DATABASE INIT FAILED!</h3>');
             }
         ?>
         </ul>

@@ -7,6 +7,9 @@ $_dbHost = "localhost";
 $_dbPort = 3306;
 $_dbType = "mysql";
 
-$_dbTableName = "lgv_ms_meetings";
-$_dbTempTableName = "lgv_ms_meetings_temp";
+$_dbTableName = "data";
+$_dbTempTableName = "temp";
+$_dbMetaTableName = "meta";
+
+$_updateIntervalInSeconds = (4 * 60 * 60);
 ?>

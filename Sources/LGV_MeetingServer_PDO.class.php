@@ -118,9 +118,10 @@ class LGV_MeetingServer_PDO {
             
             return $ret;
 		} catch (PDOException $exception) {
-    die("Params:<pre>".htmlspecialchars(print_r($exception->getMessage(), true))."</pre>");
 		    $this->last_insert = NULL;
             $this->_pdo->rollback();
+// echo("SQL:<pre>".htmlspecialchars(print_r($sql, true))."</pre>");    
+// die("Params:<pre>".htmlspecialchars(print_r($params, true))."</pre>");    
 			throw new Exception(__METHOD__ . '()::' . __LINE__ . "\n" . $exception->getMessage());
 		}
 		

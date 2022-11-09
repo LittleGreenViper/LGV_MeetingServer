@@ -231,12 +231,26 @@ function _save_bmlt_meetings_into_db(   $pdo_instance,  ///< REQUIRED: The initi
         array_push($params, (isset($meeting["tag8"]) ? $meeting["tag8"] : NULL));
         array_push($params, (isset($meeting["tag9"]) ? $meeting["tag9"] : NULL));
         array_push($params, (isset($meeting["comments"]) ? $meeting["comments"] : NULL));
-        array_push($params, "formats");
-        array_push($params, "physical_address");
-        array_push($params, "virtual_information");
+        if ( isset($meeting["formats"]) ) {
+            $_json = json_encode($meeting["formats"]);
+            array_push($params, $_json);
+        } else {
+            array_push($params, "");
+        }
+        if ( isset($meeting["physical_location"]) && !empty($meeting["physical_location"]) ) {
+            $_json = json_encode($meeting["physical_location"]);
+            array_push($params, $_json);
+        } else {
+            array_push($params, "");
+        }
+        if ( isset($meeting["virtual_meeting_info"]) && !empty($meeting["virtual_meeting_info"]) ) {
+            $_json = json_encode($meeting["virtual_meeting_info"]);
+            array_push($params, $_json);
+        } else {
+            array_push($params, "");
+        }
     }
     $sql .= (implode(",\n", $sql_rows) . ";\n");
-    
     $pdo_instance->preparedStatement($sql, $params);
     
     return $counted_meetings;
