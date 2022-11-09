@@ -25,27 +25,30 @@
 */
 defined( 'LGV_MeetingServer_Files' ) or die ( 'Cannot Execute Directly' );	// Makes sure that this file is in the correct context.
 
-require_once($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
-
 require_once(dirname(__FILE__).'/LGV_MeetingServer_BMLT.php');
 
-define( 'LGV_DB_CATCHER', 1 );
+defined( 'LGV_DB_CATCHER' ) or define( 'LGV_DB_CATCHER', 1 );
 
 require_once(dirname(__FILE__).'/LGV_MeetingServer_PDO.class.php');
-
-/// This will hold our PDO instance, initialized to the database, as set in the config.
-global $g_PDOInstance;
-
-try {
-    $g_PDOInstance = new LGV_MeetingServer_PDO($_dbName, $_dbLogin, $_dbPassword, $_dbType, $_dbHost, $_dbPort);
-} catch (Exception $exception) {
-    echo('<h1 style="color:red">ERROR WHILE TRYING TO INITIALIZE DATABASE CONNECTION!</h1>');
-    die('<pre>'.htmlspecialchars(print_r($exception, true)).'</pre>');
-}
 
 /****************************************************************************************************************************/
 /**
  */
-function update_database( $physical_only = false  ///< If true (default is false), then only meetings that have a physical location will be returned.
+function update_database(   $dbFromTableName,       ///< The temporary table that we will be moving into place.
+                            $dbToTableName,         ///< The original table that will be replaced.
+                            $physical_only = false  ///< If true (default is false), then only meetings that have a physical location will be returned.
                         ) {
+    global $config_file_path;
+    include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
+
+    try {
+        $pdoInstance = new LGV_MeetingServer_PDO($_dbName, $_dbLogin, $_dbPassword, $_dbType, $_dbHost, $_dbPort);
+        $number_of_meetings = process_all_bmlt_server_meetings($pdoInstance, $dbFromTableName, $physical_only);
+        $rename_sql = "DROP TABLE IF EXISTS `$dbToTableName`;RENAME TABLE `$dbFromTableName` TO `$dbToTableName`;";
+        $pdoInstance->preparedStatement($rename_sql);
+    
+        return $number_of_meetings;
+    } catch (Exception $exception) {
+        return NULL;
+    }
 }

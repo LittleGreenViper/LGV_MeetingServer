@@ -24,10 +24,17 @@
     The Great Rift Valley Software Company: https://riftvalleysoftware.com
 */
     set_time_limit(300);
+    global $config_file_path;
+    
+    $g_PDOInstance = NULL;
+    $config_file_path = dirname(__FILE__).'/config/LGV_MeetingServer-Config.php';
+    include($config_file_path);
+
     define( 'LGV_TEST', 1 );
     require_once(dirname(__FILE__).'/InitializeDatabase.php');
     define( 'LGV_MeetingServer_Files', 1 );
-    require_once(dirname(dirname(__FILE__)).'/Sources/LGV_MeetingServer_BMLT.php');
+    require_once(dirname(dirname(__FILE__)).'/Sources/LGV_MeetingServer.php');
+    
 ?><!DOCTYPE html>
 <html lang="en">
     <head>
@@ -38,10 +45,12 @@
         <h1>LGV_MeetingServer Test Host</h1>
         <?php 
             echo("<h2>Initializing to fresh database.</h2>");
-            initialize_database();
-            echo("<h2>Reading BMLT Server List (Physical-Only).</h2>");
-            $all_meetings = read_all_bmlt_server_meetings(true);
-            echo("<pre>".count($all_meetings)." meetings found.</pre>");
+            $pdo_instance = initialize_database($_dbTempTableName);
+            if ( $pdo_instance ) {
+                echo("<h2>Reading BMLT Server List (Physical-Only).</h2>");
+                $all_meetings = update_database($_dbTempTableName, $_dbTableName, true);
+                echo("<h4>$all_meetings meetings found.</h4>");
+            }
         ?>
         </ul>
     </body>

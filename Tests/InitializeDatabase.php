@@ -30,41 +30,36 @@ require_once(dirname(dirname(__FILE__)).'/Sources/LGV_MeetingServer_PDO.class.ph
 
 /***********************/
 /**
+\returns: An initialized PDO instance.
 */
-function initialize_database() {
-    $_pdo_instance = NULL;    
-    require_once(dirname(__FILE__).'/config/LGV_MeetingServer-Config.php');
+function initialize_database($dbTableName   ///< REQUIRED: The name of the table to receive the initialization
+                            ) {
+    global $config_file_path;
+    include($config_file_path);
+
+    $pdo_instance = NULL;    
 
     try {
         $sql_init = file_get_contents(dirname(dirname(__FILE__)).'/Sources/config/sql/LGV_MeetingServer-MySQL.sql');
-        $sql_data = file_get_contents(dirname(__FILE__).'/config/LGV_MeetingServer-Rows-MySQL.sql');
-
-        $_pdo_instance = new LGV_MeetingServer_PDO($_dbName, $_dbLogin, $_dbPassword, $_dbType, $_dbHost, $_dbPort);
-        if ( $_pdo_instance->preparedStatement($sql_init) ) {
-            $data = $_pdo_instance->preparedStatement("SELECT * FROM lgv_ms_meetings", [], true);
+        $sql_init = str_replace("`TABLE-NAME`", "`$dbTableName`", $sql_init);
+        $pdo_instance = new LGV_MeetingServer_PDO($_dbName, $_dbLogin, $_dbPassword, $_dbType, $_dbHost, $_dbPort);
+        if ( $pdo_instance->preparedStatement($sql_init) ) {
+            $data = $pdo_instance->preparedStatement("SELECT * FROM `$dbTableName`", [], true);
             if ( isset($data) && is_array($data) && 0 == count($data) ) {
                 echo('<h3 style="color:green">SUCCESSFUL DATABASE INIT:</h3>');
-//                 if ( $_pdo_instance->preparedStatement($sql_data) ) {
-//                     $data = $_pdo_instance->preparedStatement("SELECT * FROM lgv_ms_meetings", [], true);
-//     
-//                     if ( isset($data) && is_array($data) && count($data) ) {
-//                         echo('<h3 style="color:green">SUCCESSFUL DATA INIT:</h3>');
-//                         echo('<pre>'.htmlspecialchars(print_r($data, true)).'</pre>');
-//                     } else {
-//                         echo('<h3 style="color:red">DATA INIT CHECK FAILED!</h3>');
-//                     }
-//                 } else {
-//                     echo('<h3 style="color:red">DATA INIT FAILED!</h3>');
-//                 }
             } else {
                 echo('<h3 style="color:red">DATABASE INIT CHECK FAILED!</h3>');
             }
         } else {
             echo('<h3 style="color:red">DATABASE INIT FAILED!</h3>');
         }
+        
+        return $pdo_instance;
     } catch (Exception $exception) {
         echo('<h3 style="color:red">ERROR WHILE TRYING TO INITIALIZE THE DATABASES</h3>');
         echo('<pre>'.htmlspecialchars(print_r($exception->getMessage(), true)).'</pre>');
     }
+    
+    return NULL;
 }
 ?>

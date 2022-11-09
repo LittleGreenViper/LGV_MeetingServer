@@ -83,7 +83,6 @@ class LGV_MeetingServer_PDO {
 								        $fetchResponse = false  ///< If true (default is false), then a fetch will be done, and a response returned.
 						            )
 	{
-		$this->last_insert = NULL;
 		if ( NULL == $this->_pdo ) {
             throw new Exception(__METHOD__ . '()::' . __LINE__ . "\nNo PDO object!");
 		}
@@ -119,6 +118,7 @@ class LGV_MeetingServer_PDO {
             
             return $ret;
 		} catch (PDOException $exception) {
+    die("Params:<pre>".htmlspecialchars(print_r($exception->getMessage(), true))."</pre>");
 		    $this->last_insert = NULL;
             $this->_pdo->rollback();
 			throw new Exception(__METHOD__ . '()::' . __LINE__ . "\n" . $exception->getMessage());

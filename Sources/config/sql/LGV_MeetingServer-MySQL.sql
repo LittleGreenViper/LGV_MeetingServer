@@ -1,5 +1,5 @@
-DROP TABLE IF EXISTS `lgv_ms_meetings`;
-CREATE TABLE `lgv_ms_meetings` (
+DROP TABLE IF EXISTS `TABLE-NAME`;
+CREATE TABLE `TABLE-NAME` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `server_id` int(10) UNSIGNED NOT NULL,
   `meeting_id` int(10) UNSIGNED NOT NULL,
@@ -8,7 +8,7 @@ CREATE TABLE `lgv_ms_meetings` (
   `start_time` time DEFAULT NULL,
   `weekday` tinyint(3) UNSIGNED DEFAULT NULL,
   `single_occurrence_date` datetime DEFAULT NULL,
-  `duration` int(10) UNSIGNED ZEROFILL DEFAULT NULL,
+  `duration` int(10) UNSIGNED DEFAULT NULL,
   `longitude` float DEFAULT NULL,
   `latitude` float DEFAULT NULL,
   `tag0` varchar(255) COLLATE utf8_bin DEFAULT NULL,
@@ -27,18 +27,18 @@ CREATE TABLE `lgv_ms_meetings` (
   `virtual_information` text COLLATE utf8_bin,
   `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-ALTER TABLE `lgv_ms_meetings`
+ALTER TABLE `TABLE-NAME`
   ADD PRIMARY KEY (`id`),
   ADD KEY `server_id` (`server_id`),
   ADD KEY `meeting_id` (`meeting_id`),
+  ADD KEY `organization_key` (`organization_key`),
   ADD KEY `name` (`name`),
   ADD KEY `start_time` (`start_time`),
+  ADD KEY `weekday` (`weekday`),
+  ADD KEY `single_occurrence_date` (`single_occurrence_date`),
   ADD KEY `duration` (`duration`),
   ADD KEY `longitude` (`longitude`),
   ADD KEY `latitude` (`latitude`),
-  ADD KEY `weekday` (`weekday`),
-  ADD KEY `organization_key` (`organization_key`),
-  ADD KEY `single_occurrence_date` (`single_occurrence_date`),
   ADD KEY `tag0` (`tag0`),
   ADD KEY `tag1` (`tag1`),
   ADD KEY `tag2` (`tag2`),
@@ -49,5 +49,5 @@ ALTER TABLE `lgv_ms_meetings`
   ADD KEY `tag7` (`tag7`),
   ADD KEY `tag8` (`tag8`),
   ADD KEY `tag9` (`tag9`);
-ALTER TABLE `lgv_ms_meetings`
+ALTER TABLE `TABLE-NAME`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
