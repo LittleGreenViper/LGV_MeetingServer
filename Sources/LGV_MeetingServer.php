@@ -155,6 +155,42 @@ function _location_predicate(   $geo_center_lng,    ///< REQUIRED FLOAT: The sea
     return $ret;
 }
 
+/***********************/
+/**
+\returns true, if successful.
+*/
+function initialize_meta_database(  $pdo_instance   ///< REQUIRED: The PDO instance for this transaction.
+                                ) {
+    $sql_init = file_get_contents(dirname(__FILE__).'/config/sql/LGV_MeetingServer-Meta-MySQL.sql');
+
+    try {
+        $pdo_instance->preparedStatement($sql_init);
+        return true;
+    } catch (Exception $exception) {
+    }
+    
+    return false;
+}
+
+/***********************/
+/**
+\returns true, if successful.
+*/
+function initialize_main_database(  $pdo_instance,  ///< REQUIRED: The PDO instance for this transaction.
+                                    $dbTableName    ///< REQUIRED: The name of the table to receive the initialization
+                                ) {
+    $sql_init = file_get_contents(dirname(__FILE__).'/config/sql/LGV_MeetingServer-MySQL.sql');
+
+    try {
+        $sql_init = str_replace("`TABLE-NAME`", "`$dbTableName`", $sql_init);
+        $pdo_instance->preparedStatement($sql_init);
+        return true;
+    } catch (Exception $exception) {
+    }
+    
+    return false;
+}
+
 /*******************************************************************/
 /**
 This actually fetches all the meetings, converts them to our local format, and stores them into a temporary table.
@@ -188,7 +224,8 @@ function geo_query_database($geo_center_lng,    ///< REQUIRED FLOAT: The longitu
                             $geo_radius,        ///< REQUIRED UNSIGNED FLOAT: The maximum radius (in Kilometers) of the search.
                             $minimum_found = 0, ///< OPTIONAL UNSIGNED INT: If nonzero, then the search will be an "auto-radius" search, starting from the center, and expanding in steps (each step is 1/20 of the total radius). Once this many meetings are found (or the maximum radius is reached), the search stops, and the found metings are returned.
                             $weekdays = [],     ///< OPTIONAL ARRAY[UNSIGNED INT (1 - 7)]: Any weekdays. Each integer is 1-7 (1 is always Sunday). There are a maximum of 7 elements. An empty Array (default), means all weekdays. If any values are present, ONLY those days are found.
-                            $start_time = 0     ///< OPTIONAL UNSIGNED INT: A minimum start time, in seconds (0 -> 86400, with 86399 being "One minute before midnight tonight," and 0 being "midnight, this morning"). Default is 0. This is inclusive (25200 is 7AM, or later).
+                            $start_time = 0,    ///< OPTIONAL UNSIGNED INT: A minimum start time, in seconds (0 -> 86400, with 86399 being "One minute before midnight tonight," and 0 being "midnight, this morning"). Default is 0. This is inclusive (25200 is 7AM, or later).
+                            $org_key = NULL     ///< OPTIONAL STRING: The key for a particular organization. If not provided, all organizations are searched.
                             ) {
     $step_size_in_km = $geo_radius;
     $current_step = $geo_radius;
@@ -198,6 +235,7 @@ function geo_query_database($geo_center_lng,    ///< REQUIRED FLOAT: The longitu
     }
     
     $predicate = "";
+    $params = [];
     
     $weekday_predicate_array = [];
     
@@ -212,7 +250,7 @@ function geo_query_database($geo_center_lng,    ///< REQUIRED FLOAT: The longitu
     }
     
     if ( !empty($weekday_predicate_array) ) {
-        $predicate = "(".implode(") AND (",$weekday_predicate_array).")";
+        $predicate = "(".implode(") OR (",$weekday_predicate_array).")";
     }
     
     $start_time = intval($start_time);
@@ -224,7 +262,16 @@ function geo_query_database($geo_center_lng,    ///< REQUIRED FLOAT: The longitu
         if ( $predicate ) {
             $predicate .= " AND ";
         }
-        $predicate .= "(start_time <= $comp_time)";
+        $predicate .= "(`start_time`<=$comp_time)";
+    }
+    
+    if ( isset($org_key) && trim($org_key) ) {
+        $org_key = strtolower(trim($org_key));
+        $params = [$org_key];
+        if ( $predicate ) {
+            $predicate .= " AND ";
+        }
+        $predicate .= "(?=`organization_key`)";
     }
     
     $sql = _location_predicate($geo_center_lng, $geo_center_lat, $current_step, $predicate, false);
@@ -232,6 +279,7 @@ function geo_query_database($geo_center_lng,    ///< REQUIRED FLOAT: The longitu
     global $config_file_path;
     include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
     $pdoInstance = new LGV_MeetingServer_PDO($_dbName, $_dbLogin, $_dbPassword, $_dbType, $_dbHost, $_dbPort);
-    $response = $pdoInstance->preparedStatement($sql, [], true);
-echo("Search Results:<pre>".htmlspecialchars(print_r($response, true))."</pre>");
+    $response = $pdoInstance->preparedStatement($sql, $params, true);
+    
+    return $response;
 }

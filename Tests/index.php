@@ -27,8 +27,6 @@
     $config_file_path = dirname(__FILE__).'/config/LGV_MeetingServer-Config.php';
     include($config_file_path);
 
-    define( 'LGV_TEST', 1 );
-    require_once(dirname(__FILE__).'/InitializeDatabase.php');
     define( 'LGV_MeetingServer_Files', 1 );
     require_once(dirname(dirname(__FILE__)).'/Sources/LGV_MeetingServer.php');
     
@@ -44,9 +42,9 @@
             echo("<h2>Initializing meta table.</h2>");
             $pdo_instance = new LGV_MeetingServer_PDO($_dbName, $_dbLogin, $_dbPassword, $_dbType, $_dbHost, $_dbPort);
             if ( $pdo_instance ) {
-                if ( $pdo_instance->preparedStatement('DROP TABLE IF EXISTS `meta`;CREATE TABLE `meta` (`last_update` bigint(20) DEFAULT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;INSERT INTO `meta` (`last_update`) VALUES (0);') ) {
+                if ( initialize_meta_database($pdo_instance) ) {
                     echo("<h2>Initializing to fresh database.</h2>");
-                    if ( initialize_database($pdo_instance, $_dbTempTableName) ) {
+                    if ( initialize_main_database($pdo_instance, $_dbTempTableName) ) {
                         echo("<h2>Reading BMLT Server List (Physical-Only).</h2>");
                         set_time_limit(300);
                         $start = microtime(true);
@@ -56,7 +54,9 @@
                     }
             
                     echo("<h2>Geo query Test</h2>");
-                    geo_query_database(-73.3432, 40.9009, 10000);
+                    $response = geo_query_database(-73.3432, 40.9009, 10);
+                    echo("Search Results:<pre>".htmlspecialchars(print_r($response, true))."</pre>");
+
                 } else {
                     echo('<h3 style="color:red">TEMP DATABASE INIT FAILED!</h3>');
                 }
