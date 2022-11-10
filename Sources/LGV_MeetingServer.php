@@ -41,9 +41,9 @@ require_once(dirname(__FILE__).'/LGV_MeetingServer_PDO.class.php');
     \returns a Float with the distance, in Kilometers.
 */
 function _get_accurate_distance (	$lat1,  ///< This is the first point latitude (degrees).
-                                        $lon1,  ///< This is the first point longitude (degrees).
-                                        $lat2,  ///< This is the second point latitude (degrees).
-                                        $lon2   ///< This is the second point longitude (degrees).
+                                    $lon1,  ///< This is the first point longitude (degrees).
+                                    $lat2,  ///< This is the second point latitude (degrees).
+                                    $lon2   ///< This is the second point longitude (degrees).
                                     )
 {
     if (($lat1 == $lat2) && ($lon1 == $lon2)) { // Just a quick shortcut.
@@ -104,7 +104,70 @@ function _get_accurate_distance (	$lat1,  ///< This is the first point latitude 
     
     return ( abs ( round ( $s ) / 1000.0 ) ); 
 }
-	
+
+/****************************************************************************************************************************/
+/**
+This is a simple sort closure, for the resultant meeting array. We sort on the distances from search center.
+This allows us to maintain a consistent order to each server's meetings.
+
+\returns 0, if the IDs are equal, or -1 is $a is less than $b, or 1, otherwise.
+ */
+function _sort_meetings_by_distance(    $a, ///< REQUIRED: The first meeting to check.
+                                        $b  ///< REQUIRED: The second meeting to check.
+                                    ) {
+    $aVal = $a["distance"];
+    $bVal = $b["distance"];
+    
+    return ($aVal == $bVal) ? 0 : (($aVal < $bVal) ? -1 : 1);
+}
+
+
+/****************************************************************************************************************************/
+/**
+This "scrubs" a meeting array, so that unused fields are removed. It will help to make transmission much faster.
+
+\returns the "cleaned" meeting Array.
+ */
+function _clean_meeting($meeting    ///< REQUIRED: The meeting to be filtered (an Array).
+                        ) {
+    $keys = array_keys($meeting) ;
+    $ret = Array();
+    
+    // Get rid of "housekeeping" stuff.
+    if ( isset($meeting["id"]) ) {
+        unset($meeting["id"]);
+    }
+    
+    if ( isset($meeting["radius"]) ) {
+        unset($meeting["radius"]);
+    }
+    
+    if ( isset($meeting["last_modified"]) ) {
+        unset($meeting["last_modified"]);
+    }
+
+    foreach ($keys as $key) {
+        $value = $meeting[$key];
+        if ( isset($meeting[$key]) && !empty($value) ) {
+            if ( "formats" == $key || "virtual_information" == $key || "physical_address" == $key ) {
+                $value = unserialize($value);
+                if ( "physical_address" == $key ) {
+                    if ( isset($value["latitude"]) ) {
+                        unset($value["latitude"]);
+                    }
+                    if ( isset($value["longitude"]) ) {
+                        unset($value["longitude"]);
+                    }
+                }
+            }
+            
+            $ret[$key] = $value;
+        }
+    }
+    
+    return $ret;
+}
+
 /*******************************************************************/
 /**
 This method creates a special SQL header that has an embedded Haversine formula. You use this in place of the security predicate.
@@ -161,7 +224,10 @@ function _location_predicate(   $geo_center_lng,    ///< REQUIRED FLOAT: The sea
 */
 function initialize_meta_database(  $pdo_instance   ///< REQUIRED: The PDO instance for this transaction.
                                 ) {
-    $sql_init = file_get_contents(dirname(__FILE__).'/config/sql/LGV_MeetingServer-Meta-MySQL.sql');
+    global $config_file_path;
+    include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
+
+    $sql_init = file_get_contents(dirname(__FILE__).'/config/sql/LGV_MeetingServer-Meta-MySQL.sql') . ";DROP TABLE IF EXISTS `$_dbTableName`;DROP TABLE IF EXISTS `$_dbTempTableName`";;
 
     try {
         $pdo_instance->preparedStatement($sql_init);
@@ -202,13 +268,13 @@ function update_database(   $physical_only = false  ///< REQUIRED: If true (defa
     include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
 
     try {
-        $pdoInstance = new LGV_MeetingServer_PDO($_dbName, $_dbLogin, $_dbPassword, $_dbType, $_dbHost, $_dbPort);
-        $lastupdate_response = $pdoInstance->preparedStatement("SELECT `last_update` FROM `$_dbMetaTableName`", [], true)[0]["last_update"];
+        $pdo_instance = new LGV_MeetingServer_PDO($_dbName, $_dbLogin, $_dbPassword, $_dbType, $_dbHost, $_dbPort);
+        $lastupdate_response = $pdo_instance->preparedStatement("SELECT `last_update` FROM `$_dbMetaTableName`", [], true)[0]["last_update"];
         $lapsed_time = time() - intval($lastupdate_response);
-        if ( $_updateIntervalInSeconds < $lapsed_time ) {
-            $number_of_meetings = process_all_bmlt_server_meetings($pdoInstance, $_dbTempTableName, $physical_only);
+        if ( ($_updateIntervalInSeconds < $lapsed_time) && initialize_main_database($pdo_instance, $_dbTempTableName) ) {
+            $number_of_meetings = process_all_bmlt_server_meetings($pdo_instance, $_dbTempTableName, $physical_only);
             $rename_sql = "DROP TABLE IF EXISTS `$_dbTableName`;RENAME TABLE `$_dbTempTableName` TO `$_dbTableName`;UPDATE `$_dbMetaTableName` SET `last_update`=? WHERE 1;";
-            $pdoInstance->preparedStatement($rename_sql, [time()]);
+            $pdo_instance->preparedStatement($rename_sql, [time()]);
         }
         return $number_of_meetings;
     } catch (Exception $exception) {
@@ -219,16 +285,29 @@ function update_database(   $physical_only = false  ///< REQUIRED: If true (defa
 /*******************************************************************/
 /**
  */
-function geo_query_database($geo_center_lng,    ///< REQUIRED FLOAT: The longitude (in degrees) of the center of the search
-                            $geo_center_lat,    ///< REQUIRED FLOAT: The latitude (in degrees) of the center of the search
-                            $geo_radius,        ///< REQUIRED UNSIGNED FLOAT: The maximum radius (in Kilometers) of the search.
-                            $minimum_found = 0, ///< OPTIONAL UNSIGNED INT: If nonzero, then the search will be an "auto-radius" search, starting from the center, and expanding in steps (each step is 1/20 of the total radius). Once this many meetings are found (or the maximum radius is reached), the search stops, and the found metings are returned.
-                            $weekdays = [],     ///< OPTIONAL ARRAY[UNSIGNED INT (1 - 7)]: Any weekdays. Each integer is 1-7 (1 is always Sunday). There are a maximum of 7 elements. An empty Array (default), means all weekdays. If any values are present, ONLY those days are found.
-                            $start_time = 0,    ///< OPTIONAL UNSIGNED INT: A minimum start time, in seconds (0 -> 86400, with 86399 being "One minute before midnight tonight," and 0 being "midnight, this morning"). Default is 0. This is inclusive (25200 is 7AM, or later).
-                            $org_key = NULL     ///< OPTIONAL STRING: The key for a particular organization. If not provided, all organizations are searched.
-                            ) {
+function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitude (in degrees) of the center of the search
+                        $geo_center_lat = NULL, ///< OPTIONAL FLOAT: The latitude (in degrees) of the center of the search
+                        $geo_radius = NULL,     ///< OPTIONAL UNSIGNED FLOAT: The maximum radius (in Kilometers) of the search.
+                        $minimum_found = 0,     ///< OPTIONAL UNSIGNED INT: If nonzero, then the search will be an "auto-radius" search, starting from the center, and expanding in steps (each step is 1/20 of the total radius). Once this many meetings are found (or the maximum radius is reached), the search stops, and the found metings are returned.
+                        $weekdays = [],         ///< OPTIONAL ARRAY[UNSIGNED INT (1 - 7)]: Any weekdays. Each integer is 1-7 (1 is always Sunday). There are a maximum of 7 elements. An empty Array (default), means all weekdays. If any values are present, ONLY those days are found.
+                        $start_time = 0,        ///< OPTIONAL UNSIGNED INT: A minimum start time, in seconds (0 -> 86400, with 86399 being "One minute before midnight tonight," and 0 being "midnight, this morning"). Default is 0. This is inclusive (25200 is 7AM, or later).
+                        $org_key = NULL         ///< OPTIONAL STRING: The key for a particular organization. If not provided, all organizations are searched.
+                        ) {
+    $start = microtime(true);
+
     $step_size_in_km = $geo_radius;
-    $current_step = $geo_radius;
+    
+    $current_step = $step_size_in_km;
+    
+    $geo_search = !empty($geo_center_lng) && !empty($geo_center_lat) && !empty($geo_radius);
+    
+    if ( !$geo_search ) {
+        $geo_center_lng = NULL;
+        $geo_center_lat = NULL;
+        $geo_radius = NULL;
+        $minimum_found = 0;
+    }
+    
     if ( 0 < $minimum_found) {
         $step_size_in_km /= 20;
         $current_step = $step_size_in_km;
@@ -273,13 +352,56 @@ function geo_query_database($geo_center_lng,    ///< REQUIRED FLOAT: The longitu
         }
         $predicate .= "(?=`organization_key`)";
     }
-    
-    $sql = _location_predicate($geo_center_lng, $geo_center_lat, $current_step, $predicate, false);
    
     global $config_file_path;
     include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
     $pdoInstance = new LGV_MeetingServer_PDO($_dbName, $_dbLogin, $_dbPassword, $_dbType, $_dbHost, $_dbPort);
-    $response = $pdoInstance->preparedStatement($sql, $params, true);
     
-    return $response;
+    $response = [];
+    
+    if ( 0 < $minimum_found) {
+        while ( ($current_step <= $geo_radius) && ($minimum_found > count($response)) ) {
+            $sql = _location_predicate($geo_center_lng, $geo_center_lat, $current_step, $predicate, false);
+            $response = $pdoInstance->preparedStatement($sql, $params, true);
+            $current_step += $step_size_in_km;
+        }
+    } else {
+        $sql =  "";
+        
+        if ( $geo_search ) {
+            $sql = _location_predicate($geo_center_lng, $geo_center_lat, $geo_radius * 1.05, $predicate, false);
+        } else {
+            $sql = "SELECT * FROM `".$_dbTableName."`";
+            if ( !empty($predicate) ) {
+                $sql .= " WHERE $predicate";
+            }
+            
+        }
+        $response = $pdoInstance->preparedStatement($sql, $params, true);
+    }
+    
+    $ret = Array();
+    
+    $filter_meetings = !$geo_search || ($current_step == $geo_radius) || ((0 < $minimum_found) && (count($meetings) >= $minimum_found));
+    
+    // We apply a Vincenty algorithm, to refine the distance. It is more accurate than the simple one we used for the main search.
+    if ( $filter_meetings ) {
+        foreach ( $response as $meeting ) {
+            if ( $geo_search && isset($meeting["latitude"]) && isset($meeting["longitude"]) ) {
+                $distance = _get_accurate_distance($geo_center_lat, $geo_center_lng, floatVal($meeting["latitude"]), floatval($meeting["longitude"]));
+                if ( $geo_radius >= $distance ) {
+                    $meeting["distance"] = $distance;
+                    array_push($ret, _clean_meeting($meeting));
+                }
+            } else {
+                array_push($ret, _clean_meeting($meeting));
+            }
+        }
+        
+        usort($ret, "_sort_meetings_by_distance");
+        
+        $ret = ["meta" => ["time" => microtime(true) - $start], "meetings" => $ret];
+    }
+    
+    return $ret;
 }
