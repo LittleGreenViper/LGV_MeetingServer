@@ -80,6 +80,8 @@
                 $geo_org = $value;
             }
         }
-        $found_meetings = json_encode( query_database($geocenter_lng, $geocenter_lat, $geo_radius, $geo_min, $geo_weekdays, $geo_start_time, $geo_org) );
-        die($found_meetings);
+        $found_meetings = query_database($geocenter_lng, $geocenter_lat, $geo_radius, $geo_min, $geo_weekdays, $geo_start_time, $geo_org);
+        ob_start("ob_gzhandler");
+        echo($found_meetings);
+        ob_end_flush();
     }

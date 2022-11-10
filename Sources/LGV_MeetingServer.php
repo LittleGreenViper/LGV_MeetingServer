@@ -161,6 +161,18 @@ function _clean_meeting($meeting    ///< REQUIRED: The meeting to be filtered (a
                 }
             }
             
+            switch ( $key ) {
+                case "server_id":
+                case "meeting_id":
+                case "weekday":
+                case "duration":
+                    $value = intval($value);
+                    
+                case "latitude":
+                case "longitude":
+                    $value = floatval($value);
+            }
+            
             $ret[$key] = $value;
         }
     }
@@ -291,7 +303,8 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
                         $minimum_found = 0,     ///< OPTIONAL UNSIGNED INT: If nonzero, then the search will be an "auto-radius" search, starting from the center, and expanding in steps (each step is 1/20 of the total radius). Once this many meetings are found (or the maximum radius is reached), the search stops, and the found metings are returned.
                         $weekdays = [],         ///< OPTIONAL ARRAY[UNSIGNED INT (1 - 7)]: Any weekdays. Each integer is 1-7 (1 is always Sunday). There are a maximum of 7 elements. An empty Array (default), means all weekdays. If any values are present, ONLY those days are found.
                         $start_time = 0,        ///< OPTIONAL UNSIGNED INT: A minimum start time, in seconds (0 -> 86400, with 86399 being "One minute before midnight tonight," and 0 being "midnight, this morning"). Default is 0. This is inclusive (25200 is 7AM, or later).
-                        $org_key = NULL         ///< OPTIONAL STRING: The key for a particular organization. If not provided, all organizations are searched.
+                        $org_key = NULL,        ///< OPTIONAL STRING: The key for a particular organization. If not provided, all organizations are searched.
+                        $ids = NULL             ///< OPTIONAL ARRAY[(UNSIGNED INT, UNSIGNED INT)]: This can be an array of tuples (each being a server ID, and a meeting ID, in that order, as integers). These represent individual meetings. If these are provided, then ONLY those meetings will be returned, but any other parameters will still be applied.
                         ) {
     $start = microtime(true);
 
@@ -333,6 +346,7 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
     }
     
     $start_time = intval($start_time);
+    
     if ( 0 < $start_time && 86400 > $start_time ) {
         $hour = intval($start_time / 3600);
         $minute = ($start_time - ($hour * 3600)) / 60;
@@ -351,6 +365,26 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
             $predicate .= " AND ";
         }
         $predicate .= "(?=`organization_key`)";
+    }
+    
+    if ( !empty($ids) ) {
+        $plist = [];
+        foreach ( $ids as $id ) {
+            if ( is_array($id) && (1 < count($id)) ) {
+                $server_id = intval($id[0]);
+                $meeting_id = intval($id[1]);
+                
+                array_push($plist, "(`server_id`=$server_id AND `meeting_id`=$meeting_id)");
+            }
+        }
+        
+        if ( !empty($plist) ) {
+            if ( $predicate ) {
+                $predicate .= " AND ";
+            }
+            
+            $predicate .= implode(" AND ", $plist);
+        }
     }
    
     global $config_file_path;
@@ -400,7 +434,7 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
         
         usort($ret, "_sort_meetings_by_distance");
         
-        $ret = ["meta" => ["time" => microtime(true) - $start], "meetings" => $ret];
+        $ret = "{ \"meta\": {\"time\": ".microtime(true) - $start."}, \"meetings\": ".json_encode( $ret )."}";
     }
     
     return $ret;
