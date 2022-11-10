@@ -383,7 +383,7 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
                 $predicate .= " AND ";
             }
             
-            $predicate .= implode(" AND ", $plist);
+            $predicate .= implode(" OR ", $plist);
         }
     }
    

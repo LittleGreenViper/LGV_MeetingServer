@@ -57,6 +57,7 @@
         $geo_weekdays = NULL;
         $geo_start_time = NULL;
         $geo_org = NULL;
+        $ids = NULL;
         
         foreach ( $query as $parameter ) {
             [$key, $value] = explode("=", $parameter);
@@ -78,10 +79,23 @@
                 $geo_start_time = intval($value);
             } elseif ( "geo_org" == $key && !empty($value) ) {
                 $geo_org = $value;
+            } elseif ( "ids" == $key && !empty($value) ) {
+                $id_temp = explode("),(", trim($value, "()"));
+                
+                if ( !empty($id_temp) ) {
+                    $ids = [];
+                    foreach ( $id_temp as $id_pair ) {
+                        $id_pair_temp = explode(",", $id_pair);
+                        if ( 2 == count($id_pair_temp) ) {
+                            $server_id = intval($id_pair_temp[0]);
+                            $meeting_id = intval($id_pair_temp[1]);
+                            
+                            array_push($ids, [$server_id, $meeting_id]);
+                        }
+                    }
+                }
             }
         }
-        $found_meetings = query_database($geocenter_lng, $geocenter_lat, $geo_radius, $geo_min, $geo_weekdays, $geo_start_time, $geo_org);
-        ob_start("ob_gzhandler");
-        echo($found_meetings);
-        ob_end_flush();
+        
+        echo(query_database($geocenter_lng, $geocenter_lat, $geo_radius, $geo_min, $geo_weekdays, $geo_start_time, $geo_org, $ids));
     }
