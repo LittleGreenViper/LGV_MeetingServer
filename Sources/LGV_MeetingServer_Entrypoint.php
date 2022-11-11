@@ -23,6 +23,12 @@
 
     The Great Rift Valley Software Company: https://riftvalleysoftware.com
 */
+/***************************************************************************************************************************/
+/**
+    \brief This file implements the lions' share of basic entrypoint duties for the server. It should be included into whatever index file you are using.
+    
+    NOTE: Your index file needs to declare a path to the config file, in the global variable $config_file_path.
+ */
 defined( 'LGV_MeetingServer_Files' ) or die ( 'Cannot Execute Directly' );	// Makes sure that this file is in the correct context.
 set_time_limit(300);
 

@@ -23,6 +23,13 @@
 
     The Great Rift Valley Software Company: https://riftvalleysoftware.com
 */
+/***************************************************************************************************************************/
+/**
+    \brief This file implements the BMLT-specific "writer" for the server.
+    
+    It reads in the current server list (from the [TOMATO Project](https://github.com/bmlt-enabled/tomato/blob/master/rootServerList.json)), and then reads in every server, using the default localization.
+    It processes the server data into our local format, and stores it.
+ */
 defined( 'LGV_MeetingServer_Files' ) or die ( 'Cannot Execute Directly' );	// Makes sure that this file is in the correct context.
     
 /****************************************************************************************************************************/

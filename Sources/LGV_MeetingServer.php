@@ -23,6 +23,10 @@
 
     The Great Rift Valley Software Company: https://riftvalleysoftware.com
 */
+/***************************************************************************************************************************/
+/**
+    \brief This file implements the generic "reader" for the server.
+ */
 defined( 'LGV_MeetingServer_Files' ) or die ( 'Cannot Execute Directly' );	// Makes sure that this file is in the correct context.
 
 require_once(dirname(__FILE__).'/LGV_MeetingServer_BMLT.php');
@@ -35,7 +39,7 @@ require_once(dirname(__FILE__).'/LGV_MeetingServer_PDO.class.php');
 
 /*******************************************************************/
 /**
-    \brief Uses the Vincenty calculation to determine the distance (in Kilometers) between the two given lat/long pairs (in Degrees).
+    \brief Uses [the Vincenty calculation](https://en.wikipedia.org/wiki/Vincenty%27s_formulae) to determine the distance (in Kilometers) between the two given lat/long pairs (in Degrees).
     
     The Vincenty calculation is more accurate than the Haversine calculation, as it takes into account the "un-spherical" shape of the Earth, but is more computationally intense.
     We use this calculation to refine the Haversine "triage" in SQL.
@@ -214,7 +218,7 @@ function _clean_meeting($meeting    ///< REQUIRED: The meeting to be filtered (a
 
 /*******************************************************************/
 /**
-This method creates a special SQL header that has an embedded Haversine formula. You use this in place of the security predicate.
+This method creates a special SQL header that has an embedded [Haversine formula](https://en.wikipedia.org/wiki/Haversine_formula).
 
 The Haversine formula is not as accurate as the Vincenty Calculation, but is a lot less computationally intense, so we use this in SQL for a "triage."
 
