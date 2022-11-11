@@ -435,7 +435,7 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
         }
     
         if ( !empty($weekday_predicate_array) ) {
-            $predicate = "(".implode(") OR (",$weekday_predicate_array).")";
+            $predicate = "((".implode(") OR (",$weekday_predicate_array)."))";
         }
     }
     
@@ -477,7 +477,7 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
                 $predicate .= " AND ";
             }
             
-            $predicate .= implode(" OR ", $plist);
+            $predicate .= "(".implode(" OR ", $plist).")";
         }
     }
    
@@ -508,6 +508,7 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
                 }
             
             }
+
             $response = $pdo_instance->preparedStatement($sql, $params, true);
         }
     }

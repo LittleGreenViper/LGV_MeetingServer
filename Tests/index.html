@@ -6,10 +6,20 @@
     </head>
     <body>
         <ul>
+            <li><h2>Individual IDs</h2><ul>
+                <li><a href="https://meetingserver/entrypoint.php?ids=(152,16573)" target="_blank">1 Meeting</a></li>
+                <li><a href="https://meetingserver/entrypoint.php?ids=(99,2),(100,5912),(152,16573)" target="_blank">3 Meetings, From 3 Servers</a></li>
+                <li><a href="https://meetingserver/entrypoint.php?ids=(99,2),(99,9),(100,5901),(100,5912),(100,8206),(100,8272),(152,16573),(152,16592),(152,16605),(152,16627)" target="_blank">10 Meetings, From 3 Servers</a></li>
+                <li><a href="https://meetingserver/entrypoint.php?ids=(99,2),(99,9),(100,5901),(100,5912),(100,8206),(100,8272),(152,16573),(152,16592),(152,16605),(152,16627)&weekdays=1" target="_blank">10 Meetings, From 3 Servers, But Filtered For Only Sunday</a></li>
+                <li><a href="https://meetingserver/entrypoint.php?ids=(100,8272),(99,9),(100,5901),(100,5912),(100,8206),(152,16573),(152,16592),(152,16605),(152,16627)&weekdays=7,1" target="_blank">10 Meetings, From 3 Servers, But Filtered For Only Sunday and Saturday</a></li>
+                <li><a href="https://meetingserver/entrypoint.php?ids=(99,2),(99,9),(100,5901),(100,5912),(100,8206),(100,8272),(120,1520),(120,1824),(120,1855),(134,940),(146,10228),(149,291),(134,996),(134,1077),(137,5897),(137,5908),(137,5925),(137,9341),(99,2),(141,1132),(141,1140),(144,624),(144,639),(144,642),(144,649),(145,2573),(145,2581),(146,2926),(146,2938),(146,2943),(146,2947),(146,2950),(146,10219),(146,10220),(149,294),(149,302),(151,41),(151,54),(151,58),(152,16573),(152,16592),(152,16605),(152,16627)" target="_blank">42 Meetings, From 12 Servers</a></li>
+                <li><a href="https://meetingserver/entrypoint.php?geocenter_lng=-47.2694&geocenter_lat=-22.8222&geo_radius=1000&ids=(99,2),(99,9),(100,5901),(100,5912),(100,8206),(100,8272),(120,1520),(120,1824),(120,1855),(134,940),(134,996),(134,1077),(137,5897),(137,5908),(137,5925),(137,9341),(141,1132),(141,1140),(144,624),(144,639),(144,642),(144,649),(145,2573),(145,2581),(146,2926),(146,2938),(146,2943),(146,2947),(146,2950),(146,10219),(146,10220),(146,10228),(149,291),(149,294),(149,302),(151,41),(151,54),(151,58),(152,16573),(152,16592),(152,16605),(152,16627)" target="_blank">42 Meetings, From 12 Servers, But Geofenced For Brazil</a></li>
+                <li><a href="https://meetingserver/entrypoint.php?geocenter_lng=-47.2694&geocenter_lat=-22.8222&geo_radius=1000&weekdays=4&ids=(99,2),(99,9),(100,5901),(100,5912),(100,8206),(100,8272),(120,1520),(120,1824),(120,1855),(134,940),(134,996),(134,1077),(137,5897),(137,5908),(137,5925),(137,9341),(141,1132),(141,1140),(144,624),(144,639),(144,642),(144,649),(145,2573),(145,2581),(146,2926),(146,2938),(146,2943),(146,2947),(146,2950),(146,10219),(146,10220),(146,10228),(149,291),(149,294),(149,302),(151,41),(151,54),(151,58),(152,16573),(152,16592),(152,16605),(152,16627)" target="_blank">42 Meetings, From 12 Servers, But Filtered For Brazil, and Thursday</a></li>
+            </ul></li>
             <li><h2>All Weekdays</h2><ul>
                 <li><h3>All Meetings</h3><ul>
                     <li><a href="https://meetingserver/entrypoint.php?page_size=0" target="_blank">No Paging, Just Getting Metrics</a></li>
-                    <li><a href="https://meetingserver/entrypoint.php" target="_blank">No Paging</a></li>
+                    <li><a href="https://meetingserver/entrypoint.php" target="_blank">No Paging</a> <em>(The Whole Nine Yards, Find Something to Do)</em></li>
                     <li><a href="https://meetingserver/entrypoint.php?page_size=10" target="_blank">10-Meeting Pages, Page 0</a> <em>(Implicit first page)</em></li>
                     <li><a href="https://meetingserver/entrypoint.php?page_size=10&page=0" target="_blank">10-Meeting Pages, Page 0</a> <em>(Explicit first page)</em></li>
                     <li><a href="https://meetingserver/entrypoint.php?page_size=10&page=100" target="_blank">10-Meeting Pages, Page 100</a></li>
@@ -60,7 +70,7 @@
                 </ul></li>
                 <li><h3>Auto-Radius, Paging</h3><ul>
                     <li><a href="https://meetingserver/entrypoint.php?geocenter_lng=-67.7452&geocenter_lat=-54.3084&minimum_found=1000&page_size=100" target="_blank">Search for about 1000 meetings, Tierra Del Fuego (No Limit, Page Size: 100)</a></li>
-                    <li><a href="https://meetingserver/entrypoint.php?geocenter_lng=-73.9442&geocenter_lat=40.6782&minimum_found=1000&page_size=100&page=3" target="_blank">Search for about 5 meetings, Brooklyn (No Limit, Page Size: 100, Page 3)</a></li>
+                    <li><a href="https://meetingserver/entrypoint.php?geocenter_lng=-73.9442&geocenter_lat=40.6782&minimum_found=1000&page_size=100&page=3" target="_blank">Search for about 1000 meetings, Brooklyn (No Limit, Page Size: 100, Page 3)</a></li>
                 </ul></li>
             </ul></li>
         </ul>
