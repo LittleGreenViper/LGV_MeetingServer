@@ -76,6 +76,9 @@ if ( in_array("update", $query) && in_array($_update_key, $query) ) {
                     break;
                         
                     case "geo_radius":
+                        if ( empty($value) ) {
+                            break;
+                        }
                         $geo_radius = floatval($value);
                         break;
                         
@@ -96,6 +99,9 @@ if ( in_array("update", $query) && in_array($_update_key, $query) ) {
                     break;
                         
                     case "org_key":
+                        if ( empty(trim($value)) ) {
+                            break;
+                        }
                         $org_key = trim($value);
                     break;
                         
