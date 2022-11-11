@@ -7,6 +7,7 @@
     <body>
         <ul>
             <li><h2>All Meetings</h2><ul>
+                <li><a href="https://meetingserver/entrypoint.php?page_size=0" target="_blank">No Paging, Just Getting Metrics</a></li>
                 <li><a href="https://meetingserver/entrypoint.php" target="_blank">No Paging</a></li>
                 <li><a href="https://meetingserver/entrypoint.php?page_size=10" target="_blank">10-Meeting Pages, Page 0</a> <em>(Implicit first page)</em></li>
                 <li><a href="https://meetingserver/entrypoint.php?page_size=10&page=0" target="_blank">10-Meeting Pages, Page 0</a> <em>(Explicit first page)</em></li>
@@ -38,6 +39,11 @@
             <li><h2>Fixed-Radius, Paging</h2><ul>
                 <li><a href="https://meetingserver/entrypoint.php?geocenter_lng=-73.9665&geocenter_lat=40.7812&geo_radius=100&page_size=100" target="_blank">Large Fixed-Radius Search, Manhattan, Page 0, of 100-Meeting Pages</a></li>
                 <li><a href="https://meetingserver/entrypoint.php?geocenter_lng=-73.9665&geocenter_lat=40.7812&geo_radius=100&page_size=100&page=3" target="_blank">Large Fixed-Radius Search, Manhattan, Page 3, of 100-Meeting Pages</a></li>
+            </ul></li>
+            <li><h2>Auto-Radius, No Paging</h2><ul>
+                <li><a href="https://meetingserver/entrypoint.php?geocenter_lng=-73.3432&geocenter_lat=40.9009&geo_radius=100&minimum_found=5" target="_blank">Search for about 5 meetings, North Shore Long Island</a></li>
+                <li><a href="https://meetingserver/entrypoint.php?geocenter_lng=-73.3432&geocenter_lat=40.9009&geo_radius=100&minimum_found=10" target="_blank">Search for about 10 meetings, North Shore Long Island</a></li>
+                <li><a href="https://meetingserver/entrypoint.php?geocenter_lng=-73.3432&geocenter_lat=40.9009&geo_radius=100&minimum_found=100" target="_blank">Search for about 100 meetings, North Shore Long Island</a></li>
             </ul></li>
         </ul>
     </body>

@@ -394,7 +394,6 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
     $start_time = abs(intval($start_time));
     $page = abs(intval($page));
     $page_size = max(-1, intval($page_size));
-    
     $step_size_in_km = $geo_radius;
     
     $current_step = $step_size_in_km;
@@ -509,7 +508,7 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
     // We do avoid a couple of the time-intensive tasks, though, if we are just looking for metrics.
     // 0 for a page size, means we are just looking for a total count. -1, means we want the whole found set at once.
 
-    if ( !empty($response) && (!$geo_search || ($current_step == $geo_radius) || ((0 < $minimum_found) && (count($meetings) >= $minimum_found))) ) {
+    if ( !empty($response) && (!$geo_search || ($current_step == $geo_radius) || ((0 < $minimum_found) && (count($response) >= $minimum_found))) ) {
         $ret = Array();
     
         foreach ( $response as $meeting ) {

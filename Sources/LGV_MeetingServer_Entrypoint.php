@@ -65,7 +65,7 @@ if ( in_array("update", $query) && in_array($_update_key, $query) ) {
         if ( is_array($splodie) && 1 < count($splodie) ) {
             $key = $splodie[0];
             $value = $splodie[1];
-            if ( !empty($value) ) {
+            if ( isset($value) ) {
                 switch ( $key ) {
                     case "geocenter_lng":
                         $geocenter_lng = floatval($value);
