@@ -31,6 +31,8 @@ defined( 'LGV_DB_CATCHER' ) or define( 'LGV_DB_CATCHER', 1 );
 
 require_once(dirname(__FILE__).'/LGV_MeetingServer_PDO.class.php');
 
+// MARK: - Internal Functions -
+
 /*******************************************************************/
 /**
     \brief Uses the Vincenty calculation to determine the distance (in Kilometers) between the two given lat/long pairs (in Degrees).
@@ -115,10 +117,40 @@ This allows us to maintain a consistent order to each server's meetings.
 function _sort_meetings_by_distance(    $a, ///< REQUIRED: The first meeting to check.
                                         $b  ///< REQUIRED: The second meeting to check.
                                     ) {
-    $aVal = $a["distance"];
-    $bVal = $b["distance"];
+    $aVal = floatval($a["distance"]);
+    $bVal = floatval($b["distance"]);
     
-    return ($aVal == $bVal) ? 0 : (($aVal < $bVal) ? -1 : 1);
+    return ($aVal == $bVal) ? _sort_meetings_by_id($a, $b) : (($aVal < $bVal) ? -1 : 1);
+}
+
+/****************************************************************************************************************************/
+/**
+This is a simple sort closure, for the resultant meeting array. We sort on the IDs of the servers and meetings.
+This allows us to maintain a consistent order to each server's meetings.
+
+\returns 0, if the IDs are equal, or -1 is $a is less than $b, or 1, otherwise.
+ */
+function _sort_meetings_by_id(  $a, ///< REQUIRED: The first meeting to check.
+                                $b  ///< REQUIRED: The second meeting to check.
+                            ) {
+    if ( isset($a["organization_key"]) && isset($b["organization_key"]) ) {
+        if ( $a["organization_key"] < $b["organization_key"] ) {
+            return -1;
+        } elseif ( $a["organization_key"] < $b["organization_key"] ) {
+            return 1;
+        }
+    }
+    
+    $aVal_server = intval($a["server_id"]);
+    $bVal_server = intval($b["server_id"]);
+    
+    if ($aVal_server == $bVal_server) {
+        $aVal_meeting = intval($a["meeting_id"]);
+        $bVal_meeting = intval($b["meeting_id"]);
+        return ($aVal_meeting == $bVal_meeting) ? 0 : (($aVal_meeting < $bVal_meeting) ? -1 : 1);
+    } else {
+        return ($aVal_server < $bVal_server) ? -1 : 1;
+    }
 }
 
 
@@ -147,8 +179,8 @@ function _clean_meeting($meeting    ///< REQUIRED: The meeting to be filtered (a
     }
 
     foreach ($keys as $key) {
-        $value = $meeting[$key];
-        if ( isset($meeting[$key]) && !empty($value) ) {
+        if ( !empty($meeting[$key])) {
+            $value = $meeting[$key];
             if ( "formats" == $key || "virtual_information" == $key || "physical_address" == $key ) {
                 $value = unserialize($value);
                 if ( "physical_address" == $key ) {
@@ -160,19 +192,19 @@ function _clean_meeting($meeting    ///< REQUIRED: The meeting to be filtered (a
                     }
                 }
             }
-            
+        
             switch ( $key ) {
                 case "server_id":
                 case "meeting_id":
                 case "weekday":
                 case "duration":
                     $value = intval($value);
-                    
+                
                 case "latitude":
                 case "longitude":
                     $value = floatval($value);
             }
-            
+        
             $ret[$key] = $value;
         }
     }
@@ -232,9 +264,41 @@ function _location_predicate(   $geo_center_lng,    ///< REQUIRED FLOAT: The sea
 
 /***********************/
 /**
+\returns true, if the meta table exists.
+*/
+function _meta_table_exists($pdo_instance   ///< REQUIRED: The PDO instance for this transaction.
+                            ) {
+    global $config_file_path;
+    include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
+
+    $sql = "SELECT * FROM information_schema.tables WHERE table_schema='$_dbName' AND table_name='$_dbMetaTableName' LIMIT 1;";
+    
+    $response = $pdo_instance->preparedStatement($sql, [], true);
+
+    return !empty($response);
+}
+
+/***********************/
+/**
+\returns true, if the data table exists.
+*/
+function _data_table_exists($pdo_instance   ///< REQUIRED: The PDO instance for this transaction.
+                            ) {
+    global $config_file_path;
+    include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
+
+    $sql = "SELECT * FROM information_schema.tables WHERE table_schema='$_dbName' AND table_name='$_dbTableName' LIMIT 1;";
+    
+    $response = $pdo_instance->preparedStatement($sql, [], true);
+
+    return !empty($response);
+}
+
+/***********************/
+/**
 \returns true, if successful.
 */
-function initialize_meta_database(  $pdo_instance   ///< REQUIRED: The PDO instance for this transaction.
+function _initialize_meta_database(  $pdo_instance   ///< REQUIRED: The PDO instance for this transaction.
                                 ) {
     global $config_file_path;
     include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
@@ -254,7 +318,7 @@ function initialize_meta_database(  $pdo_instance   ///< REQUIRED: The PDO insta
 /**
 \returns true, if successful.
 */
-function initialize_main_database(  $pdo_instance,  ///< REQUIRED: The PDO instance for this transaction.
+function _initialize_main_database(  $pdo_instance,  ///< REQUIRED: The PDO instance for this transaction.
                                     $dbTableName    ///< REQUIRED: The name of the table to receive the initialization
                                 ) {
     $sql_init = file_get_contents(dirname(__FILE__).'/config/sql/LGV_MeetingServer-MySQL.sql');
@@ -269,10 +333,17 @@ function initialize_main_database(  $pdo_instance,  ///< REQUIRED: The PDO insta
     return false;
 }
 
+// MARK: - Exposed Functions -
+
 /*******************************************************************/
 /**
 This actually fetches all the meetings, converts them to our local format, and stores them into a temporary table.
 Once that is done, it deletes the current data table, and replaces it with the newly initialized temp table.
+
+This checks to see if the meta table exists. If it does not, then it creates it.
+This checks if the data table exists. If it does, and if the elapsed time has passed, an update is forced. Otherwise, if it does not exist, an update is forced (which creates it).
+
+\returns: the number of meetings updated. NULL, if no update.
  */
 function update_database(   $physical_only = false  ///< REQUIRED: If true (default is false), then only meetings that have a physical location will be returned.
                         ) {
@@ -281,21 +352,28 @@ function update_database(   $physical_only = false  ///< REQUIRED: If true (defa
 
     try {
         $pdo_instance = new LGV_MeetingServer_PDO($_dbName, $_dbLogin, $_dbPassword, $_dbType, $_dbHost, $_dbPort);
+        if (!_meta_table_exists($pdo_instance) ) {
+            _initialize_meta_database($pdo_instance);
+        }
         $lastupdate_response = $pdo_instance->preparedStatement("SELECT `last_update` FROM `$_dbMetaTableName`", [], true)[0]["last_update"];
         $lapsed_time = time() - intval($lastupdate_response);
-        if ( ($_updateIntervalInSeconds < $lapsed_time) && initialize_main_database($pdo_instance, $_dbTempTableName) ) {
+        if ( (!_data_table_exists($pdo_instance) || ($_updateIntervalInSeconds < $lapsed_time)) && _initialize_main_database($pdo_instance, $_dbTempTableName) ) {
             $number_of_meetings = process_all_bmlt_server_meetings($pdo_instance, $_dbTempTableName, $physical_only);
             $rename_sql = "DROP TABLE IF EXISTS `$_dbTableName`;RENAME TABLE `$_dbTempTableName` TO `$_dbTableName`;UPDATE `$_dbMetaTableName` SET `last_update`=? WHERE 1;";
             $pdo_instance->preparedStatement($rename_sql, [time()]);
+            if ( 0 < $number_of_meetings ) {
+                return $number_of_meetings;
+            }
         }
-        return $number_of_meetings;
     } catch (Exception $exception) {
-        return NULL;
     }
+   
+    return NULL;
 }
 
 /*******************************************************************/
 /**
+\returns a JSON object, with the meetings found, and the time it took for the search to be done (in seconds). NULL, if no meetings found.
  */
 function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitude (in degrees) of the center of the search
                         $geo_center_lat = NULL, ///< OPTIONAL FLOAT: The latitude (in degrees) of the center of the search
@@ -329,20 +407,22 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
     $predicate = "";
     $params = [];
     
-    $weekday_predicate_array = [];
+    if ( !empty($weekdays) ) {
+        $weekday_predicate_array = [];
     
-    foreach ( $weekdays as $weekday ) {
-        $weekday = abs(intval($weekday));
-        if ( (0 < $weekday) && (8 > $weekday) ) {
-            $pred = "`weekday`=$weekday";
-            if ( !in_array($pred, $weekday_predicate_array) ) {
-                array_push($weekday_predicate_array, $pred);
+        foreach ( $weekdays as $weekday ) {
+            $weekday = abs(intval($weekday));
+            if ( (0 < $weekday) && (8 > $weekday) ) {
+                $pred = "`weekday`=$weekday";
+                if ( !in_array($pred, $weekday_predicate_array) ) {
+                    array_push($weekday_predicate_array, $pred);
+                }
             }
         }
-    }
     
-    if ( !empty($weekday_predicate_array) ) {
-        $predicate = "(".implode(") OR (",$weekday_predicate_array).")";
+        if ( !empty($weekday_predicate_array) ) {
+            $predicate = "(".implode(") OR (",$weekday_predicate_array).")";
+        }
     }
     
     $start_time = intval($start_time);
@@ -389,39 +469,39 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
    
     global $config_file_path;
     include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
-    $pdoInstance = new LGV_MeetingServer_PDO($_dbName, $_dbLogin, $_dbPassword, $_dbType, $_dbHost, $_dbPort);
+    $pdo_instance = new LGV_MeetingServer_PDO($_dbName, $_dbLogin, $_dbPassword, $_dbType, $_dbHost, $_dbPort);
     
     $response = [];
     
-    if ( 0 < $minimum_found) {
-        while ( ($current_step <= $geo_radius) && ($minimum_found > count($response)) ) {
-            $sql = _location_predicate($geo_center_lng, $geo_center_lat, $current_step, $predicate, false);
-            $response = $pdoInstance->preparedStatement($sql, $params, true);
-            $current_step += $step_size_in_km;
-        }
-    } else {
-        $sql =  "";
-        
-        if ( $geo_search ) {
-            $sql = _location_predicate($geo_center_lng, $geo_center_lat, $geo_radius * 1.05, $predicate, false);
-        } else {
-            $sql = "SELECT * FROM `".$_dbTableName."`";
-            if ( !empty($predicate) ) {
-                $sql .= " WHERE $predicate";
+    if ( _data_table_exists($pdo_instance) ) {
+        if ( 0 < $minimum_found) {
+            while ( ($current_step <= $geo_radius) && ($minimum_found > count($response)) ) {
+                $sql = _location_predicate($geo_center_lng, $geo_center_lat, $current_step, $predicate, false);
+                $response = $pdo_instance->preparedStatement($sql, $params, true);
+                $current_step += $step_size_in_km;
             }
+        } else {
+            $sql =  "";
+        
+            if ( $geo_search ) {
+                $sql = _location_predicate($geo_center_lng, $geo_center_lat, $geo_radius * 1.05, $predicate, false);
+            } else {
+                $sql = "SELECT * FROM `".$_dbTableName."`";
+                if ( !empty($predicate) ) {
+                    $sql .= " WHERE $predicate";
+                }
             
+            }
+            $response = $pdo_instance->preparedStatement($sql, $params, true);
         }
-        $response = $pdoInstance->preparedStatement($sql, $params, true);
     }
     
-    $ret = Array();
+    if ( !empty($response) && (!$geo_search || ($current_step == $geo_radius) || ((0 < $minimum_found) && (count($meetings) >= $minimum_found))) ) {
+        $ret = Array();
     
-    $filter_meetings = !$geo_search || ($current_step == $geo_radius) || ((0 < $minimum_found) && (count($meetings) >= $minimum_found));
-    
-    // We apply a Vincenty algorithm, to refine the distance. It is more accurate than the simple one we used for the main search.
-    if ( $filter_meetings ) {
         foreach ( $response as $meeting ) {
             if ( $geo_search && isset($meeting["latitude"]) && isset($meeting["longitude"]) ) {
+                // We apply a Vincenty algorithm, to refine the distance. It is more accurate than the simple one we used for the main search.
                 $distance = _get_accurate_distance($geo_center_lat, $geo_center_lng, floatVal($meeting["latitude"]), floatval($meeting["longitude"]));
                 if ( $geo_radius >= $distance ) {
                     $meeting["distance"] = $distance;
@@ -432,10 +512,10 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
             }
         }
         
-        usort($ret, "_sort_meetings_by_distance");
+        usort($ret, "_sort_meetings_by_".($geo_search ? "distance" : "id"));
         
-        $ret = "{ \"meta\": {\"time\": ".microtime(true) - $start."}, \"meetings\": ".json_encode( $ret )."}";
+        return "{ \"meta\": {\"time\": ".microtime(true) - $start."}, \"meetings\": ".json_encode( $ret )."}";
     }
     
-    return $ret;
+    return 0;
 }
