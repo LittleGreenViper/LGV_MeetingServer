@@ -536,21 +536,22 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
         }
         
         $count = count($ret);
+        $total_pages = intval((0 > $page_size) ? 1 : ((0 == $page_size) ? 0 : (($count + ($page_size - 1)) / $page_size)));
         
         $starting_index = max(0, $page * $page_size);
 
-        if ( 0 <= $page_size ) {
+        if ( 0 > $page_size ) {
             $page_size = $count;
             $page = 0;
-        } else {
-            $slice_size = $count - $starting_index;
-            $page_size = (0 > $page_size) ? $slice_size : min(slice_size, $page_size);
         }
-
-        $returned_meetings = array_slice($ret, $starting_index, $page_size);
         
-        return "{ \"meta\": {\"total\": $count, \"page\": $page, \"page_size\": $page_size}, \"meetings\": ".json_encode( $returned_meetings )."}";
+        $page_end_index = min($count, ($page + 1) * $page_size);
+        
+        $slice_size = $page_end_index - $starting_index;
+        $returned_meetings = array_slice($ret, $starting_index, $slice_size);
+        
+        return "{ \"meta\": {\"count\": $slice_size, \"total\": $count, \"starting_index\": $starting_index, \"page\": $page, \"total_pages\": $total_pages, \"page_size\": $page_size}, \"meetings\": ".json_encode( $returned_meetings )."}";
     }
     
-    return "{ \"meta\": {\"total\": 0, \"page\": 0, \"page_size\": 0}, \"meetings\": []}";
+    return "{ \"meta\": {\"count\": 0, \"total\": 0, \"page\": 0, \"total_pages\": 0, \"page_size\": 0}, \"meetings\": []}";
 }

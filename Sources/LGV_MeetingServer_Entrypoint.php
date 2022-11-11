@@ -128,5 +128,7 @@ if ( in_array("update", $query) && in_array($_update_key, $query) ) {
         }
     }
     
+    ob_start('ob_gzhandler');
     echo(query_database($geocenter_lng, $geocenter_lat, $geo_radius, $minimum_found, $weekdays, $start_time, $org_key, $ids, $page, $page_size));
+    ob_end_flush();
 }
