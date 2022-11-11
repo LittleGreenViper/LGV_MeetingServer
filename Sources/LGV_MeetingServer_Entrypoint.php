@@ -121,7 +121,7 @@ if ( in_array("update", $query) && in_array($_update_key, $query) ) {
                     break;
                         
                     case "page_size":
-                        $page_size = intval($value);
+                        $page_size = max(-1, intval($value));
                     break;
                 }
             }
