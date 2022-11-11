@@ -387,29 +387,35 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
                         $page_size = -1         ///< OPTIONAL INTEGER: The size of each page. 0, means return a count only. Negative values mean the whole search should be returned in one page, and $page is ignored (considered to be 0).
                         ) {
     // Practice good argument hygiene.
-    $geo_center_lng = floatval($geo_center_lng);
-    $geo_center_lat = floatval($geo_center_lat);
-    $geo_radius = floatval($geo_radius);
     $minimum_found = abs(intval($minimum_found));
     $start_time = abs(intval($start_time));
     $page = abs(intval($page));
     $page_size = max(-1, intval($page_size));
     $step_size_in_km = $geo_radius;
     
+    
+    
     $current_step = $step_size_in_km;
     
-    $geo_search = !empty($geo_center_lng) && !empty($geo_center_lat) && !empty($geo_radius);
+    $geo_search = NULL != $geo_center_lng && NULL != $geo_center_lat;
     
+    $geo_center_lng = floatval($geo_center_lng);
+    $geo_center_lat = floatval($geo_center_lat);
+    $geo_radius = abs(floatval($geo_radius));
+
     if ( !$geo_search ) {
-        $geo_center_lng = NULL;
-        $geo_center_lat = NULL;
-        $geo_radius = NULL;
+        $geo_radius = 0;
         $minimum_found = 0;
     }
     
-    if ( 0 < $minimum_found) {
-        $step_size_in_km /= 20;
+    if ( 0 < $minimum_found && 0 < $geo_radius && $geo_search) {
+        $step_size_in_km = 0.1;
         $current_step = $step_size_in_km;
+    // Special case for specifying a minimum, without a radius. We set 5Km steps, and a max radius of 10000 Km.
+    } elseif ( 0 < $minimum_found && 0 == $geo_radius && $geo_search) {
+        $step_size_in_km = 0.1;
+        $current_step = $step_size_in_km;
+        $geo_radius = 10000;
     }
     
     $predicate = "";
@@ -486,8 +492,10 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
             while ( ($current_step <= $geo_radius) && ($minimum_found > count($response)) ) {
                 $sql = _location_predicate($geo_center_lng, $geo_center_lat, $current_step, $predicate, false);
                 $response = $pdo_instance->preparedStatement($sql, $params, true);
-                $current_step += $step_size_in_km;
+                $current_step *= 1.05;
             }
+            
+            $current_step = $geo_radius;
         } else {
             $sql =  "";
         
