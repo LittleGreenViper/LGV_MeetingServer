@@ -560,5 +560,5 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
         return "{ \"meta\": {\"count\": $slice_size, \"total\": $count, \"starting_index\": $starting_index, \"page\": $page, \"total_pages\": $total_pages, \"page_size\": $page_size}, \"meetings\": ".json_encode( $returned_meetings )."}";
     }
     
-    return "{ \"meta\": {\"count\": 0, \"total\": 0, \"page\": 0, \"total_pages\": 0, \"page_size\": 0}, \"meetings\": []}";
+    return "{ \"meta\": {\"count\": 0, \"total\": 0, \"starting_index\": 0, \"page\": 0, \"total_pages\": 0, \"page_size\": 0}, \"meetings\": []}";
 }
