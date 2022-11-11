@@ -382,10 +382,19 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
                         $weekdays = [],         ///< OPTIONAL ARRAY[UNSIGNED INT (1 - 7)]: Any weekdays. Each integer is 1-7 (1 is always Sunday). There are a maximum of 7 elements. An empty Array (default), means all weekdays. If any values are present, ONLY those days are found.
                         $start_time = 0,        ///< OPTIONAL UNSIGNED INT: A minimum start time, in seconds (0 -> 86400, with 86399 being "One minute before midnight tonight," and 0 being "midnight, this morning"). Default is 0. This is inclusive (25200 is 7AM, or later).
                         $org_key = NULL,        ///< OPTIONAL STRING: The key for a particular organization. If not provided, all organizations are searched.
-                        $ids = NULL             ///< OPTIONAL ARRAY[(UNSIGNED INT, UNSIGNED INT)]: This can be an array of tuples (each being a server ID, and a meeting ID, in that order, as integers). These represent individual meetings. If these are provided, then ONLY those meetings will be returned, but any other parameters will still be applied.
+                        $ids = NULL,            ///< OPTIONAL ARRAY[(UNSIGNED INT, UNSIGNED INT)]: This can be an array of tuples (each being a server ID, and a meeting ID, in that order, as integers). These represent individual meetings. If these are provided, then ONLY those meetings will be returned, but any other parameters will still be applied.
+                        $page = 0,              ///< OPTIONAL UNSIGNED INTEGER: This is the 0-based page. Default is 0 (from the beginning).
+                        $page_size = -1         ///< OPTIONAL INTEGER: The size of each page. 0, means return a count only. Negative values mean the whole search should be returned in one page, and $page is ignored (considered to be 0).
                         ) {
-    $start = microtime(true);
-
+    // Practice good argument hygiene.
+    $geo_center_lng = floatval($geo_center_lng);
+    $geo_center_lat = floatval($geo_center_lat);
+    $geo_radius = floatval($geo_radius);
+    $minimum_found = abs(intval($minimum_found));
+    $start_time = abs(intval($start_time));
+    $page = abs(intval($page));
+    $page_size = max(-1, intval($page_size));
+    
     $step_size_in_km = $geo_radius;
     
     $current_step = $step_size_in_km;
@@ -495,7 +504,11 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
             $response = $pdo_instance->preparedStatement($sql, $params, true);
         }
     }
-    
+
+    // NOTE ON PAGING: We don't use SQL to page, because our "cleaning," with the Vincenty algorithm, could shave off some meetings.
+    // We do avoid a couple of the time-intensive tasks, though, if we are just looking for metrics.
+    // 0 for a page size, means we are just looking for a total count. -1, means we want the whole found set at once.
+
     if ( !empty($response) && (!$geo_search || ($current_step == $geo_radius) || ((0 < $minimum_found) && (count($meetings) >= $minimum_found))) ) {
         $ret = Array();
     
@@ -505,17 +518,39 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
                 $distance = _get_accurate_distance($geo_center_lat, $geo_center_lng, floatVal($meeting["latitude"]), floatval($meeting["longitude"]));
                 if ( $geo_radius >= $distance ) {
                     $meeting["distance"] = $distance;
-                    array_push($ret, _clean_meeting($meeting));
+                    if ( 0 != $page_size ) {
+                        array_push($ret, _clean_meeting($meeting));
+                    } else {
+                        array_push($ret, $meeting);
+                    }
                 }
-            } else {
+            } elseif ( 0 != $page_size ) {
                 array_push($ret, _clean_meeting($meeting));
+            } else {
+                array_push($ret, $meeting);
             }
         }
         
-        usort($ret, "_sort_meetings_by_".($geo_search ? "distance" : "id"));
+        if ( 0 != $page_size ) {
+            usort($ret, "_sort_meetings_by_".($geo_search ? "distance" : "id"));
+        }
         
-        return "{ \"meta\": {\"time\": ".microtime(true) - $start."}, \"meetings\": ".json_encode( $ret )."}";
+        $count = count($ret);
+        
+        $starting_index = max(0, $page * $page_size);
+
+        if ( 0 <= $page_size ) {
+            $page_size = $count;
+            $page = 0;
+        } else {
+            $slice_size = $count - $starting_index;
+            $page_size = (0 > $page_size) ? $slice_size : min(slice_size, $page_size);
+        }
+
+        $returned_meetings = array_slice($ret, $starting_index, $page_size);
+        
+        return "{ \"meta\": {\"total\": $count, \"page\": $page, \"page_size\": $page_size}, \"meetings\": ".json_encode( $returned_meetings )."}";
     }
     
-    return 0;
+    return "{ \"meta\": {\"total\": 0, \"page\": 0, \"page_size\": 0}, \"meetings\": []}";
 }

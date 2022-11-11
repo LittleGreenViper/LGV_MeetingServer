@@ -52,53 +52,81 @@ if ( in_array("update", $query) && in_array($_update_key, $query) ) {
     $geocenter_lng = NULL;
     $geocenter_lat = NULL;
     $geo_radius = NULL;
-    $geo_min = NULL;
-    $geo_weekdays = NULL;
-    $geo_start_time = NULL;
-    $geo_org = NULL;
-    $ids = NULL;
+    $minimum_found = 0;
+    $weekdays = [];
+    $start_time = 0;
+    $org_key = NULL;
+    $ids = [];
+    $page = 0;
+    $page_size = -1;
     
     foreach ( $query as $parameter ) {
         $splodie = explode("=", $parameter);
         if ( is_array($splodie) && 1 < count($splodie) ) {
             $key = $splodie[0];
             $value = $splodie[1];
-            if ( "geocenter_lng" == $key && !empty($value) ) {
-                $geocenter_lng = floatval($value);
-            } elseif ( "geocenter_lat" == $key && !empty($value) ) {
-                $geocenter_lat = floatval($value);
-            } elseif ( "geo_radius" == $key && !empty($value) ) {
-                $geo_radius = floatval($value);
-            } elseif ( "geo_min" == $key && !empty($value) ) {
-                $geo_min = intval($value);
-            } elseif ( "geo_weekdays" == $key && !empty($value) ) {
-                $weekdays = explode(",", $value);
-            
-                if ( !empty($weekdays) ) {
-                    $geo_weekdays = array_map('intval', $weekdays);
-                }
-            } elseif ( "geo_start_time" == $key && !empty($value) ) {
-                $geo_start_time = intval($value);
-            } elseif ( "geo_org" == $key && !empty($value) ) {
-                $geo_org = $value;
-            } elseif ( "ids" == $key && !empty($value) ) {
-                $id_temp = explode("),(", trim($value, "()"));
-            
-                if ( !empty($id_temp) ) {
-                    $ids = [];
-                    foreach ( $id_temp as $id_pair ) {
-                        $id_pair_temp = explode(",", $id_pair);
-                        if ( 2 == count($id_pair_temp) ) {
-                            $server_id = intval($id_pair_temp[0]);
-                            $meeting_id = intval($id_pair_temp[1]);
+            if ( !empty($value) ) {
+                switch ( $key ) {
+                    case "geocenter_lng":
+                        $geocenter_lng = floatval($value);
+                    break;
                         
-                            array_push($ids, [$server_id, $meeting_id]);
+                    case "geocenter_lat":
+                        $geocenter_lat = floatval($value);
+                    break;
+                        
+                    case "geo_radius":
+                        $geo_radius = floatval($value);
+                        break;
+                        
+                    case "minimum_found":
+                        $minimum_found = abs(intval($value));
+                    break;
+                        
+                    case "weekdays":
+                        $weekdays = explode(",", $value);
+            
+                        if ( !empty($weekdays) ) {
+                            $weekdays = array_map('intval', $weekdays);
                         }
-                    }
+                    break;
+                        
+                    case "start_time":
+                        $start_time = abs(intval($value));
+                    break;
+                        
+                    case "org_key":
+                        $org_key = trim($value);
+                    break;
+                        
+                    case "ids":
+                        $id_temp = explode("),(", trim($value, "()"));
+            
+                        if ( !empty($id_temp) ) {
+                            $ids = [];
+                            foreach ( $id_temp as $id_pair ) {
+                                $id_pair_temp = explode(",", $id_pair);
+                                if ( 2 == count($id_pair_temp) ) {
+                                    $server_id = intval($id_pair_temp[0]);
+                                    $meeting_id = intval($id_pair_temp[1]);
+                        
+                                    array_push($ids, [$server_id, $meeting_id]);
+                                }
+                            }
+                        }
+                    break;
+                        
+                    case "page":
+                        $page = abs(intval($value));
+                    break;
+                        
+                    case "page_size":
+                        $page_size = intval($value);
+                    break;
                 }
             }
         }
     }
     
-    echo(query_database($geocenter_lng, $geocenter_lat, $geo_radius, $geo_min, $geo_weekdays, $geo_start_time, $geo_org, $ids));
+    echo(query_database($geocenter_lng, $geocenter_lat, $geo_radius, $minimum_found, $weekdays, $start_time, $org_key, $ids, $page, $page_size));
 }
