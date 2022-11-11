@@ -397,7 +397,7 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
     $page_size = max(-1, intval($page_size));
     $step_size_in_km = $geo_radius;
     
-    
+    $start_time = microtime(true);
     
     $current_step = $step_size_in_km;
     
@@ -490,7 +490,7 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
     $pdo_instance = new LGV_MeetingServer_PDO($_dbName, $_dbLogin, $_dbPassword, $_dbType, $_dbHost, $_dbPort);
     
     $response = [];
-    
+
     if ( _data_table_exists($pdo_instance) ) {
         if ( 0 < $minimum_found) {
             while ( ($current_step <= $geo_radius) && ($minimum_found > count($response)) ) {
@@ -498,14 +498,14 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
                 $response = $pdo_instance->preparedStatement($sql, $params, true);
                 $current_step *= 1.05;
             }
-            
-            $current_step = $geo_radius;
         } else {
             $sql =  "";
         
             if ( $geo_search ) {
+                $current_step = $geo_radius;
                 $sql = _location_predicate($geo_center_lng, $geo_center_lat, $geo_radius * 1.05, $predicate, false);
             } else {
+                $current_step =0;
                 $sql = "SELECT * FROM `".$_dbTableName."`";
                 if ( !empty($predicate) ) {
                     $sql .= " WHERE $predicate";
@@ -560,10 +560,13 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
         $page_end_index = min($count, ($page + 1) * $page_size);
         
         $slice_size = $page_end_index - $starting_index;
-        $returned_meetings = array_slice($ret, $starting_index, $slice_size);
         
-        return "{ \"meta\": {\"count\": $slice_size, \"total\": $count, \"starting_index\": $starting_index, \"page\": $page, \"total_pages\": $total_pages, \"page_size\": $page_size}, \"meetings\": ".json_encode( $returned_meetings )."}";
+        $json_meetings = "\"meetings\": ".json_encode(array_slice($ret, $starting_index, $slice_size));
+        
+        $meta = "\"meta\": {\"total\": $count, \"total_pages\": $total_pages, \"page_size\": $page_size, \"page\": $page, \"starting_index\": $starting_index, \"actual_size\": $slice_size, \"search_time\": ".(microtime(true) - $start_time).($geo_search ? ", \"center_lat\": $geo_center_lat, \"center_lng\": $geo_center_lng, \"radius_in_km\": $current_step " : "")."}";
+        
+        return "{".$meta.", ".$json_meetings."}";
     }
     
-    return "{ \"meta\": {\"count\": 0, \"total\": 0, \"starting_index\": 0, \"page\": 0, \"total_pages\": 0, \"page_size\": 0}, \"meetings\": []}";
+    return "{ \"meta\": {\"total\": 0}, \"meetings\": []}";
 }
