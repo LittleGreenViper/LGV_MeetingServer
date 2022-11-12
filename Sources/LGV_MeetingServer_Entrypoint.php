@@ -31,12 +31,7 @@
  */
 defined( 'LGV_MeetingServer_Files' ) or die ( 'Cannot Execute Directly' );	// Makes sure that this file is in the correct context.
 
-global $config_file_path;
-include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
-
 require_once(dirname(__FILE__).'/LGV_MeetingServer.php');
-
-$query = explode("&", strtolower($_SERVER["QUERY_STRING"]));
 
 $query = explode("&", strtolower($_SERVER["QUERY_STRING"]));
 
