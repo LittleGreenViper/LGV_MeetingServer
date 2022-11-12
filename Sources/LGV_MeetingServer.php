@@ -354,10 +354,9 @@ This checks if the data table exists. If it does, and if the elapsed time has pa
 function update_database(   $physical_only = false, ///< OPTIONAL BOOLEAN: If true (default is false), then only meetings that have a physical location will be stored.
                             $force = false          ///< OPTIONAL BOOLEAN: If true (default is false), then the update occurs, even if not otherwise prescribed.
                         ) {
-    global $config_file_path;
-    include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
-
     try {
+        global $config_file_path;
+        include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
         $pdo_instance = new LGV_MeetingServer_PDO($_dbName, $_dbLogin, $_dbPassword, $_dbType, $_dbHost, $_dbPort);
         if (!_meta_table_exists($pdo_instance) ) {
             _initialize_meta_database($pdo_instance);

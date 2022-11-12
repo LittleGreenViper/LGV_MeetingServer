@@ -12,8 +12,4 @@ $_dbTempTableName = "temp";
 $_dbMetaTableName = "meta";
 
 $_updateIntervalInSeconds = (4 * 60 * 60);
-
-$_query_time_limit_in_seconds = 300;
-
-$_update_key = "supercalifragilisticexpialidocious";
 ?>

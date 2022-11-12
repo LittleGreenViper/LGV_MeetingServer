@@ -38,24 +38,24 @@ require_once(dirname(__FILE__).'/LGV_MeetingServer.php');
 
 $query = explode("&", strtolower($_SERVER["QUERY_STRING"]));
 
-set_time_limit($_query_time_limit_in_seconds);
-
 $query = explode("&", strtolower($_SERVER["QUERY_STRING"]));
 
 // See if this is an update call.
-// We need to match the update key (stupid security, but it avoids the s'kiddies).
-if ( in_array("update", $query) && in_array($_update_key, $query) ) {
+if ( in_array("update", $query) ) { // && ('cli' == php_sapi_name()) ) {
+    $force = in_array("force", $query);
+    $physical_only = in_array("physical_only", $query);
     $start = microtime(true);
     set_time_limit(300);    // We give ourselves a ridiculous amount of time, as this may take a while.
-    $number_of_meetings = update_database(true, in_array("physical_only", $query), in_array("force", $query));
+    $number_of_meetings = update_database($physical_only, $force);
     $exchange_time = microtime(true) - $start;
     if ( 0 < $number_of_meetings ) {
         header('Content-Type: application/json');
         echo("{\"number_of_meetings\": $number_of_meetings,\"time_in_seconds\":$exchange_time}");
     } else {
-        header("HTTP/1.1 500 Server Error");
+        header("HTTP/1.1 204 No Content");
     }
-} elseif ( !in_array("update", $query) ) {  // If we are a search, then 
+ // If we are a search, then we also see if we need a query key.
+} elseif ( !in_array("update", $query) && in_array("query", $query) ) { 
     $geocenter_lng = NULL;
     $geocenter_lat = NULL;
     $geo_radius = NULL;
@@ -157,6 +157,7 @@ if ( in_array("update", $query) && in_array($_update_key, $query) ) {
     ob_start('ob_gzhandler');
     echo(query_database($geocenter_lng, $geocenter_lat, $geo_radius, $minimum_found, $weekdays, $start_time, $org_key, $ids, $page, $page_size));
     ob_end_flush();
-} else {    // No key, no unlock.
-    header("HTTP/1.1 403 Not Authorized");
+} else {
+    header("HTTP/1.1 418 I'm a teapot");
+    echo("I'M A TEAPOT (🫖)");
 }
