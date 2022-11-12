@@ -47,7 +47,7 @@ $query = explode("&", strtolower($_SERVER["QUERY_STRING"]));
 if ( in_array("update", $query) && in_array($_update_key, $query) ) {
     $start = microtime(true);
     set_time_limit(300);    // We give ourselves a ridiculous amount of time, as this may take a while.
-    $number_of_meetings = update_database(true, in_array("physical_only", $query));
+    $number_of_meetings = update_database(true, in_array("physical_only", $query), in_array("force", $query));
     $exchange_time = microtime(true) - $start;
     if ( 0 < $number_of_meetings ) {
         header('Content-Type: application/json');

@@ -22,6 +22,8 @@
     CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     The Great Rift Valley Software Company: https://riftvalleysoftware.com
+    
+    Version: 1.0.0
 */
 /***************************************************************************************************************************/
 /**
@@ -349,7 +351,8 @@ This checks if the data table exists. If it does, and if the elapsed time has pa
 
 \returns: the number of meetings updated. NULL, if no update.
  */
-function update_database(   $physical_only = false  ///< REQUIRED: If true (default is false), then only meetings that have a physical location will be returned.
+function update_database(   $physical_only = false, ///< OPTIONAL BOOLEAN: If true (default is false), then only meetings that have a physical location will be stored.
+                            $force = false          ///< OPTIONAL BOOLEAN: If true (default is false), then the update occurs, even if not otherwise prescribed.
                         ) {
     global $config_file_path;
     include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
@@ -361,7 +364,7 @@ function update_database(   $physical_only = false  ///< REQUIRED: If true (defa
         }
         $lastupdate_response = $pdo_instance->preparedStatement("SELECT `last_update` FROM `$_dbMetaTableName`", [], true)[0]["last_update"];
         $lapsed_time = time() - intval($lastupdate_response);
-        if ( (!_data_table_exists($pdo_instance) || ($_updateIntervalInSeconds < $lapsed_time)) && _initialize_main_database($pdo_instance, $_dbTempTableName) ) {
+        if ( (!_data_table_exists($pdo_instance) || $force || ($_updateIntervalInSeconds < $lapsed_time)) && _initialize_main_database($pdo_instance, $_dbTempTableName) ) {
             $number_of_meetings = process_all_bmlt_server_meetings($pdo_instance, $_dbTempTableName, $physical_only);
             $rename_sql = "DROP TABLE IF EXISTS `$_dbTableName`;RENAME TABLE `$_dbTempTableName` TO `$_dbTableName`;UPDATE `$_dbMetaTableName` SET `last_update`=? WHERE 1;";
             $pdo_instance->preparedStatement($rename_sql, [time()]);
