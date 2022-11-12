@@ -39,8 +39,9 @@ $query = explode("&", strtolower($_SERVER["QUERY_STRING"]));
 if ( in_array("update", $query) ) { // && ('cli' == php_sapi_name()) ) {
     $force = in_array("force", $query);
     $physical_only = in_array("physical_only", $query);
+
+    set_time_limit(600);    // We give ourselves a ridiculous amount of time, as this may take a while.
     $start = microtime(true);
-    set_time_limit(300);    // We give ourselves a ridiculous amount of time, as this may take a while.
     $number_of_meetings = update_database($physical_only, $force);
     $exchange_time = microtime(true) - $start;
     if ( 0 < $number_of_meetings ) {
@@ -51,6 +52,7 @@ if ( in_array("update", $query) ) { // && ('cli' == php_sapi_name()) ) {
     }
  // If we are a search, then we also see if we need a query key.
 } elseif ( !in_array("update", $query) && in_array("query", $query) ) { 
+    set_time_limit(60);    // We give ourselves a minute, as some searches may take a while.
     $geocenter_lng = NULL;
     $geocenter_lat = NULL;
     $geo_radius = NULL;
@@ -62,7 +64,6 @@ if ( in_array("update", $query) ) { // && ('cli' == php_sapi_name()) ) {
     $page = 0;
     $page_size = -1;
     
-    set_time_limit(60);    // We give ourselves a minute, as some searches may take a while.
     // Build up the list of arguments that we'll be sending to the query function.
     foreach ( $query as $parameter ) {
         $splodie = explode("=", $parameter);
