@@ -396,7 +396,7 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
     // Practice good argument hygiene.
     $minimum_found = abs(intval($minimum_found));
     $start_time = abs(intval($start_time));
-    $page = abs(intval($page));
+    $page = max(0, intval($page));
     $page_size = max(-1, intval($page_size));
     $step_size_in_km = $geo_radius;
     

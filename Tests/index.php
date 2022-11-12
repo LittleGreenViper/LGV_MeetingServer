@@ -34,8 +34,10 @@
             <li><h2>Update</h2><ul>
             </ul></li>
             <li><h2>All Meetings</h2><ul>
-                <li><a href="./entrypoint.php?page_size=0" target="_blank">No Paging, Just Getting Metrics</a></li>
-                <li><a href="./entrypoint.php" target="_blank">No Paging</a> <em>(The Whole Nine Yards, Find Something to Do)</em></li>
+                <li><a href="./entrypoint.php?page_size=0" target="_blank">Just Get the Metrics</a></li>
+                <li><a href="./entrypoint.php" target="_blank">Get All of It</a> <em>(The Whole Nine Yards, Find Something to Do)</em></li>
+            </ul></li>
+            <li><h2>All Meetings <em>(Page Tests)</em></h2><ul>
                 <li><a href="./entrypoint.php?page_size=10" target="_blank">10-Meeting Pages, Page 0</a> <em>(Implicit first page)</em></li>
                 <li><a href="./entrypoint.php?page_size=10&page=0" target="_blank">10-Meeting Pages, Page 0</a> <em>(Explicit first page)</em></li>
                 <li><a href="./entrypoint.php?page_size=10&page=100" target="_blank">10-Meeting Pages, Page 100</a></li>
@@ -44,7 +46,7 @@
                 <li><a href="./entrypoint.php?page_size=100&page=8" target="_blank">100-Meeting Pages, Page 8</a></li>
                 <li><a href="./entrypoint.php?page_size=1000" target="_blank">1000-Meeting Pages, Page 0</a> <em>(Implicit first page)</em></li>
                 <li><a href="./entrypoint.php?page_size=1000&page=0" target="_blank">1000-Meeting Pages, Page 0</a> <em>(Explicit first page)</em></li>
-                <li><a href="./entrypoint.php?page_size=1000&page=-1" target="_blank">1000-Meeting Pages, Page -1</a> <em>(Should come up as Page 1 -the second page)</em></li>
+                <li><a href="./entrypoint.php?page_size=1000&page=-1" target="_blank">1000-Meeting Pages, Page -1</a> <em>(Should come up as Page 0)</em></li>
                 <li><a href="./entrypoint.php?page_size=1000&page=8" target="_blank">1000-Meeting Pages, Page 8</a></li>
                 <li><a href="./entrypoint.php?page_size=1000&page=27" target="_blank">1000-Meeting Pages, Page 27</a></li>
             </ul></li>
