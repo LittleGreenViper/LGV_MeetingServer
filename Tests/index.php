@@ -66,48 +66,53 @@
                         <li><h5>Weekday Filtering</h5><ul>
                             <li><a href="./entrypoint.php?query&page_size=100&page=0&weekdays=7,3,5,7,3" target="_blank">100-Meeting Pages, Page 0, Tuesday, Thursday, and Saturday</a></li>
                         </ul></li>
+                        <li><h5>Org Key Checks</h5><ul>
+                            <li><a href="./entrypoint.php?query&page_size=100&page=0&org_key=na" target="_blank">Get All of the Physical NA Meetings (100-Meeting Pages, Page 0)</a></li>
+                            <li><a href="./entrypoint.php?query&page_size=100&page=0&org_key=virtual-na" target="_blank">Get All of the Virtual NA Meetings (100-Meeting Pages, Page 0)</a></li>
+                            <li><a href="./entrypoint.php?query&page_size=100&page=0&org_key=virtual-na,na" target="_blank">Get All of the Virtual and Physical NA Meetings (100-Meeting Pages, Page 0)</a></li>
+                        </ul>
                     </ul></li>
                 </ul></li>
-                <li><h3>Geographic Searches</h3><ul>
+                <li><h3>Geographic Searches (All Physical Meetings)</h3><ul>
                     <li><h4>Fixed-Radius, No Paging</h4><ul>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=-73.3432&geocenter_lat=40.9009&geo_radius=10" target="_blank">Small Fixed-Radius Search, North Shore Long Island</a></li>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=-73.3432&geocenter_lat=40.9009&geo_radius=50" target="_blank">Medium Fixed-Radius Search, North Shore Long Island</a></li>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=-73.3432&geocenter_lat=40.9009&geo_radius=100" target="_blank">Large Fixed-Radius Search, North Shore Long Island</a></li>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=-73.9665&geocenter_lat=40.7812&geo_radius=10" target="_blank">Small Fixed-Radius Search, Manhattan</a></li>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=-73.9665&geocenter_lat=40.7812&geo_radius=50" target="_blank">Medium Fixed-Radius Search, Manhattan</a></li>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=-73.9665&geocenter_lat=40.7812&geo_radius=100" target="_blank">Large Fixed-Radius Search, Manhattan</a></li>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=151.2093&geocenter_lat=-33.8688&geo_radius=10" target="_blank">Small Fixed-Radius Search, Sydney, Australia</a></li>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=151.2093&geocenter_lat=-33.8688&geo_radius=50" target="_blank">Medium Fixed-Radius Search, Sydney, Australia</a></li>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=151.2093&geocenter_lat=-33.8688&geo_radius=100" target="_blank">Large Fixed-Radius Search, Sydney, Australia</a></li>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=18.4241&geocenter_lat=-33.9249&geo_radius=10" target="_blank">Small Fixed-Radius Search, Cape Town, South Africa</a></li>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=18.4241&geocenter_lat=-33.9249&geo_radius=50" target="_blank">Medium Fixed-Radius Search, Cape Town, South Africa</a></li>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=18.4241&geocenter_lat=-33.9249&geo_radius=100" target="_blank">Large Fixed-Radius Search, Cape Town, South Africa</a></li>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=-67.7452&geocenter_lat=-54.3084&geo_radius=1000" target="_blank">Large Fixed-Radius Search, Tierra Del Fuego</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=-73.3432&geocenter_lat=40.9009&geo_radius=10" target="_blank">Small Fixed-Radius Search, North Shore Long Island</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=-73.3432&geocenter_lat=40.9009&geo_radius=50" target="_blank">Medium Fixed-Radius Search, North Shore Long Island</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=-73.3432&geocenter_lat=40.9009&geo_radius=100" target="_blank">Large Fixed-Radius Search, North Shore Long Island</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=-73.9665&geocenter_lat=40.7812&geo_radius=10" target="_blank">Small Fixed-Radius Search, Manhattan</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=-73.9665&geocenter_lat=40.7812&geo_radius=50" target="_blank">Medium Fixed-Radius Search, Manhattan</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=-73.9665&geocenter_lat=40.7812&geo_radius=100" target="_blank">Large Fixed-Radius Search, Manhattan</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=151.2093&geocenter_lat=-33.8688&geo_radius=10" target="_blank">Small Fixed-Radius Search, Sydney, Australia</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=151.2093&geocenter_lat=-33.8688&geo_radius=50" target="_blank">Medium Fixed-Radius Search, Sydney, Australia</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=151.2093&geocenter_lat=-33.8688&geo_radius=100" target="_blank">Large Fixed-Radius Search, Sydney, Australia</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=18.4241&geocenter_lat=-33.9249&geo_radius=10" target="_blank">Small Fixed-Radius Search, Cape Town, South Africa</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=18.4241&geocenter_lat=-33.9249&geo_radius=50" target="_blank">Medium Fixed-Radius Search, Cape Town, South Africa</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=18.4241&geocenter_lat=-33.9249&geo_radius=100" target="_blank">Large Fixed-Radius Search, Cape Town, South Africa</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=-67.7452&geocenter_lat=-54.3084&geo_radius=1000" target="_blank">Large Fixed-Radius Search, Tierra Del Fuego</a></li>
                     </ul></li>
                     <li><h4>Fixed-Radius, Paging</h4><ul>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=-73.9665&geocenter_lat=40.7812&geo_radius=100&page_size=100" target="_blank">Large Fixed-Radius Search, Manhattan, Page 0, of 100-Meeting Pages</a></li>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=-73.9665&geocenter_lat=40.7812&geo_radius=100&page_size=100&page=3" target="_blank">Large Fixed-Radius Search, Manhattan, Page 3, of 100-Meeting Pages</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=-73.9665&geocenter_lat=40.7812&geo_radius=100&page_size=100" target="_blank">Large Fixed-Radius Search, Manhattan, Page 0, of 100-Meeting Pages</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=-73.9665&geocenter_lat=40.7812&geo_radius=100&page_size=100&page=3" target="_blank">Large Fixed-Radius Search, Manhattan, Page 3, of 100-Meeting Pages</a></li>
                     </ul></li>
                     <li><h4>Auto-Radius, No Paging</h4><ul>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=-73.3432&geocenter_lat=40.9009&minimum_found=5" target="_blank">Search for about 5 meetings, North Shore Long Island (No Limit)</a></li>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=-67.7452&geocenter_lat=-54.3084&minimum_found=5" target="_blank">Search for about 5 meetings, Tierra Del Fuego (No Limit)</a></li>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=-67.7452&geocenter_lat=-54.3084&minimum_found=10" target="_blank">Search for about 10 meetings, Tierra Del Fuego (No Limit)</a></li>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=-67.7452&geocenter_lat=-54.3084&minimum_found=100" target="_blank">Search for about 100 meetings, Tierra Del Fuego (No Limit)</a></li>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=-67.7452&geocenter_lat=-54.3084&minimum_found=1000" target="_blank">Search for about 1000 meetings, Tierra Del Fuego (No Limit)</a></li>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=-73.3432&geocenter_lat=40.9009&geo_radius=100&minimum_found=5" target="_blank">Search for about 5 meetings, North Shore Long Island (100Km Limit)</a></li>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=-73.3432&geocenter_lat=40.9009&geo_radius=100&minimum_found=10" target="_blank">Search for about 10 meetings, North Shore Long Island</a></li>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=-73.3432&geocenter_lat=40.9009&geo_radius=100&minimum_found=100" target="_blank">Search for about 100 meetings, North Shore Long Island</a></li>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=-73.9442&geocenter_lat=40.6782&minimum_found=5" target="_blank">Search for about 5 meetings, Brooklyn (No Limit)</a></li>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=-73.9442&geocenter_lat=40.6782&geo_radius=10&minimum_found=5" target="_blank">Search for about 5 meetings, Brooklyn (10Km Limit)</a></li>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=-73.9442&geocenter_lat=40.6782&geo_radius=10&minimum_found=10" target="_blank">Search for about 10 meetings, Brooklyn (2Km Limit)</a></li>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=-73.9442&geocenter_lat=40.6782&geo_radius=1&minimum_found=1" target="_blank">Search for about 10 meetings, Brooklyn (1Km Limit)</a></li>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=-108.5007&geocenter_lat=45.7833&minimum_found=5" target="_blank">Search for about 5 meetings, Montana (No Limit)</a></li>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=-108.5007&geocenter_lat=45.7833&minimum_found=25" target="_blank">Search for about 25 meetings, Montana (No Limit)</a></li>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=-108.5007&geocenter_lat=45.7833&geo_radius=200&minimum_found=25" target="_blank">Search for about 25 meetings, Montana (200Km Limit)</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=-73.3432&geocenter_lat=40.9009&minimum_found=5" target="_blank">Search for about 5 meetings, North Shore Long Island (No Limit)</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=-67.7452&geocenter_lat=-54.3084&minimum_found=5" target="_blank">Search for about 5 meetings, Tierra Del Fuego (No Limit)</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=-67.7452&geocenter_lat=-54.3084&minimum_found=10" target="_blank">Search for about 10 meetings, Tierra Del Fuego (No Limit)</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=-67.7452&geocenter_lat=-54.3084&minimum_found=100" target="_blank">Search for about 100 meetings, Tierra Del Fuego (No Limit)</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=-67.7452&geocenter_lat=-54.3084&minimum_found=1000" target="_blank">Search for about 1000 meetings, Tierra Del Fuego (No Limit)</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=-73.3432&geocenter_lat=40.9009&geo_radius=100&minimum_found=5" target="_blank">Search for about 5 meetings, North Shore Long Island (100Km Limit)</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=-73.3432&geocenter_lat=40.9009&geo_radius=100&minimum_found=10" target="_blank">Search for about 10 meetings, North Shore Long Island</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=-73.3432&geocenter_lat=40.9009&geo_radius=100&minimum_found=100" target="_blank">Search for about 100 meetings, North Shore Long Island</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=-73.9442&geocenter_lat=40.6782&minimum_found=5" target="_blank">Search for about 5 meetings, Brooklyn (No Limit)</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=-73.9442&geocenter_lat=40.6782&geo_radius=10&minimum_found=5" target="_blank">Search for about 5 meetings, Brooklyn (10Km Limit)</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=-73.9442&geocenter_lat=40.6782&geo_radius=10&minimum_found=10" target="_blank">Search for about 10 meetings, Brooklyn (2Km Limit)</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=-73.9442&geocenter_lat=40.6782&geo_radius=1&minimum_found=1" target="_blank">Search for about 10 meetings, Brooklyn (1Km Limit)</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=-108.5007&geocenter_lat=45.7833&minimum_found=5" target="_blank">Search for about 5 meetings, Montana (No Limit)</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=-108.5007&geocenter_lat=45.7833&minimum_found=25" target="_blank">Search for about 25 meetings, Montana (No Limit)</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=-108.5007&geocenter_lat=45.7833&geo_radius=200&minimum_found=25" target="_blank">Search for about 25 meetings, Montana (200Km Limit)</a></li>
                     </ul></li>
                     <li><h4>Auto-Radius, Paging</h4><ul>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=-67.7452&geocenter_lat=-54.3084&minimum_found=1000&page_size=100" target="_blank">Search for about 1000 meetings, Tierra Del Fuego (No Limit, Page Size: 100)</a></li>
-                        <li><a href="./entrypoint.php?query&geocenter_lng=-73.9442&geocenter_lat=40.6782&minimum_found=1000&page_size=100&page=3" target="_blank">Search for about 1000 meetings, Brooklyn (No Limit, Page Size: 100, Page 3)</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=-67.7452&geocenter_lat=-54.3084&minimum_found=1000&page_size=100" target="_blank">Search for about 1000 meetings, Tierra Del Fuego (No Limit, Page Size: 100)</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=-73.9442&geocenter_lat=40.6782&minimum_found=1000&page_size=100&page=3" target="_blank">Search for about 1000 meetings, Brooklyn (No Limit, Page Size: 100, Page 3)</a></li>
                     </ul></li>
                 </ul></li>
                 <li><h3>Individual IDs</h3><ul>

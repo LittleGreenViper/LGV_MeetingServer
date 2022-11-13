@@ -126,10 +126,10 @@ if ( 'cli' == php_sapi_name() ) { // A call from the CLI means just do an update
                         break;
                         
                         case "org_key":
-                            if ( empty(trim($value)) ) {
-                                break;
+                            $value = trim($value);
+                            if ( !empty($value) ) {
+                                $org_key = array_map('trim', explode(",", $value));
                             }
-                            $org_key = trim($value);
                         break;
                         
                         case "ids":
