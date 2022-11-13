@@ -133,19 +133,30 @@ if ( 'cli' == php_sapi_name() ) { // A call from the CLI means just do an update
                         break;
                         
                         case "ids":
-                            $id_temp = explode("),(", trim($value, "()"));
+                            if ( !empty(trim($value)) ) {
+                                $id_temp = explode("),(", trim($value, "()"));
             
-                            if ( !empty($id_temp) ) {
-                                $ids = [];
-                                foreach ( $id_temp as $id_pair ) {
-                                    $id_pair_temp = explode(",", $id_pair);
-                                    if ( 2 == count($id_pair_temp) ) {
-                                        $server_id = intval($id_pair_temp[0]);
-                                        $meeting_id = intval($id_pair_temp[1]);
-                        
-                                        array_push($ids, [$server_id, $meeting_id]);
+                                if ( !empty($id_temp) ) {
+                                    foreach ( $id_temp as $id_pair ) {
+                                        $id_pair_temp = explode(",", $id_pair);
+                                        if ( 1 <= count($id_pair_temp) ) {
+                                            $comp = [intval($id_pair_temp[0]), isset($id_pair_temp[1]) ? intval($id_pair_temp[1]) : 0];
+                                            if ( 0 < $comp[0] ) {
+                                                array_push($ids, $comp);
+                                            }
+                                        }
                                     }
+                                    if ( empty($ids) ) {
+                                        header("HTTP/1.1 400 Bad Parameters");
+                                        exit("INVALID IDS");
+                                    }
+                                } else {
+                                    header("HTTP/1.1 400 Bad Parameters");
+                                    exit("INVALID IDS");
                                 }
+                            } else {
+                                header("HTTP/1.1 400 Bad Parameters");
+                                exit("INVALID IDS");
                             }
                         break;
                         

@@ -139,21 +139,18 @@ This allows us to maintain a consistent order to each server's meetings.
 function _sort_meetings_by_id(  $a, ///< REQUIRED: The first meeting to check.
                                 $b  ///< REQUIRED: The second meeting to check.
                             ) {
-    if ( isset($a["organization_key"]) && isset($b["organization_key"]) ) {
-        if ( $a["organization_key"] < $b["organization_key"] ) {
-            return -1;
-        } elseif ( $a["organization_key"] < $b["organization_key"] ) {
-            return 1;
-        }
-    }
-    
     $aVal_server = intval($a["server_id"]);
     $bVal_server = intval($b["server_id"]);
     
     if ($aVal_server == $bVal_server) {
         $aVal_meeting = intval($a["meeting_id"]);
         $bVal_meeting = intval($b["meeting_id"]);
-        return ($aVal_meeting == $bVal_meeting) ? 0 : (($aVal_meeting < $bVal_meeting) ? -1 : 1);
+        
+        if ( $aVal_meeting == $bVal_meeting ) {
+            return 0;
+        } else {
+            return ($aVal_meeting < $bVal_meeting) ? -1 : 1;
+        }
     } else {
         return ($aVal_server < $bVal_server) ? -1 : 1;
     }
@@ -473,11 +470,21 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
     if ( !empty($ids) ) {
         $plist = [];
         foreach ( $ids as $id ) {
-            if ( is_array($id) && (1 < count($id)) ) {
+            if ( is_array($id) && (0 < count($id)) ) {
                 $server_id = intval($id[0]);
-                $meeting_id = intval($id[1]);
-                
-                array_push($plist, "(`server_id`=$server_id AND `meeting_id`=$meeting_id)");
+                $meeting_id = isset($id[1]) ? intval($id[1]) : 0;
+                if ( 0 < $server_id ) { // Need to have at least a server ID.
+                    $comp = "`server_id`=$server_id";
+                    
+                    // It is possible to have a server "wildcard" search, where we get every meeting in the server. We do this by specifying no meeting ID, or a non-numeric value (like "*").
+                    if ( 0 < $meeting_id ) {
+                        $comp .= " AND `meeting_id`=$meeting_id";
+                    }
+                    
+                    if ( !in_array("($comp)", $plist) ) {
+                        array_push($plist, "($comp)");
+                    }
+                }
             }
         }
         
