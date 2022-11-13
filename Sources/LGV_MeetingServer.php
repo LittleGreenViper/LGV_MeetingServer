@@ -399,7 +399,7 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
     $page_size = max(-1, intval($page_size));
     $step_size_in_km = $geo_radius;
     
-    $start_time = microtime(true);
+    $initial_time = microtime(true);
     
     $current_step = $step_size_in_km;
     
@@ -453,9 +453,9 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
         $second = $start_time - ($hour * 3600) - ($minute * 60);
         $comp_time = sprintf("%02d:%02d:00", $hour, $minute);
         if ( $predicate ) {
-            $predicate .= " AND ";
+            $predicate = "($predicate) AND ";
         }
-        $predicate .= "(`start_time`<=$comp_time)";
+        $predicate .= "(`start_time`>='$comp_time')";
     }
     
     if ( isset($org_key) && trim($org_key) ) {
@@ -565,7 +565,7 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
         
         $json_meetings = "\"meetings\": ".json_encode(array_slice($ret, $starting_index, $slice_size));
         
-        $meta = "\"meta\": {\"total\": $count, \"total_pages\": $total_pages, \"page_size\": $page_size, \"page\": $page, \"starting_index\": $starting_index, \"actual_size\": $slice_size, \"search_time\": ".(microtime(true) - $start_time).($geo_search ? ", \"center_lat\": $geo_center_lat, \"center_lng\": $geo_center_lng, \"radius_in_km\": $current_step " : "")."}";
+        $meta = "\"meta\": {\"total\": $count, \"total_pages\": $total_pages, \"page_size\": $page_size, \"page\": $page, \"starting_index\": $starting_index, \"actual_size\": $slice_size, \"search_time\": ".(microtime(true) - $initial_time).($geo_search ? ", \"center_lat\": $geo_center_lat, \"center_lng\": $geo_center_lng, \"radius_in_km\": $current_step " : "")."}";
         
         return "{".$meta.", ".$json_meetings."}";
     }
