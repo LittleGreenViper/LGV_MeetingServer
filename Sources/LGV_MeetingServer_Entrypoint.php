@@ -36,7 +36,7 @@ require_once(dirname(__FILE__).'/LGV_MeetingServer.php');
 $query = explode("&", strtolower($_SERVER["QUERY_STRING"]));
 
 // See if this is an update call.
-if ( in_array("update", $query) ) { // && ('cli' == php_sapi_name()) ) {
+if ( in_array("update", $query) ) {
     $force = in_array("force", $query);
     $physical_only = in_array("physical_only", $query);
 
@@ -153,7 +153,9 @@ if ( in_array("update", $query) ) { // && ('cli' == php_sapi_name()) ) {
     ob_start('ob_gzhandler');
     echo(query_database($geocenter_lng, $geocenter_lat, $geo_radius, $minimum_found, $weekdays, $start_time, $org_key, $ids, $page, $page_size));
     ob_end_flush();
+} elseif ( 'cli' == php_sapi_name() ) { // An un-argumented call from the CLI means just do an unforced physical-only update (for cron jobs).
+    return intval(update_database(true));
 } else {
     header("HTTP/1.1 418 I'm a teapot");
-    echo("I'M A TEAPOT (🫖)");
+    echo("🫖");
 }
