@@ -352,6 +352,7 @@ function update_database(   $physical_only = false,     ///< OPTIONAL BOOLEAN: I
                             $force = false,             ///< OPTIONAL BOOLEAN: If true (default is false), then the update occurs, even if not otherwise prescribed.
                             $separate_virtual = false   ///< OPTIONAL BOOLEAN: If true (default is false), then virtual-only meetings will be counted, but will be assigned a "virtual-%s" (with "%s" being the org key) org key.
                         ) {
+    set_time_limit(600);    // We give ourselves a ridiculous amount of time, as this may take a while.
     try {
         global $config_file_path;
         include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
@@ -391,6 +392,7 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
                         $page = 0,              ///< OPTIONAL UNSIGNED INTEGER: This is the 0-based page. Default is 0 (from the beginning).
                         $page_size = -1         ///< OPTIONAL INTEGER: The size of each page. 0, means return a count only. Negative values mean the whole search should be returned in one page, and $page is ignored (considered to be 0).
                         ) {
+    set_time_limit(60);    // Just in case we have time-consuming searches.
     // Practice good argument hygiene.
     $minimum_found = abs(intval($minimum_found));
     $start_time = abs(intval($start_time));
