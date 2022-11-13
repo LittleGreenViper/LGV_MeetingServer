@@ -125,6 +125,10 @@ if ( 'cli' == php_sapi_name() ) { // A call from the CLI means just do an update
                             $start_time = abs(intval($value));
                         break;
                         
+                        case "end_time":
+                            $end_time = abs(intval($value));
+                        break;
+                        
                         case "org_key":
                             $value = trim($value);
                             if ( !empty($value) ) {
@@ -175,7 +179,7 @@ if ( 'cli' == php_sapi_name() ) { // A call from the CLI means just do an update
         // Compress the response.
         header('Content-Type: application/json');
         ob_start('ob_gzhandler');
-        echo(query_database($geocenter_lng, $geocenter_lat, $geo_radius, $minimum_found, $weekdays, $start_time, $org_key, $ids, $page, $page_size));
+        echo(query_database($geocenter_lng, $geocenter_lat, $geo_radius, $minimum_found, $weekdays, $start_time, $end_time, $org_key, $ids, $page, $page_size));
         ob_end_flush();
     } else {
         header("HTTP/1.1 418 I'm a teapot");

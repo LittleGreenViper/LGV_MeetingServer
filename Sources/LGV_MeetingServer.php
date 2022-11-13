@@ -385,6 +385,7 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
                         $minimum_found = 0,     ///< OPTIONAL UNSIGNED INT: If nonzero, then the search will be an "auto-radius" search, starting from the center, and expanding in steps (each step is 1/20 of the total radius). Once this many meetings are found (or the maximum radius is reached), the search stops, and the found metings are returned.
                         $weekdays = [],         ///< OPTIONAL ARRAY[UNSIGNED INT (1 - 7)]: Any weekdays. Each integer is 1-7 (1 is always Sunday). There are a maximum of 7 elements. An empty Array (default), means all weekdays. If any values are present, ONLY those days are found.
                         $start_time = 0,        ///< OPTIONAL UNSIGNED INT: A minimum start time, in seconds (0 -> 86400, with 86399 being "One minute before midnight tonight," and 0 being "midnight, this morning"). Default is 0. This is inclusive (25200 is 7AM, or later).
+                        $end_time = 0,          ///< OPTIONAL UNSIGNED INT: A maximum start time, in seconds (0 -> 86400, with 86399 being "One minute before midnight tonight," and 0 being "midnight, this morning"). Default is 0. This is inclusive (25200 is 7AM, or earlier). This must be greater than $start_time.
                         $org_key = NULL,        ///< OPTIONAL STRING ARRAY: The key[s] for one or more particular organization[s]. If not provided, all organizations are searched.
                         $ids = NULL,            ///< OPTIONAL ARRAY[(UNSIGNED INT, UNSIGNED INT)]: This can be an array of tuples (each being a server ID, and a meeting ID, in that order, as integers). These represent individual meetings. If these are provided, then ONLY those meetings will be returned, but any other parameters will still be applied.
                         $page = 0,              ///< OPTIONAL UNSIGNED INTEGER: This is the 0-based page. Default is 0 (from the beginning).
@@ -413,11 +414,11 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
     }
     
     if ( 0 < $minimum_found && 0 < $geo_radius && $geo_search) {
-        $step_size_in_km = 0.1;
+        $step_size_in_km = 0.5;
         $current_step = $step_size_in_km;
     // Special case for specifying a minimum, without a radius. We set 5Km steps, and a max radius of 10000 Km.
     } elseif ( 0 < $minimum_found && 0 == $geo_radius && $geo_search) {
-        $step_size_in_km = 0.1;
+        $step_size_in_km = 0.5;
         $current_step = $step_size_in_km;
         $geo_radius = 10000;
     }
@@ -456,6 +457,19 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
         $predicate .= "(`start_time`>='$comp_time')";
     }
     
+    $end_time = intval($end_time);
+    
+    if ( 0 < $end_time && $start_time <= $end_time && 86400 > $end_time ) {
+        $hour = intval($end_time / 3600);
+        $minute = ($end_time - ($hour * 3600)) / 60;
+        $second = $end_time - ($hour * 3600) - ($minute * 60);
+        $comp_time = sprintf("%02d:%02d:00", $hour, $minute);
+        if ( $predicate ) {
+            $predicate = "($predicate) AND ";
+        }
+        $predicate .= "(`start_time`<='$comp_time')";
+    }
+    
     if ( !empty($org_key) ) {
         if ( $predicate ) {
             $predicate .= " AND ";
@@ -463,7 +477,7 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
         $params = $org_key;
         $sql_predicate = array_fill(0, count($org_key), "(`organization_key`=?)");
         if ( !empty($sql_predicate) ) {
-            $predicate = "((".implode(") OR (", $sql_predicate)."))";
+            $predicate .= "((".implode(") OR (", $sql_predicate)."))";
         }
     }
     
@@ -524,7 +538,6 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
                 }
             
             }
-
             $response = $pdo_instance->preparedStatement($sql, $params, true);
         }
     }
