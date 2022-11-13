@@ -73,9 +73,9 @@
                             <li><a href="./entrypoint.php?query&page_size=100&page=0&weekdays=7,3,5,7,3" target="_blank">100-Meeting Pages, Page 0, Tuesday, Thursday, and Saturday</a></li>
                         </ul></li>
                         <li><h5>Org Key Checks</h5><ul>
-                            <li><a href="./entrypoint.php?query&page_size=100&page=0&org_key=na" target="_blank">Get All of the Physical NA Meetings</a> <em>(100-Meeting Pages, Page 0)</li>
-                            <li><a href="./entrypoint.php?query&page_size=100&page=0&org_key=virtual-na" target="_blank">Get All of the Virtual NA Meetings</a> <em>(100-Meeting Pages, Page 0)</li>
-                            <li><a href="./entrypoint.php?query&page_size=100&page=0&org_key=virtual-na,na" target="_blank">Get All of the Virtual and Physical NA Meetings</a> <em>(100-Meeting Pages, Page 0)</li>
+                            <li><a href="./entrypoint.php?query&page_size=100&page=0&org_key=na" target="_blank">Get All of the Physical NA Meetings</a> <em>(100-Meeting Pages, Page 0)</em></li>
+                            <li><a href="./entrypoint.php?query&page_size=100&page=0&org_key=virtual-na" target="_blank">Get All of the Virtual NA Meetings</a> <em>(100-Meeting Pages, Page 0)</em></li>
+                            <li><a href="./entrypoint.php?query&page_size=100&page=0&org_key=virtual-na,na" target="_blank">Get All of the Virtual and Physical NA Meetings</a> <em>(100-Meeting Pages, Page 0)</em></li>
                         </ul>
                     </ul></li>
                 </ul></li>
