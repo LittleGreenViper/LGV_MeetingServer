@@ -3,8 +3,6 @@
 /**
     This is the main entrypoint file for the LGV_MeetingServer basic server-level unit tests.
     
-    © Copyright 2022, <a href="https://littlegreenviper.com">Little Green Viper Software Development LLC</a>
-    
     LICENSE:
     
     MIT License
@@ -21,7 +19,7 @@
     IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
     CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-    The Great Rift Valley Software Company: https://riftvalleysoftware.com
+    [Little Green Viper Software Development LLC](https://littlegreenviper.com)
 */
 global $config_file_path;
 $config_file_path = dirname(__FILE__).'/config/LGV_MeetingServer-Config.php';

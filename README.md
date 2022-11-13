@@ -4,12 +4,13 @@
 
 ![The Project Icon](icon.png)
 
+This is a general-purpose aggretor server for various meeting lists.
 
 ## License
 
-The SDK is provided as [MIT](https://opensource.org/licenses/MIT)-licensed code.
-
 Copyright 2022 [Little Green Viper Software Development LLC](https://littlegreenviper.com)
+
+The SDK is provided as [MIT](https://opensource.org/licenses/MIT)-licensed code.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 

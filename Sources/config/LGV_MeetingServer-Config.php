@@ -1,10 +1,8 @@
 <?php
 /***************************************************************************************************************************/
 /**
-    This is the main entrypoint file for the LGV_MeetingServer basic server-level unit tests.
-    
-    © Copyright 2022, <a href="https://littlegreenviper.com">Little Green Viper Software Development LLC</a>
-    
+    The general-purpose configuration for the implementation of the Meeting List Server.
+
     LICENSE:
     
     MIT License
@@ -21,7 +19,7 @@
     IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
     CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-    The Great Rift Valley Software Company: https://riftvalleysoftware.com
+    [Little Green Viper Software Development LLC](https://littlegreenviper.com)
 */
 defined( 'LGV_MeetingServer_Files' ) or die ( 'Cannot Execute Directly' );	// Makes sure that this file is in the correct context.
 

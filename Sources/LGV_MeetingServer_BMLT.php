@@ -3,7 +3,7 @@
 /**
     This file handles the BMLT aspect of the meeting server.
     
-    © Copyright 2022, <a href="https://littlegreenviper.com">Little Green Viper Software Development LLC</a>
+    © Copyright 2022, [Little Green Viper Software Development LLC](https://littlegreenviper.com)
     
     LICENSE:
     
@@ -21,7 +21,7 @@
     IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
     CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-    The Great Rift Valley Software Company: https://riftvalleysoftware.com
+    [Little Green Viper Software Development LLC](https://littlegreenviper.com)
 */
 /***************************************************************************************************************************/
 /**

@@ -5,8 +5,8 @@
     
     This defaults to a standard localhost MySQL server (can be other types of servers).
     
-    © <a href="https://github.com/RiftValleySoftware/badger/blob/master/db/co_pdo.class.php">Original Copyright 2021, The Great Rift Valley Software Company</a>
-    © <a href="https://littlegreenviper.com">Copyright 2022, Little Green Viper Software Development LLC</a>
+    © Copyright 2022, [Little Green Viper Software Development LLC](https://littlegreenviper.com)
+    © Copyright 2021, [The Great Rift Valley Software Company](https://riftvalleysoftware.com)
     
     LICENSE:
     
@@ -24,7 +24,7 @@
     IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
     CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-    The Great Rift Valley Software Company: https://riftvalleysoftware.com
+    [Little Green Viper Software Development LLC](https://littlegreenviper.com)
 */
 defined( 'LGV_DB_CATCHER' ) or die ( 'Cannot Execute Directly' );	// Makes sure that this file is in the correct context.
 
