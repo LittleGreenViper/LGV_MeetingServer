@@ -87,9 +87,10 @@ This queries a single server for all of its meeting data, and converts it to our
 
 \returns the meetings from the server, as our own representation, and sorted by server ID.
  */
-function _read_bmlt_server_meetings($url,                   ///< REQIRED:   This is the base URL for the server's API.
-                                    $server_id,             ///< REQUIRED: The integer ID of the server.
-                                    $physical_only = false  ///< If true (default is false), then only meetings that have a physical location will be returned.
+function _read_bmlt_server_meetings($url,                       ///< REQIRED:   This is the base URL for the server's API.
+                                    $server_id,                 ///< REQUIRED: The integer ID of the server.
+                                    $physical_only = false,     ///< OPTIONAL BOOLEAN: If true (default is false), then only meetings that have a physical location will be returned.
+                                    $separate_virtual = false   ///< OPTIONAL BOOLEAN: If true (default is false), then virtual-only meetings will be counted, but will be assigned a "virtual-%s" (with "%s" being the org key) org key.
                                     ) {
     $json_data = _call_bmlt_URL("$url/client_interface/json/?switcher=GetSearchResults&get_used_formats=1");
     $decoded_json = json_decode($json_data);
@@ -190,7 +191,10 @@ function _read_bmlt_server_meetings($url,                   ///< REQIRED:   This
                 }
             }
             
-            if ( isset($meeting["physical_location"]) || !$physical_only ) {
+            if ( isset($meeting["physical_location"]) || !$physical_only || $separate_virtual ) {
+                if ( $separate_virtual && !isset($meeting["physical_location"]) ) {
+                    $meeting["organization_key"] = "virtual-na";
+                }
                 array_push($meetings, $meeting);
             }
         }
@@ -274,15 +278,16 @@ This processes all the BMLT meetings, using the TOMATO list. It reads the server
 
 \returns the number of meetings that were processed.
  */
-function process_all_bmlt_server_meetings(  $pdo_instance,          ///< REQUIRED: The initialized PDO instance that will be used to store the data.
-                                            $table_name,            ///< REQUIRED: The name of the table to be used. This will not be cleared or initialized.
-                                            $physical_only = false  ///< If true (default is false), then only meetings that have a physical location will be returned.
+function process_all_bmlt_server_meetings(  $pdo_instance,              ///< REQUIRED: The initialized PDO instance that will be used to store the data.
+                                            $table_name,                ///< REQUIRED: The name of the table to be used. This will not be cleared or initialized.
+                                            $physical_only = false,     ///< OPTIONAL BOOLEAN: If true (default is false), then only meetings that have a physical location will be returned.
+                                            $separate_virtual = false   ///< OPTIONAL BOOLEAN: If true (default is false), then virtual-only meetings will be counted, but will be assigned a "virtual-%s" (with "%s" being the org key) org key.
                                         ) {
     $all_meetings = 0;
     $server_list = _read_bmlt_server_list();
     foreach ( $server_list as $server ) {
         $dataURL = $server->rootURL."client_interface/json/?switcher=GetSearchResults&get_used_formats=1";
-        $meetings = _read_bmlt_server_meetings($dataURL, intval($server->id), $physical_only);
+        $meetings = _read_bmlt_server_meetings($dataURL, intval($server->id), $physical_only, $separate_virtual);
         $all_meetings += _save_bmlt_meetings_into_db($pdo_instance, $table_name, $meetings);
     }
     

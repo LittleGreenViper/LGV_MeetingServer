@@ -351,8 +351,9 @@ This checks if the data table exists. If it does, and if the elapsed time has pa
 
 \returns: the number of meetings updated. NULL, if no update.
  */
-function update_database(   $physical_only = false, ///< OPTIONAL BOOLEAN: If true (default is false), then only meetings that have a physical location will be stored.
-                            $force = false          ///< OPTIONAL BOOLEAN: If true (default is false), then the update occurs, even if not otherwise prescribed.
+function update_database(   $physical_only = false,     ///< OPTIONAL BOOLEAN: If true (default is false), then only meetings that have a physical location will be stored.
+                            $force = false,             ///< OPTIONAL BOOLEAN: If true (default is false), then the update occurs, even if not otherwise prescribed.
+                            $separate_virtual = false   ///< OPTIONAL BOOLEAN: If true (default is false), then virtual-only meetings will be counted, but will be assigned a "virtual-%s" (with "%s" being the org key) org key.
                         ) {
     try {
         global $config_file_path;
@@ -364,7 +365,7 @@ function update_database(   $physical_only = false, ///< OPTIONAL BOOLEAN: If tr
         $lastupdate_response = $pdo_instance->preparedStatement("SELECT `last_update` FROM `$_dbMetaTableName`", [], true)[0]["last_update"];
         $lapsed_time = time() - intval($lastupdate_response);
         if ( (!_data_table_exists($pdo_instance) || $force || ($_updateIntervalInSeconds < $lapsed_time)) && _initialize_main_database($pdo_instance, $_dbTempTableName) ) {
-            $number_of_meetings = process_all_bmlt_server_meetings($pdo_instance, $_dbTempTableName, $physical_only);
+            $number_of_meetings = process_all_bmlt_server_meetings($pdo_instance, $_dbTempTableName, $physical_only, $separate_virtual);
             $rename_sql = "DROP TABLE IF EXISTS `$_dbTableName`;RENAME TABLE `$_dbTempTableName` TO `$_dbTableName`;UPDATE `$_dbMetaTableName` SET `last_update`=? WHERE 1;";
             $pdo_instance->preparedStatement($rename_sql, [time()]);
             if ( 0 < $number_of_meetings ) {
