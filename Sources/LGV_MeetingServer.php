@@ -610,35 +610,6 @@ function get_server_info() {
     include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
     
     $pdo_instance = new LGV_MeetingServer_PDO($_dbName, $_dbLogin, $_dbPassword, $_dbType, $_dbHost, $_dbPort);
-    $sql = "SELECT COUNT(*) FROM (SELECT * FROM `".$_dbTableName."` WHERE 1) AS C";
-    $response = $pdo_instance->preparedStatement($sql, [], true);
-    
-    if ( isset($response[0]["count(*)"]) ) {
-        $count = intval($response[0]["count(*)"]);
-        $ret["total_meetings"] = $count;
-    }
-
-    $sql = "SELECT DISTINCT `organization_key` FROM `".$_dbTableName."` WHERE 1";
-    $response = $pdo_instance->preparedStatement($sql, [], true);
-// die(htmlspecialchars(print_r($response, true)));
-    
-    if ( !empty($response) && is_array($response) ) {
-        $organizations = [];
-        foreach ( $response as $organization_ar ) {
-            if ( !empty($organization_ar) && !empty($organization_ar["organization_key"]) ) {
-                $sql = "SELECT COUNT(*) FROM (SELECT `id` FROM `".$_dbTableName."` WHERE `organization_key`=?) AS C";
-                $res_temp = $pdo_instance->preparedStatement($sql, [$organization_ar["organization_key"]], true);
-                $num_meetings = 0;
-                if ( isset($res_temp[0]["count(*)"]) ) {
-                    $num_meetings = intval($res_temp[0]["count(*)"]);
-                }
-                array_push($organizations, ["key" => $organization_ar["organization_key"], "number_of_meetings" => $num_meetings]);
-            }
-        }
-        
-        arsort($organizations);
-        $ret["organizations"] = $organizations;
-    }
 
     $sql = "SELECT `last_update` FROM `".$_dbMetaTableName."` WHERE 1";
     $response = $pdo_instance->preparedStatement($sql, [], true);
@@ -648,6 +619,36 @@ function get_server_info() {
         $ret["last_update_timestamp"] = $last_update;
     }
         
+    $total_meetings = 0;
+    
+    $sql = "SELECT COUNT(*) FROM (SELECT * FROM `".$_dbTableName."` WHERE 1) AS C";
+    $response = $pdo_instance->preparedStatement($sql, [], true);
+    
+    if ( isset($response[0]["count(*)"]) ) {
+        $total_meetings = intval($response[0]["count(*)"]);
+    }
+
+    $sql = "SELECT DISTINCT `organization_key` FROM `".$_dbTableName."` WHERE 1";
+    $response = $pdo_instance->preparedStatement($sql, [], true);
+    
+    if ( !empty($response) && is_array($response) ) {
+        $organizations = ["total_meetings" => $total_meetings];
+        foreach ( $response as $organization_ar ) {
+            if ( !empty($organization_ar) && !empty($organization_ar["organization_key"]) ) {
+                $sql = "SELECT COUNT(*) FROM (SELECT `id` FROM `".$_dbTableName."` WHERE `organization_key`=?) AS C";
+                $res_temp = $pdo_instance->preparedStatement($sql, [$organization_ar["organization_key"]], true);
+                $num_meetings = 0;
+                if ( isset($res_temp[0]["count(*)"]) ) {
+                    $num_meetings = intval($res_temp[0]["count(*)"]);
+                }
+                $organizations[$organization_ar["organization_key"]] = $num_meetings;
+            }
+        }
+        
+        arsort($organizations);
+        $ret["organizations"] = $organizations;
+    }
+
     $services = [new BMLTServerInteraction()];
     $services_response = [];
     $server_ids = [];
@@ -664,8 +665,8 @@ function get_server_info() {
     $server_ids = array_unique($server_ids);
     asort($server_ids);
     
-    $ret["services"] = $services_response;
     $ret["server_ids"] = array_values($server_ids);
+    $ret["services"] = $services_response;
 
     return json_encode($ret);
 }
