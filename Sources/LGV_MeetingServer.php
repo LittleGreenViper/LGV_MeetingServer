@@ -525,7 +525,7 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
             while ( ($current_step <= $geo_radius) && ($minimum_found > count($response)) ) {
                 $sql = _location_predicate($geo_center_lng, $geo_center_lat, $current_step, $predicate, false);
                 $response = $pdo_instance->preparedStatement($sql, $params, true);
-                $current_step *= 1.05;
+                $current_step *= 1.1;
             }
         } else {
             $sql =  "";
@@ -534,7 +534,7 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
                 $current_step = $geo_radius;
                 $sql = _location_predicate($geo_center_lng, $geo_center_lat, $geo_radius * 1.05, $predicate, false);
             } else {
-                $current_step =0;
+                $current_step = 0;
                 $sql = "SELECT * FROM `".$_dbTableName."`";
                 if ( !empty($predicate) ) {
                     $sql .= " WHERE $predicate";
