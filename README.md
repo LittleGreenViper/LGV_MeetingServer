@@ -168,9 +168,32 @@ This indicates the server function that we are invoking. It can be:
    - *separate_virtual*
    This means that an "pure virtual" meetings encountered, will be read, but assigned a different organization key (in this case, "virtual-na").
   
+#### Query Response
+
+Each query will result in a JSON response, consisting of two parts: `meta`, and `meetings`. `meta` is a JSON object, with some basic information about the query and the response, and `meetings` is an array of JSON objects, representing each meeting.
+
 #### Query Parameters
 
-These are the refinements to the command requested by the function.
+These are the refinements to the command requested by the `"query"` function.
+
+- **Paging**
+  It is possible to "page" large query responses. This is the process of breaking up a very large response, into discrete "chunks." For example, if a query returned 3,000 meetings, it could be a lot of memory overhead to parse that much JSON, and you could also tie up the connection for a long time. That could be a problem, if there was "spotty" Internet service.
+  
+  Instead, what we do, is ask the server to break the response into "pages," and send us only the portion of the whole that is on a given "page."
+  
+  For example, we could break the 3,000 meeting response into 30 pages of 100 meetings, then ask for Page 0 (0 ... 299), Page 1 (300 ... 399), etc.
+  
+  - *page_size*
+  
+  This is the size of each page. It is 1-based. In the above example, this would be 100.
+  
+  - *page*
+  
+  This is which page to send. It is 0-based, so page 0, is 0 -> `page_size` - 1 meetings.
+  
+  **Just Getting the Paging Metrics**
+  
+  If you specify a `page_size` of 0, then only the "metrics" of the query response will be returned (how many meetings).
  
 ## License
 
