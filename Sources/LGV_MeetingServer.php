@@ -351,6 +351,9 @@ function update_database(   $physical_only = false,     ///< OPTIONAL BOOLEAN: I
                             $separate_virtual = false   ///< OPTIONAL BOOLEAN: If true (default is false), then virtual-only meetings will be counted, but will be assigned a "virtual-%s" (with "%s" being the org key) org key.
                         ) {
     set_time_limit(600);    // We give ourselves a ridiculous amount of time, as this may take a while.
+    
+    $bmltClass = new BMLTServerInteraction();
+    
     try {
         global $config_file_path;
         include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
@@ -361,7 +364,7 @@ function update_database(   $physical_only = false,     ///< OPTIONAL BOOLEAN: I
         $lastupdate_response = $pdo_instance->preparedStatement("SELECT `last_update` FROM `$_dbMetaTableName`", [], true)[0]["last_update"];
         $lapsed_time = time() - intval($lastupdate_response);
         if ( (!_data_table_exists($pdo_instance) || $force || ($_updateIntervalInSeconds < $lapsed_time)) && _initialize_main_database($pdo_instance, $_dbTempTableName) ) {
-            $number_of_meetings = process_all_bmlt_server_meetings($pdo_instance, $_dbTempTableName, $physical_only, $separate_virtual);
+            $number_of_meetings = $bmltClass->process_all_meetings($pdo_instance, $_dbTempTableName, $physical_only, $separate_virtual);
             $rename_sql = "DROP TABLE IF EXISTS `$_dbTableName`;RENAME TABLE `$_dbTempTableName` TO `$_dbTableName`;UPDATE `$_dbMetaTableName` SET `last_update`=? WHERE 1;";
             $pdo_instance->preparedStatement($rename_sql, [time()]);
             if ( 0 < $number_of_meetings ) {
@@ -601,4 +604,107 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
 \returns a JSON object, with the server information.
  */
 function get_server_info() {
+    $ret = [];
+    
+    global $config_file_path;
+    include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
+    
+    $pdo_instance = new LGV_MeetingServer_PDO($_dbName, $_dbLogin, $_dbPassword, $_dbType, $_dbHost, $_dbPort);
+    $sql = "SELECT COUNT(*) FROM (SELECT * FROM `".$_dbTableName."` WHERE 1) AS C";
+    $response = $pdo_instance->preparedStatement($sql, [], true);
+    
+    if ( isset($response[0]["count(*)"]) ) {
+        $count = intval($response[0]["count(*)"]);
+        $ret["total_meetings"] = $count;
+    }
+
+    $sql = "SELECT DISTINCT `organization_key` FROM `".$_dbTableName."` WHERE 1";
+    $response = $pdo_instance->preparedStatement($sql, [], true);
+// die(htmlspecialchars(print_r($response, true)));
+    
+    if ( !empty($response) && is_array($response) ) {
+        $organizations = [];
+        foreach ( $response as $organization_ar ) {
+            if ( !empty($organization_ar) && !empty($organization_ar["organization_key"]) ) {
+                $sql = "SELECT COUNT(*) FROM (SELECT `id` FROM `".$_dbTableName."` WHERE `organization_key`=?) AS C";
+                $res_temp = $pdo_instance->preparedStatement($sql, [$organization_ar["organization_key"]], true);
+                $num_meetings = 0;
+                if ( isset($res_temp[0]["count(*)"]) ) {
+                    $num_meetings = intval($res_temp[0]["count(*)"]);
+                }
+                array_push($organizations, ["key" => $organization_ar["organization_key"], "number_of_meetings" => $num_meetings]);
+            }
+        }
+        
+        arsort($organizations);
+        $ret["organizations"] = $organizations;
+    }
+    
+    $services = [new BMLTServerInteraction()];
+    $services_response = [];
+    $server_ids = [];
+    foreach ( $services as $service ) {
+        $info = $service->service_info();
+        
+        if ( !empty($info) ) {
+            $services_response[$info["service_name"]] = $info;
+            $server_ids_temp = array_map('intval', array_keys($info["servers"]));
+            $server_ids = array_merge($server_ids, $server_ids_temp);
+        }
+    }
+
+    $server_ids = array_unique($server_ids);
+    asort($server_ids);
+    
+    $ret["services"] = $services_response;
+    $ret["server_ids"] = array_values($server_ids);
+
+    return json_encode($ret);
+}
+
+/***************************************************************************************************************************/
+/**
+\brief This class gives an abstract interface for service processors.
+ */
+abstract class AServiceInteraction {
+    /***********************************************************************************************************************/
+    /**
+    This is a simple GET caller.
+
+    \returns the resulting transfer from the server, as a string of bytes.
+     */
+    protected static function _call_URL($url    ///< REQIRED:   This is the base URL for the call. It should include the entire URI, including query arguments.
+                                        ) {
+        $curl = curl_init();                                // Initialize the cURL handle.
+        curl_setopt($curl, CURLOPT_URL, $url);              // This is the URL we are calling.
+        curl_setopt($curl, CURLOPT_HEADER, false);          // Do not return any headers, please.
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);   // Please return to sender as a function response.
+        curl_setopt($curl, CURLOPT_VERBOSE, false);         // Let's keep this thing simple.
+    
+        $result = curl_exec($curl); // Do it to it.
+
+        curl_close($curl);  // Bye, now.
+
+        return $result;
+    }
+
+    /***********************************************************************************************************************/
+    /**
+    This processes all the Server meetings. It reads all the meetings in each server, then saves them into the given table.
+
+    \returns the number of meetings that were processed.
+     */
+    function process_all_meetings(  $pdo_instance,      ///< REQUIRED: The initialized PDO instance that will be used to store the data.
+                                    $table_name,        ///< REQUIRED: The name of the table to be used. This will not be cleared or initialized.
+                                    $physical_only,     ///< OPTIONAL BOOLEAN: If true (default is false), then only meetings that have a physical location will be returned.
+                                    $separate_virtua    ///< OPTIONAL BOOLEAN: If true (default is false), then virtual-only meetings will be counted, but will be assigned a "virtual-%s" (with "%s" being the org key) org key.
+                                ) { }
+                                
+    /***********************************************************************************************************************/
+    /**
+    This returns information about the servers.
+
+    \returns an array, with the key being the server ID, and the value being an array, with a string, with the server name, and another string, with the server URL.
+     */
+    function service_info() {}
 }

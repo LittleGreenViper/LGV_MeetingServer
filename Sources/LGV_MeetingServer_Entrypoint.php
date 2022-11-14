@@ -169,7 +169,6 @@ if ( 'cli' == php_sapi_name() ) { // A call from the CLI means just do an update
         } elseif ( "info" == strtolower($query[0]) ) {
             header('Content-Type: application/json');
             echo(get_server_info());
-            
             exit;
         } elseif ( "update" == strtolower($query[0]) ) {
             $force = in_array("force", $query);
