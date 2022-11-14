@@ -37,7 +37,7 @@
                 <li><h3>Open Searches</h3><ul>
                     <li><h4>All Meetings <em>(No Paging)</em></h4><ul>
                         <li><a href="./entrypoint.php?query&page_size=0" target="_blank">Just Get the Metrics</a></li>
-                        <li><a href="./entrypoint.php" target="_blank">Get All of It</a> <em>(The Whole Nine Yards. Find Something to Do. This Will Take a While to Render.)</em></li>
+                        <li><a href="./entrypoint.php?query" target="_blank">Get All of It</a> <em>(The Whole Nine Yards. Find Something to Do. This Will Take a While to Render.)</em></li>
                         <li><h5>Weekday Filtering</h5><ul>
                             <li><a href="./entrypoint.php?query&weekdays=7,3,5,7,3" target="_blank">Tuesday, Thursday, and Saturday</a></li>
                         </ul></li>
