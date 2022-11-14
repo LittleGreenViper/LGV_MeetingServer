@@ -32,8 +32,6 @@
  */
 defined( 'LGV_MeetingServer_Files' ) or die ( 'Cannot Execute Directly' );	// Makes sure that this file is in the correct context.
 
-/// This is the "master list" of all the BMLT servers that TOMATO (the BMLT aggregator) uses. It is a JSON file.
-$_tomato_server_list_file_uri = "https://raw.githubusercontent.com/bmlt-enabled/tomato/master/rootServerList.json";
 
 /***************************************************************************************************************************/
 /**
@@ -49,7 +47,8 @@ class BMLTServerInteraction extends AServiceInteraction {
     \returns a JSON-decoded PHP object, with the list as an Array. Each element has an ID (Integer), name (String), and Root Server entrypoint URI (String).
      */
     protected static function _read_bmlt_server_list() {
-        return json_decode(self::_call_URL($_tomato_server_list_file_uri));
+        /// This is the "master list" of all the BMLT servers that TOMATO (the BMLT aggregator) uses. It is a JSON file.
+        return json_decode(self::_call_URL("https://raw.githubusercontent.com/bmlt-enabled/tomato/master/rootServerList.json"));
     }
 
     /***********************************************************************************************************************/
