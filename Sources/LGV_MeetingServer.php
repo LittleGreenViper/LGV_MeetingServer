@@ -595,3 +595,10 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
     
     return "{ \"meta\": {\"total\": 0}, \"meetings\": []}";
 }
+
+/*******************************************************************/
+/**
+\returns a JSON object, with the server information.
+ */
+function get_server_info() {
+}

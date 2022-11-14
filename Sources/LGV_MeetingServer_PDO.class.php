@@ -57,7 +57,7 @@ class LGV_MeetingServer_PDO {
                                     $port = 3306 	        ///< database TCP port (default is 3306)
 								) {
 		$this->_pdo = NULL;
-		$this->driver_type = $driver;
+		$this->driver_type = strtolower($driver);
 		
         $dsn = $driver . ':host=' . $host . ';dbname=' . $database . ';charset=utf8;port=' . strval($port);
         
@@ -85,6 +85,11 @@ class LGV_MeetingServer_PDO {
 	{
 		if ( NULL == $this->_pdo ) {
             throw new Exception(__METHOD__ . '()::' . __LINE__ . "\nNo PDO object!");
+		}
+		
+		// Non-MySQL servers aren't fans of the backticks.
+		if ( 'mysql' != $this->driver_type ) {
+		    $sql = str_ireplace('`', '', $sql);
 		}
 		
 		try {

@@ -45,109 +45,100 @@ if ( 'cli' == php_sapi_name() ) { // A call from the CLI means just do an update
         echo intval(update_database($physical_only, $forced, $separate_virtual));
     }
 } else {
-    $query = explode("&", strtolower($_SERVER["QUERY_STRING"]));
-
-    if ( in_array("update", $query) ) {
-        $force = in_array("force", $query);
-        $physical_only = in_array("physical_only", $query);
-        $separate_virtual = in_array("separate_virtual", $query);
-
-        $start = microtime(true);
-        $number_of_meetings = update_database($physical_only, $force, $separate_virtual);
-        $exchange_time = microtime(true) - $start;
-        if ( 0 < $number_of_meetings ) {
-            header('Content-Type: application/json');
-            echo("{\"number_of_meetings\": $number_of_meetings,\"time_in_seconds\":$exchange_time}");
-        } else {
-            header("HTTP/1.1 204 No Content");
-        }
-     // If we are a search, then we also see if we need a query key.
-    } elseif ( !in_array("update", $query) && in_array("query", $query) ) { 
-        $geocenter_lng = NULL;
-        $geocenter_lat = NULL;
-        $geo_radius = NULL;
-        $minimum_found = 0;
-        $weekdays = [];
-        $start_time = 0;
-        $org_key = NULL;
-        $ids = [];
-        $page = 0;
-        $page_size = -1;
+    $query = explode("&", $_SERVER["QUERY_STRING"]);
     
-        // Build up the list of arguments that we'll be sending to the query function.
-        foreach ( $query as $parameter ) {
-            $splodie = explode("=", $parameter);
-            if ( is_array($splodie) && 1 < count($splodie) ) {
-                $key = $splodie[0];
-                $value = $splodie[1];
-                if ( isset($value) ) {
-                    // This allows us to "scrub" the various values.
-                    switch ( $key ) {
-                        case "geocenter_lng":
-                            $geocenter_lng = floatval($value);
-                        break;
-                        
-                        case "geocenter_lat":
-                            $geocenter_lat = floatval($value);
-                        break;
-                        
-                        case "geo_radius":
-                            if ( empty($value) ) {
-                                break;
-                            }
-                            $geo_radius = floatval($value);
+    if ( isset($query) && is_array($query) && (0 < count($query)) ) {
+        if ( "query" == strtolower($query[0]) ) { 
+            $geocenter_lng = NULL;
+            $geocenter_lat = NULL;
+            $geo_radius = NULL;
+            $minimum_found = 0;
+            $weekdays = [];
+            $start_time = 0;
+            $end_time = 0;
+            $org_key = NULL;
+            $ids = [];
+            $page = 0;
+            $page_size = -1;
+    
+            // Build up the list of arguments that we'll be sending to the query function.
+            foreach ( $query as $parameter ) {
+                $splodie = explode("=", $parameter);
+                if ( is_array($splodie) && 1 < count($splodie) ) {
+                    $key = $splodie[0];
+                    $value = $splodie[1];
+                    if ( isset($value) ) {
+                        // This allows us to "scrub" the various values.
+                        switch ( $key ) {
+                            case "geocenter_lng":
+                                $geocenter_lng = floatval($value);
                             break;
                         
-                        case "minimum_found":
-                            $minimum_found = abs(intval($value));
-                        break;
+                            case "geocenter_lat":
+                                $geocenter_lat = floatval($value);
+                            break;
                         
-                        case "weekdays":
-                            $weekdays_temp = explode(",", $value);
-            
-                            if ( !empty($weekdays) ) {
-                                $weekdays_temp = array_map('abs', array_map('intval', $weekdays_temp));
-                            }
-                        
-                            foreach ( $weekdays_temp as $weekday ) {
-                                if ( !in_array($weekday, $weekdays) && (0 < $weekday) && (8 > $weekday) ) {
-                                    array_push($weekdays, $weekday);
+                            case "geo_radius":
+                                if ( empty($value) ) {
+                                    break;
                                 }
-                            }
+                                $geo_radius = floatval($value);
+                                break;
                         
-                            asort($weekdays);
-                        break;
+                            case "minimum_found":
+                                $minimum_found = abs(intval($value));
+                            break;
                         
-                        case "start_time":
-                            $start_time = abs(intval($value));
-                        break;
-                        
-                        case "end_time":
-                            $end_time = abs(intval($value));
-                        break;
-                        
-                        case "org_key":
-                            $value = trim($value);
-                            if ( !empty($value) ) {
-                                $org_key = array_map('trim', explode(",", $value));
-                            }
-                        break;
-                        
-                        case "ids":
-                            if ( !empty(trim($value)) ) {
-                                $id_temp = explode("),(", trim($value, "()"));
+                            case "weekdays":
+                                $weekdays_temp = explode(",", $value);
             
-                                if ( !empty($id_temp) ) {
-                                    foreach ( $id_temp as $id_pair ) {
-                                        $id_pair_temp = explode(",", $id_pair);
-                                        if ( 1 <= count($id_pair_temp) ) {
-                                            $comp = [intval($id_pair_temp[0]), isset($id_pair_temp[1]) ? intval($id_pair_temp[1]) : 0];
-                                            if ( 0 < $comp[0] ) {
-                                                array_push($ids, $comp);
+                                if ( !empty($weekdays) ) {
+                                    $weekdays_temp = array_map('abs', array_map('intval', $weekdays_temp));
+                                }
+                        
+                                foreach ( $weekdays_temp as $weekday ) {
+                                    if ( !in_array($weekday, $weekdays) && (0 < $weekday) && (8 > $weekday) ) {
+                                        array_push($weekdays, $weekday);
+                                    }
+                                }
+                        
+                                asort($weekdays);
+                            break;
+                        
+                            case "start_time":
+                                $start_time = abs(intval($value));
+                            break;
+                        
+                            case "end_time":
+                                $end_time = abs(intval($value));
+                            break;
+                        
+                            case "org_key":
+                                $value = trim($value);
+                                if ( !empty($value) ) {
+                                    $org_key = array_map('trim', explode(",", $value));
+                                }
+                            break;
+                        
+                            case "ids":
+                                if ( !empty(trim($value)) ) {
+                                    $id_temp = explode("),(", trim($value, "()"));
+            
+                                    if ( !empty($id_temp) ) {
+                                        foreach ( $id_temp as $id_pair ) {
+                                            $id_pair_temp = explode(",", $id_pair);
+                                            if ( 1 <= count($id_pair_temp) ) {
+                                                $comp = [intval($id_pair_temp[0]), isset($id_pair_temp[1]) ? intval($id_pair_temp[1]) : 0];
+                                                if ( 0 < $comp[0] ) {
+                                                    array_push($ids, $comp);
+                                                }
                                             }
                                         }
-                                    }
-                                    if ( empty($ids) ) {
+                                        if ( empty($ids) ) {
+                                            header("HTTP/1.1 400 Bad Parameters");
+                                            exit("INVALID IDS");
+                                        }
+                                    } else {
                                         header("HTTP/1.1 400 Bad Parameters");
                                         exit("INVALID IDS");
                                     }
@@ -155,31 +146,50 @@ if ( 'cli' == php_sapi_name() ) { // A call from the CLI means just do an update
                                     header("HTTP/1.1 400 Bad Parameters");
                                     exit("INVALID IDS");
                                 }
-                            } else {
-                                header("HTTP/1.1 400 Bad Parameters");
-                                exit("INVALID IDS");
-                            }
-                        break;
+                            break;
                         
-                        case "page":
-                            $page = max(0, intval($value));
-                        break;
+                            case "page":
+                                $page = max(0, intval($value));
+                            break;
                         
-                        case "page_size":
-                            $page_size = max(-1, intval($value));
-                        break;
+                            case "page_size":
+                                $page_size = max(-1, intval($value));
+                            break;
+                        }
                     }
                 }
             }
-        }
     
-        // Compress the response.
-        header('Content-Type: application/json');
-        ob_start('ob_gzhandler');
-        echo(query_database($geocenter_lng, $geocenter_lat, $geo_radius, $minimum_found, $weekdays, $start_time, $end_time, $org_key, $ids, $page, $page_size));
-        ob_end_flush();
-    } else {
-        header("HTTP/1.1 418 I'm a teapot");
-        echo("🫖");
+            // Compress the response.
+            header('Content-Type: application/json');
+            ob_start('ob_gzhandler');
+            echo(query_database($geocenter_lng, $geocenter_lat, $geo_radius, $minimum_found, $weekdays, $start_time, $end_time, $org_key, $ids, $page, $page_size));
+            ob_end_flush();
+            exit;
+        } elseif ( "info" == strtolower($query[0]) ) {
+            header('Content-Type: application/json');
+            echo(get_server_info());
+            
+            exit;
+        } elseif ( "update" == strtolower($query[0]) ) {
+            $force = in_array("force", $query);
+            $physical_only = in_array("physical_only", $query);
+            $separate_virtual = in_array("separate_virtual", $query);
+
+            $start = microtime(true);
+            $number_of_meetings = update_database($physical_only, $force, $separate_virtual);
+            $exchange_time = microtime(true) - $start;
+            if ( 0 < $number_of_meetings ) {
+                header('Content-Type: application/json');
+                echo("{\"number_of_meetings\": $number_of_meetings,\"time_in_seconds\":$exchange_time}");
+            } else {
+                header("HTTP/1.1 204 No Content");
+            }
+            
+            exit;
+        }
     }
+
+    header("HTTP/1.1 418 I'm a teapot");
+    echo("🫖");
 }
