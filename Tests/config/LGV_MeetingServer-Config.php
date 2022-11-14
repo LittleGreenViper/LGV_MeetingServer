@@ -1,15 +1,24 @@
 <?php
-$_dbLogin = "LGV_MeetingServerTest";
-$_dbPassword = "KrampusPresents4All";
+// These are the values you are likely to change, for your installation.
 
-$_dbName = "LGV_MeetingServerTest";
-$_dbHost = "localhost";
-$_dbType = "mysql";
-$_dbPort = 3306;
+$_dbLogin = < YOUR DB LOGIN ID >;
+$_dbPassword = < YOUR DB LOGIN PASSWORD >;
+$_dbName = < YOUR DB NAME >;
 
+// This is the period between when the update script simply returns, after doing nothing, and when it updates its servers.
+// Default is 4 hours.
+$_updateIntervalInSeconds = (4 * 3600);
+
+// The declarations below this line are unlikely to be changed.
+// ------------------------------------------------------------
+
+// These are the names of the tables.
+// Usually, there should be no need to change them, unless you have a shared database (not recommended, on general principle).
 $_dbTableName = "data";
 $_dbTempTableName = "temp";
 $_dbMetaTableName = "meta";
 
-$_updateIntervalInSeconds = (4 * 60 * 60);
+$_dbHost = "localhost";
+$_dbType = "mysql";
+$_dbPort = 3306;
 ?>
