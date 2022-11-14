@@ -639,7 +639,15 @@ function get_server_info() {
         arsort($organizations);
         $ret["organizations"] = $organizations;
     }
+
+    $sql = "SELECT `last_update` FROM `".$_dbMetaTableName."` WHERE 1";
+    $response = $pdo_instance->preparedStatement($sql, [], true);
     
+    if ( !empty($response) && !empty($response[0]["last_update"]) ) {
+        $last_update = intval($response[0]["last_update"]);
+        $ret["last_update_timestamp"] = $last_update;
+    }
+        
     $services = [new BMLTServerInteraction()];
     $services_response = [];
     $server_ids = [];
