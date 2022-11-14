@@ -281,7 +281,7 @@ class BMLTServerInteraction extends AServiceInteraction {
     /**
     This returns information about the service.
 
-    \returns an array, with information about the service.
+    \returns an array, with information about the service. The key for each element of the "servers" array, is the server ID.
      */
     function service_info() {
         $servers = [];
@@ -293,7 +293,7 @@ class BMLTServerInteraction extends AServiceInteraction {
             $name = $server->name;
             $url = $server->rootURL;
             
-            $servers[$key] = ["id" => $key, "name" => $name, "url" => $url];
+            $servers[$key] = ["name" => $name, "url" => $url];
         }
         
         return ["service_name" => "BMLT", "servers" => $servers];
