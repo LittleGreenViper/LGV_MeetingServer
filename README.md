@@ -110,7 +110,7 @@ You'll need to have about the same kind of "raw materials" as you would need, to
 
 Most of the server files can be stored outside the HTTP path. They are all included. The only file that needs to be in the HTTP path, is the entrypoint file that you write. An example, is the [`entrypoint.php`](https://github.com/LittleGreenViper/LGV_MeetingServer/blob/master/Tests/entrypoint.php) file, in the testing directory of the project.
 
-You will need to declare `$config_file_path` as a global variable, and set it to reference the configuration file:
+In your entrypoint file, you'll need to declare `$config_file_path` as a global variable, and set it to reference the configuration file:
 
     global $config_file_path;
     $config_file_path = dirname(__FILE__).'/config/LGV_MeetingServer-Config.php';
@@ -120,10 +120,58 @@ You will then need to include the `LGV_MeetingServer_Entrypoint.php` file of the
     define( 'LGV_MeetingServer_Files', 1 );
     require_once(dirname(dirname(__FILE__)).'/Sources/LGV_MeetingServer_Entrypoint.php');
 
-That's all you need to do. If the configuration file is set up correctly, the server will set itself up.
+That's all you need to do. If the configuration file is set up correctly, the server will set itself up, the first time an update is run. It should have one successful update, before applying queries.
 
-Note that `LGV_MeetingServer_Files` is declared. This is a simple macro that prevents individual files from being run, unless they are part of the hierarchy, defined by the entrypoint.
+Note that `LGV_MeetingServer_Files` macro is declared (and set to 1). This is a simple macro that prevents individual files from being run, unless they are part of the hierarchy, defined by the entrypoint.
 
+## Server API
+
+This is the explicit server API. The server is not a traditional "CRUD" server. It's a very simple "call and response" server, with calls being GET HTTP requests, and responses being simple JSON (or HTTP headers, if there's an issue).
+
+### The Calling URI
+
+Each call to the server will have a structure like so (this is just an example):
+
+    https://meetingserver/entrypoint.php?query&page_size=100&page=3&weekdays=2,3,4,5,6
+    
+    https://meetingserver/entrypoint.php   ?  query     &page_size=100&page=3&weekdays=2,3,4,5,6
+    ↑                                  ↑      ↑   ↑     ↑                                      ↑
+                The Base URL                 Function                Query Parameters
+
+#### The Base URL
+
+This will be the hostname and path, directly to the PHP file that will act as the entry point to the server. It will have the structure prescribed, above.
+
+After that, will be the question mark delimiter, and the Function will be assigned.
+
+#### The Function
+
+This indicates the server function that we are invoking. It can be:
+
+- **query**
+  This will be the function invoked most often. It queries the database, and expects meeting data to be returned as JSON. There are a number of possible parameters, that will be defined, below.
+
+- **info**
+  This asks the server to return a JSON object that defines some basic server structure, like the number of meetings, organizations, and even module servers. There are no parameters to this call.
+
+- **update**
+  This gives the server execution thread, to perform an update of its data. Unless forced, calls with this function will usually end with a "204 No Content" success code (a JSON object is returned, if an update was performed). There are only three parameters to this call:
+  
+   `https://meetingserver/entrypoint.php?update&force&physical_only&separate_virtual`
+  
+   - *force*
+   This means that the server should run the update, even if the elapsed time, specified in the config file, has not passed. The last update time will be changed to reflect this update.
+  
+   - *physical_only*
+   This means that "pure virtual" meetings will be ignored, and only meetings with a physical presence will be added. If `separate_virtual` is defined, then this is ignored.
+  
+   - *separate_virtual*
+   This means that an "pure virtual" meetings encountered, will be read, but assigned a different organization key (in this case, "virtual-na").
+  
+#### Query Parameters
+
+These are the refinements to the command requested by the function.
+ 
 ## License
 
 Copyright 2022 [Little Green Viper Software Development LLC](https://littlegreenviper.com)
