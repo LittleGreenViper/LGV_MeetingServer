@@ -41,6 +41,9 @@
                         <li><h5>Weekday Filtering</h5><ul>
                             <li><a href="./entrypoint.php?query&weekdays=7,3,5,7,3" target="_blank">Tuesday, Thursday, and Saturday</a></li>
                         </ul></li>
+                        <li><h5>Weekday, Org, and Time Filtering</h5><ul>
+                            <li><a href="./entrypoint.php?query&weekdays=2,3,4,5,6&start_time=64800&end_time=72000&org_key=na" target="_blank">In-person meetings, during the week (Mon-Fri), starting between 6 - 8PM (worldwide)</a></li>
+                        </ul></li>
                     </ul></li>
                     <li><h4>All Meetings <em>(Page Tests)</em></h4><ul>
                         <li><a href="./entrypoint.php?query&page_size=10" target="_blank">10-Meeting Pages, Page 0</a> <em>(Implicit first page)</em></li>
@@ -62,6 +65,9 @@
                             <li><a href="./entrypoint.php?query&page_size=100&page=0&org_key=virtual-na" target="_blank">Get All of the Virtual NA Meetings</a> <em>(100-Meeting Pages, Page 0)</em></li>
                             <li><a href="./entrypoint.php?query&page_size=100&page=0&org_key=virtual-na,na" target="_blank">Get All of the Virtual and Physical NA Meetings</a> <em>(100-Meeting Pages, Page 0)</em></li>
                         </ul>
+                        <li><h5>Weekday, Org, and Time Filtering</h5><ul>
+                            <li><a href="./entrypoint.php?query&page_size=100&page=3&weekdays=2,3,4,5,6&start_time=64800&end_time=72000&org_key=na" target="_blank">100-Meeting Pages, Page 3, of In-person meetings, during the week (Mon-Fri), starting between 6 - 8PM (worldwide)</a></li>
+                        </ul></li>
                     </ul></li>
                 </ul></li>
                 <li><h3>Geographic Searches (All Physical Meetings)</h3><ul>
@@ -106,7 +112,10 @@
                         <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=-73.9442&geocenter_lat=40.6782&minimum_found=1000&page_size=100&page=3" target="_blank">Search for about 1000 meetings, Brooklyn (No Limit, Page Size: 100, Page 3)</a></li>
                     </ul></li>
                     <li><h4>Auto-Radius, Paging, Weekday Filtering</h4><ul>
-                        <li><a href="./entrypoint.php?query&org_key=na&weekdays=1,7&geocenter_lng=-73.9442&geocenter_lat=40.6782&minimum_found=1000&page_size=100&page=5" target="_blank">Search for about 1000 meetings on the Weekend, Brooklyn (No Limit, Page Size: 100, Page 5)</a></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&weekdays=1,7&geocenter_lng=-73.9442&geocenter_lat=40.6782&minimum_found=1000&page_size=100&page=5" target="_blank">Search for about 1000 In-Person meetings on the Weekend, Brooklyn (No Limit, Page Size: 100, Page 5)</a></li>
+                        <li><h5>Weekday, Org, and Time Filtering</h5><ul>
+                            <li><a href="./entrypoint.php?query&geocenter_lng=-73.9442&geocenter_lat=40.6782&minimum_found=10&weekdays=2,3,4,5,6&start_time=64800&end_time=72000&org_key=na" target="_blank">Find Around 10 In-person meetings, during the week (Mon-Fri), starting between 6 - 8PM (Brooklyn)</a></li>
+                        </ul></li>
                     </ul></li>
                 </ul></li>
                 <li><h3>Individual IDs</h3><ul>
