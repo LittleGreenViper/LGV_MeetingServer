@@ -21,6 +21,9 @@
 
     [Little Green Viper Software Development LLC](https://littlegreenviper.com)
 */
+$config_file_path = dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/LGV_MeetingServer-Config/LGV_MeetingServer-Config.php';
+include($config_file_path);
+
 ?><!DOCTYPE html>
 <html lang="en">
     <head>
@@ -171,16 +174,13 @@
             <li><h2>Server Information</h2><ul>
                 <li><a href="./entrypoint.php?info" target="_blank">Get Server Info</a></li>
             </ul></li>
-            <li><h2>Update</h2><ul>
-                <li><a href="./entrypoint.php?update" target="_blank">Regular Update</a></li>
-                <li><a href="./entrypoint.php?update&physical_only" target="_blank">Regular Update</a> <em>(Physical Only)</em></li>
-                <li><a href="./entrypoint.php?update&separate_virtual" target="_blank">Regular Update</a> <em>(Separate Virtual)</em></li>
-                <li><a href="./entrypoint.php?update&separate_virtual&physical_only" target="_blank">Regular Update</a> <em>(Separate Virtual, Physical Only -ignored)</em></li>
-                <li><a href="./entrypoint.php?update&force" target="_blank">Forced Update</a></li>
-                <li><a href="./entrypoint.php?update&force&physical_only" target="_blank">Forced Update</a> <em>(Physical Only)</em></li>
-                <li><a href="./entrypoint.php?update&force&separate_virtual" target="_blank">Forced Update</a> <em>(Separate Virtual)</em></li>
-                <li><a href="./entrypoint.php?update&force&separate_virtual&physical_only" target="_blank">Forced Update</a> <em>(Separate Virtual, Physical Only -ignored)</em></li>
-            </ul></li>
+            <?php
+            if ( !isset($_use_cli_only_for_update) || !$_use_cli_only_for_update ) {
+                echo('<li><h2>Update</h2><ul><li><a href="./entrypoint.php?update" target="_blank">Regular Update</a></li><li><a href="./entrypoint.php?update&physical_only" target="_blank">Regular Update</a> <em>(Physical Only)</em></li><li><a href="./entrypoint.php?update&separate_virtual" target="_blank">Regular Update</a> <em>(Separate Virtual)</em></li><li><a href="./entrypoint.php?update&separate_virtual&physical_only" target="_blank">Regular Update</a> <em>(Separate Virtual, Physical Only -ignored)</em></li><li><a href="./entrypoint.php?update&force" target="_blank">Forced Update</a></li><li><a href="./entrypoint.php?update&force&physical_only" target="_blank">Forced Update</a> <em>(Physical Only)</em></li><li><a href="./entrypoint.php?update&force&separate_virtual" target="_blank">Forced Update</a> <em>(Separate Virtual)</em></li><li><a href="./entrypoint.php?update&force&separate_virtual&physical_only" target="_blank">Forced Update</a> <em>(Separate Virtual, Physical Only -ignored)</em></li></ul></li>');
+            } else {
+                echo('<li><h2></h2><em>Update Not Available, Because </em><code>$_use_cli_only_for_update</code><em> is set to </em><code>true</code><em>, on this server.</em></li>');
+            }
+            ?>
             <li><h2>Empty Request</h2><ul>
                 <li><a href="./entrypoint.php" target="_blank">I&apos;m A Teapot</a></li>
             </ul></li>
