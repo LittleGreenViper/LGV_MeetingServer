@@ -482,7 +482,6 @@ Here is a sample of a "full-featured" `meeting` object:
   "start_time": "20:00:00",
   "weekday": 4,
   "duration": 5400,
-  "language": "en",
   "longitude": -83.4139,
   "latitude": 36.0168,
   "comments": "Zoom Meeting ID: 339 696 7992";
@@ -548,9 +547,6 @@ Here is a sample of a "full-featured" `meeting` object:
 - `organization_key`
   This is a string, with the organization that is assigned to this table row.
   
-- `language`
-    If specified, the language that the meeting information is provided in. This is an [ISO 639](https://www.loc.gov/standards/iso639-2/php/code_list.php) code.
-  
 - `formats`
   This is an array of format objects. It may be empty. Each format object is a simple JSON object, containing the following:
   
@@ -562,9 +558,9 @@ Here is a sample of a "full-featured" `meeting` object:
     
   - `description`
     This is a longer desctription of the format.
-    
+  
   - `language`
-    If specified, the language that the format information is provided in. This is an [ISO 639](https://www.loc.gov/standards/iso639-2/php/code_list.php) code.
+    If specified, the language that the format is provided in. This is an [ISO 639](https://www.loc.gov/standards/iso639-2/php/code_list.php) code.
 
 ###### Only Supplied, If Available
 

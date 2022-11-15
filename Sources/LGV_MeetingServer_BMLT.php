@@ -108,12 +108,6 @@ class BMLTServerInteraction extends AServiceInteraction {
                     $duration = (intval($duration_array[0]) * (60 * 60)) + (intval($duration_array[1]) * 60) + intval($duration_array[2]);
                     $meeting["duration"] = $duration;
                 }
-        
-                if ( isset($meeting_object->lang_enum) && trim($meeting_object->lang_enum) ) {
-                    $meeting["language"] = strtolower(trim($meeting_object->lang_enum));
-                } else {
-                    $meeting["language"] = "en";
-                }
             
                 if ( isset($meeting_object->comments) && trim($meeting_object->comments) ) {
                     $meeting["comments"] = trim($meeting_object->comments);
