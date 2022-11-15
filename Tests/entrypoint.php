@@ -23,7 +23,7 @@
 */
 // This references a file that is not stored in Git. There is a sample file, in the "config" directory.
 global $config_file_path;
-$config_file_path = dirname(dirname(dirname(__FILE__))).'/LGV_MeetingServer-Config/LGV_MeetingServer-Config.php';
+$config_file_path = dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/LGV_MeetingServer-Config/LGV_MeetingServer-Config.php';
 
 define( 'LGV_MeetingServer_Files', 1 );
 require_once(dirname(dirname(__FILE__)).'/Sources/LGV_MeetingServer_Entrypoint.php');

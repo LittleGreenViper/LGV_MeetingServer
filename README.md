@@ -8,6 +8,8 @@ This is a general-purpose aggregator server for various meeting lists.
 
 [The source code is available at this GitHub repo.](https://github.com/LittleGreenViper/LGV_MeetingServer)
 
+[This is a Live Example (Test Harness)](https://littlegreenviper.com/LGV_MeetingServer/Tests/)
+
 ## How It Works
 
 The server is designed to allow you to write "modules," that can connect to multiple servers, and reformat their meeting data, into a common format, which can then be read as a "unified" set, in a common format.
