@@ -671,9 +671,26 @@ function get_server_info() {
     $services_response = [];
     foreach ( $services as $service ) {
         $info = $service->service_info();
+        $service_name = $info["service_name"];
         
         if ( !empty($info) ) {
-            $services_response[$info["service_name"]] = $info;
+            if ( !empty($info["servers"]) && is_array($info["servers"]) ) {
+                $servers = $info["servers"];
+                foreach ( $servers as $key => $value ) {
+                    if ( 0 < intval($key) ) {
+                        $server_id = intval($key);
+                        $sql = "SELECT COUNT(*) FROM (SELECT `id` FROM `".$_dbTableName."` WHERE `server_id`=$server_id) AS C";
+                        $res_temp = $pdo_instance->preparedStatement($sql, [], true);
+                        $num_meetings = 0;
+                        if ( isset($res_temp[0]["count(*)"]) ) {
+                            $num_meetings = intval($res_temp[0]["count(*)"]);
+                            $info["servers"][$server_id]["num_meetings"] = $num_meetings;
+                        }
+                    }
+                }
+            }
+            
+            $services_response[$service_name] = $info;
         }
     }
 
