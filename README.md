@@ -14,7 +14,7 @@ This is a general-purpose aggregator server for various meeting lists.
 
 The server is designed to allow you to write "modules," that can connect to multiple servers, and reformat their meeting data, into a common format, which can then be read as a "unified" set, in a common format.
 
-The aggregator maintains a very simple SQL database, with a common format (regardless of the format of its origins). Queries are then executed against that data.
+The aggregator maintains a very simple SQL database, with a defined format (regardless of the format of its origins). Queries are then executed against that data.
 
 ### Reading the Data Into the System
 
@@ -115,16 +115,20 @@ Most of the server files can be stored outside the HTTP path. They are all inclu
 In your entrypoint file, you'll need to declare `$config_file_path` as a global variable, and set it to reference the configuration file:
 
     global $config_file_path;
-    $config_file_path = dirname(__FILE__).'/config/LGV_MeetingServer-Config.php';
+    $config_file_path = '< PATH TO CONFIG FILE >';
 
 You will then need to include the `LGV_MeetingServer_Entrypoint.php` file of the server, from the source directory:
 
     define( 'LGV_MeetingServer_Files', 1 );
-    require_once(dirname(dirname(__FILE__)).'/Sources/LGV_MeetingServer_Entrypoint.php');
+    require_once('< PATH TO SERVER DIRECTORY >/Sources/LGV_MeetingServer_Entrypoint.php');
 
-That's all you need to do. If the configuration file is set up correctly, the server will set itself up, the first time an update is run. It should have one successful update, before applying queries.
+That's all you need to do. If the configuration file is set up correctly, the server will set itself up, the first time an update is run. You should have one successful update performed, before applying queries.
 
-Note that `LGV_MeetingServer_Files` macro is declared (and set to 1). This is a simple macro that prevents individual files from being run, unless they are part of the hierarchy, defined by the entrypoint.
+[Here is a sample config file.](https://github.com/LittleGreenViper/LGV_MeetingServer/blob/master/Tests/config/LGV_MeetingServer-Config.php)
+
+[Here is a sample entrypoint file.](https://github.com/LittleGreenViper/LGV_MeetingServer/blob/master/Tests/entrypoint.php)
+
+Note that the `LGV_MeetingServer_Files` macro is declared (and set to 1). This is a simple macro that prevents individual files from being run, unless they are part of the hierarchy, defined by the entrypoint.
 
 ## Server API
 
@@ -135,14 +139,16 @@ This is the explicit server API. The server is not a traditional "CRUD" server. 
 Each call to the server will have a structure like so (this is just an example):
 
     https://meetingserver/entrypoint.php?query&page_size=100&page=3&weekdays=2,3,4,5,6
-    
+
+Here's a simple breakdown:
+
     https://meetingserver/entrypoint.php   ?  query     &page_size=100&page=3&weekdays=2,3,4,5,6
     ↑                                  ↑      ↑   ↑     ↑                                      ↑
                 The Base URL                 Function                Query Parameters
 
 #### The Base URL
 
-This will be the hostname and path, directly to the PHP file that will act as the entry point to the server. It will have the structure prescribed, above.
+This will be the hostname and path, directly to the PHP file that will act as the entry point to the server. You will create this file, and it will have the structure prescribed, above.
 
 After that, will be the question mark delimiter, and the Function will be assigned.
 
@@ -168,7 +174,7 @@ This indicates the server function that we are invoking. It can be:
    This means that "pure virtual" meetings will be ignored, and only meetings with a physical presence will be added. If `separate_virtual` is defined, then this is ignored.
   
    - *separate_virtual*
-   This means that an "pure virtual" meetings encountered, will be read, but assigned a different organization key (in this case, "virtual-na").
+   This means that any "pure virtual" meetings encountered, will be read, but assigned a different organization key (in this case, "virtual-na").
   
 #### Query Response
 
