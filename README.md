@@ -624,6 +624,26 @@ Here is a sample of a "full-featured" `meeting` object:
   
 - `phone_number`
   The dial-in phone number for the virtual meeting.
+  
+## Command-Line Access
+
+The server has been written, so that updates can be done via the command line (like using [cron](https://en.wikipedia.org/wiki/Cron)).
+
+It needs to be run like so:
+
+`php <PATH TO DIRECTORY>/entrypoint.php cli <ADDITIONAL ARGUMENTS>`
+
+The help (-h) output is thus:
+```
+Updates the LGV_MeetingServer Database.
+	Usage:	-h: Help (This display)
+		-f: Force (Perform update, even if not scheduled)
+		-p: Physical Meetings Only (Virtual-only meetings are ignored)
+		-sv: Separate Organization for Virtual (Virtual meetings are stored, but given a different organization key. The -p flag is ignored)
+		If no arguments given, waits until the specified time has passed, and performs a -sv update of the database.
+```
+
+>**NOTE:** It is possible to prevent the `update` function from working from the HTTP invocation (only available via command line). This is so that we can regulate the updates, via things like [`cron`](https://en.wikipedia.org/wiki/Cron) tasks. This is done by setting the `$_use_cli_only_for_update` variable to `true`, in [the configuration file](https://github.com/LittleGreenViper/LGV_MeetingServer/blob/master/Tests/config/LGV_MeetingServer-Config.php).
 
 ## License
 
