@@ -176,19 +176,26 @@ if ( isset($_GET["cli"]) ) { // A call from the CLI means just do an update (for
             header('Content-Type: application/json');
             echo(get_server_info());
             exit;
-        } elseif ( !(isset($_use_cli_only_for_update) && $_use_cli_only_for_update) && "update" == strtolower($query[0]) ) {
-            $force = in_array("force", $query);
-            $physical_only = in_array("physical_only", $query);
-            $separate_virtual = in_array("separate_virtual", $query);
+        } elseif ( "update" == strtolower($query[0]) ) {
+            global $config_file_path;
+            include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
+            if ( !(isset($_use_cli_only_for_update) && $_use_cli_only_for_update) ) {
+                $force = in_array("force", $query);
+                $physical_only = in_array("physical_only", $query);
+                $separate_virtual = in_array("separate_virtual", $query);
 
-            $start = microtime(true);
-            $number_of_meetings = update_database($physical_only, $force, $separate_virtual);
-            $exchange_time = microtime(true) - $start;
-            if ( 0 < $number_of_meetings ) {
-                header('Content-Type: application/json');
-                echo("{\"number_of_meetings\": $number_of_meetings,\"time_in_seconds\":$exchange_time}");
+                $start = microtime(true);
+                $number_of_meetings = update_database($physical_only, $force, $separate_virtual);
+                $exchange_time = microtime(true) - $start;
+                if ( 0 < $number_of_meetings ) {
+                    header('Content-Type: application/json');
+                    echo("{\"number_of_meetings\": $number_of_meetings,\"time_in_seconds\":$exchange_time}");
+                } else {
+                    header("HTTP/1.1 204 No Content");
+                }
             } else {
-                header("HTTP/1.1 204 No Content");
+                header("HTTP/1.1 403 Not Authorized");
+                echo("NOT AUTHORIZED");
             }
             
             exit;
