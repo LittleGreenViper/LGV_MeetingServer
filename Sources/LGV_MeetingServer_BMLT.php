@@ -111,6 +111,8 @@ class BMLTServerInteraction extends AServiceInteraction {
         
                 if ( isset($meeting_object->lang_enum) && trim($meeting_object->lang_enum) ) {
                     $meeting["language"] = strtolower(trim($meeting_object->lang_enum));
+                } else {
+                    $meeting["language"] = "en";
                 }
             
                 if ( isset($meeting_object->comments) && trim($meeting_object->comments) ) {

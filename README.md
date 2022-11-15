@@ -286,7 +286,7 @@ Data will always be returned as an optimized [JSON](https://json.org) object, wi
 
 Here are the schemas for the various responses, assigned to the function:
 
-- **`update`**
+#### `update`
 
   >**NOTE:** It is possible to prevent the `update` function from working from the HTTP invocation (only available via command line). This is so that we can regulate the updates, via things like [`cron`](https://en.wikipedia.org/wiki/Cron) tasks. This is done by setting the `$_use_cli_only_for_update` variable to `true`, in [the configuration file](https://github.com/LittleGreenViper/LGV_MeetingServer/blob/master/Tests/config/LGV_MeetingServer-Config.php).
   
@@ -305,7 +305,7 @@ Here are the schemas for the various responses, assigned to the function:
   
   If the update is ignored (like the elapsed time period, specified by the variable `$_updateIntervalInSeconds`, in [the configuration file](https://github.com/LittleGreenViper/LGV_MeetingServer/blob/master/Tests/config/LGV_MeetingServer-Config.php), has not passed, no output is returned (You get [an HTTP 204](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/204) response).
 
-- **`info`**
+#### `Info`
 
   The `info` function returns a JSON object that looks (more or less) like this:
 ```
@@ -348,23 +348,40 @@ Here are the schemas for the various responses, assigned to the function:
 
   Here are the fields:
 
-*`last_update_timestamp`*
+- `last_update_timestamp`
   This is the [UNIX Timestamp](https://www.unixtimestamp.com) of the time that the last successful update of the database completed.
 
-*`organizations`*
+- `organizations`
   This is a list of objects, reflecting the "organizations," within the server.
   
   `total_meetings` has the total number of meetings, between all organizations.
 
   Under that, each organization is listed as a key (the `org_key` value), and the number of meetings in that organization.
 
-*`server_ids`*
+- `server_ids`
   This has the actual `server_id` values, amongst all the database table rows.
   
-*`services`*
+- `services`
   This lists each of the "reader module" services (currently, we only have [the BMLT](https://bmlt.app) supported). These list the service name, and each of the servers that it has accessed for meeting information, along with the server name, and how many meetings are assigned to that server. The key is the numerical server ID (as a string).
+  
+  - `service_name`
+    This is the name of the service.
+    
+  - `servers`
+    This has a list of servers.
+    
+    Each `server` is a JSON object, named as the ID (a string representation of the server's integer ID), with the following properties:
+    
+    - `name`
+      The readable string name for the server.
+      
+    - `url`
+      The API endpoint URL for the server.
+      
+    - `num_meetings`
+      The number of meetings, in the dataset, covered by this server.
 
-- **query**
+#### `query`
 
   The query, itself, returns a JSON object that has the following main structure:
   
@@ -385,6 +402,190 @@ Here are the schemas for the various responses, assigned to the function:
 
   We'll examine each of the two main objects, in detail, below.
   
+##### `meta`
+
+This contains information about the query. The number of fields can vary, depending on what type of query has been sent.
+
+Here is a sample of a "full-featured" `meta` object:
+
+```
+"meta": {
+    "total": 832,
+    "total_pages": 9,
+    "page_size": 100,
+    "page": 3,
+    "starting_index": 300,
+    "actual_size": 100,
+    "search_time": 0.16288781166077,
+    "center_lat": 40.7812,
+    "center_lng": -73.9665,
+    "radius_in_km": 100
+}
+```
+
+###### Always Available
+
+- `total`
+
+  This is a positive integer, with the total number of meetings returned in the found set. The number of meetings in the `meetings` array may be less than this.
+
+- `total_pages`
+
+  This is a positive 0-based integer, integer, with the total number of pages, required to represent the entire found set, if `page_size` is less than `total`. If this is a "metrics-only" query, then this will be 0.
+
+- `page_size`
+
+  This is a positive 0-based integer, integer, with the number of meetings per page. If this is a "metrics-only" query, then this will be 0. If the query is not paged, then this will be equal to `total`.
+
+- `page`
+
+  This is a positive 0-based integer, with the total number of pages, required to represent the entire found set, if `page_size` is less than `total`. If this is a "metrics-only" query, then this will be 0. If the response is not paged, it will be 1.
+
+- `starting_index`
+
+  This is a positive 0-based integer, with the index of the first meeting, in this page. For example, if we have more than 300 meetings, and a `page_size` of 100, and this is `page` 3, the `starting_index` value will be 300.
+
+- `actual_size`
+
+  This is a positive 0-based integer, with the actual number of meetings in this page. It will be `page_size`, or less.
+  
+- `search_time`
+
+  This is a positive floating point number, with the time, in seconds, that it took to perform the database query, and prepare the response. It does not include transmission time.
+
+###### Only Available for Geographic Queries
+
+- `center_lat`
+
+  This is a floating point number, between -90, and 90, with the latitude of the georaphic search center. It is in degrees.
+
+- `center_lng`
+
+  This is a floating point number, between -180, and 180, with the longitude of the georaphic search center. It is in degrees.
+
+- `radius_in_km`
+
+  This is a positive floating point number, with the last radius selected (if auto-radius), or the fixed radius, supplied to the query. It is in kilometers.
+  
+##### `meetings`
+
+This is an array of `meeting` JSON objects.
+
+Here is a sample of a "full-featured" `meeting` object:
+
+```
+{
+  "server_id": 122,
+  "meeting_id": 292,
+  "organization_key": "na",
+  "name": "Easy Does It",
+  "start_time": "20:00:00",
+  "weekday": 4,
+  "duration": 5400,
+  "language": "en",
+  "longitude": -83.4139,
+  "latitude": 36.0168,
+  "comments": "Zoom Meeting ID: 339 696 7992";
+  "formats": [
+    {
+      "key": "O",
+      "name": "Open",
+      "description": "This meeting is open to addicts and non-addicts alike. All are welcome.",
+      "language": "en"
+    },
+    {
+      "key": "H",
+      "name": "Handicapped accessible",
+      "description": "Handicapped accessible",
+      "language": "en"
+    },
+    {
+      "key": "BK",
+      "name": "Book Study",
+      "description": "Approved N.A. Books",
+      "language": "en"
+    },
+    {
+      "key": "IW",
+      "name": "It Works -How and Why",
+      "description": "This meeting is focused on discussion of the It Works -How and Why text.",
+      "language": "en"
+    },
+    {
+      "key": "BT",
+      "name": "Basic Text",
+      "description": "This meeting is focused on discussion of the Basic Text of Narcotics Anonymous.",
+      "language": "en"
+    }
+  ],
+  "physical_address": {
+    "street": "121 E. Meeting Street",
+    "name": "First United Methodist Church",
+    "neighborhood": "Other Side of the Tracks",
+    "city_subsection": "East Side Borough",
+    "city": "Dandridge",
+    "county": "Jefferson",
+    "province": "TN",
+    "postal_code": "37725"
+    "info": "Park across the street."
+  },
+  "virtual_information": {
+    "url": "https://us02web.zoom.us/j/3396967992?pwd=UVBacGFjN3dMdVVjKzkwYnhraC9HUT09",
+    "info": "Meeting ID: 339 696 7992";
+    "phone_number": "+1 301 715 8592"
+  }
+}
+```
+
+###### Always Available
+
+- `server_id`
+  This is a positive, nonzero integer, with the numerical ID of the server, responsible for this meeting. It is not unique, in the found dataset, and must be combined with `meeting_id`, to specify a unique table row (meeting).
+  
+- `meeting_id`
+  This is a positive, nonzero integer, with the numerical ID of the server, responsible for this meeting. It is unique, for the server, but not within the found dataset, and must be combined with `server_id`, to specify a unique table row (meeting).
+
+- `organization_key`
+  This is a string, with the organization that is assigned to this table row.
+  
+- `language`
+    If specified, the language that the meeting information is provided in. This is an [ISO 639](https://www.loc.gov/standards/iso639-2/php/code_list.php) code.
+  
+- `formats`
+  This is an array of format objects. It may be empty. Each format object is a simple JSON object, containing the following:
+  
+  - `key`
+    This is the string "key" of the format. It should be unique, within the format object.
+    
+  - `name`
+    This is a short name for the format.
+    
+  - `description`
+    This is a longer desctription of the format.
+    
+  - `language`
+    If specified, the language that the format information is provided in. This is an [ISO 639](https://www.loc.gov/standards/iso639-2/php/code_list.php) code.
+
+###### Only Supplied, If Available
+
+- `name`
+  The meeting name.
+  
+- `start_time`
+  The meeting start time, supplied as a string ("HH:MM:SS").
+  
+- `weekday`
+  The meeting weekday, expressed as a 1-based, positive integer, with 1 being Sunday, and 7 being Saturday. Any other value is not considered valid.
+  
+- `duration`
+  The meeting duration, expressed in seconds. This is a positive, 0-based integer, 0 - 86399.
+  
+- `longitude`
+  This is a floating point number, between -180.0, and 180.0. It is the longitude, in degrees, of the meeting's physical location. This will not be avaialbal for virtual-only meetings.
+  
+- `latitude`
+  This is a floating point number, between -90.0, and 90.0. It is the latitude, in degrees, of the meeting's physical location. This will not be avaialbal for virtual-only meetings.
+
 ## License
 
 Copyright 2022 [Little Green Viper Software Development LLC](https://littlegreenviper.com)
