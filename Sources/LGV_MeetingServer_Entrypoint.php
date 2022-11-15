@@ -176,7 +176,7 @@ if ( isset($_GET["cli"]) ) { // A call from the CLI means just do an update (for
             header('Content-Type: application/json');
             echo(get_server_info());
             exit;
-        } elseif ( (!isset($_use_cli_only_for_update) || !$_use_cli_only_for_update) && "update" == strtolower($query[0]) ) {
+        } elseif ( !(isset($_use_cli_only_for_update) && $_use_cli_only_for_update) && "update" == strtolower($query[0]) ) {
             $force = in_array("force", $query);
             $physical_only = in_array("physical_only", $query);
             $separate_virtual = in_array("separate_virtual", $query);
