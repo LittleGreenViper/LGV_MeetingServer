@@ -586,6 +586,49 @@ Here is a sample of a "full-featured" `meeting` object:
 - `latitude`
   This is a floating point number, between -90.0, and 90.0. It is the latitude, in degrees, of the meeting's physical location. This will not be avaialbal for virtual-only meetings.
 
+- `comments`
+  Any additional information.
+
+###### `physical_address`: Only Supplied, If Available (All Strings)
+
+- `street`
+  The street address.
+  
+- `name`
+  The name of the location, like "St. Mark's Place".
+  
+- `neighborhood`
+  The neighborhood (like "Hell's Kitchen.").
+  
+- `city_subsection`
+  The city borough or administrative district (like "Brooklyn," or "Cambridge").
+  
+- `city`
+  The municipality (town or city name, like "New York," or "Duluth").
+  
+- `county`
+  The county (like "Montgomery").
+  
+- `province`
+  The state or province (like "NY", or "ON").
+  
+- `postal_code`
+  The postal code (like 11731)
+  
+- `info`
+  Any additional location info (like parking or access information).
+
+###### `virtual_information`: Only Supplied, If Available (All Strings)
+
+- `url`
+  The virtual meeting HTTP URL (like the Zoom link, or the BlueJeans link).
+  
+- `info`
+  Additional virtual meeting info (like passwords or meeting IDs).
+  
+- `phone_number`
+  The dial-in phone number for the virtual meeting.
+
 ## License
 
 Copyright 2022 [Little Green Viper Software Development LLC](https://littlegreenviper.com)
