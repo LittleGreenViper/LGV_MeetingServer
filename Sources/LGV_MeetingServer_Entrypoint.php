@@ -33,15 +33,17 @@ defined( 'LGV_MeetingServer_Files' ) or die ( 'Cannot Execute Directly' );	// Ma
 
 require_once(dirname(__FILE__).'/LGV_MeetingServer.php');
 
-// See if this is an update call.
-if ( 'cli' == php_sapi_name() ) { // A call from the CLI means just do an update (for cron jobs).
-    $args = array_map('strtolower', $argv);
-    if ( 2 == count($args) && '-h' == $args[1] ) {
+if ( isset($argv) ) {
+    parse_str(implode('&', array_slice($argv, 1)), $_GET);
+}
+
+if ( isset($_GET["cli"]) ) { // A call from the CLI means just do an update (for cron jobs).
+    if ( isset($_GET['-h']) ) {
         echo("Updates the LGV_MeetingServer Database.\n\tUsage:\t-h: Help (This display)\n\t\t-f: Force (Perform update, even if not scheduled)\n\t\t-p: Physical Meetings Only (Virtual-only meetings are ignored)\n\t\t-sv: Separate Organization for Virtual (Virtual meetings are stored, but given a different organization key. The -p flag is ignored)\n\t\tIf no arguments given, waits until the specified time has passed, and performs a -sv update of the database.\n");
     } else {
-        $physical_only = in_array('-p', $args);
-        $forced = in_array('-f', $args);
-        $separate_virtual = 1 == count($args) || in_array('-sv', $args);
+        $forced = isset($_GET['-f']);
+        $physical_only = isset($_GET['-p']);
+        $separate_virtual = isset($_GET['-sv']);
         echo intval(update_database($physical_only, $forced, $separate_virtual));
     }
 } else {
@@ -162,7 +164,11 @@ if ( 'cli' == php_sapi_name() ) { // A call from the CLI means just do an update
     
             // Compress the response.
             header('Content-Type: application/json');
-            ob_start('ob_gzhandler');
+            if (extension_loaded('zlib')) {
+                ob_start();
+            } else {
+                ob_start('ob_gzhandler');
+            }
             echo(query_database($geocenter_lng, $geocenter_lat, $geo_radius, $minimum_found, $weekdays, $start_time, $end_time, $org_key, $ids, $page, $page_size));
             ob_end_flush();
             exit;
