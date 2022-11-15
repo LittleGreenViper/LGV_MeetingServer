@@ -35,7 +35,10 @@ include($config_file_path);
         <h1>LGV_MeetingServer Static Tests</h1>
         <ul>
             <li><h2>Query</h2><ul>
-                <li><h3>NOTE: These All Require That the Database be Initialized as Separate Virtual (<a href="./entrypoint.php?update&force&separate_virtual" target="_blank">Force Separate Virtual Update</a>)<h3></li>
+                <?php
+                if ( !isset($_use_cli_only_for_update) || !$_use_cli_only_for_update ) {
+                    echo('<li><h3>NOTE: These All Require That the Database be Initialized as Separate Virtual (<a href="./entrypoint.php?update&force&separate_virtual" target="_blank">Force Separate Virtual Update</a>)<h3></li>');
+                } ?>
                 <li><h4>NOTE: The response to most of these tests will be optimized JSON. This may not make much sense, unless you have a "prettify JSON" extension for your browser.<h4></li>
                 <li><h3>Open Searches</h3><ul>
                     <li><h4>All Meetings <em>(No Paging)</em></h4><ul>
