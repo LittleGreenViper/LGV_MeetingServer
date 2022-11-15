@@ -649,23 +649,34 @@ function get_server_info() {
         $ret["organizations"] = $organizations;
     }
 
+    $sql = "SELECT DISTINCT `server_id` FROM `".$_dbTableName."` WHERE 1";
+    $response = $pdo_instance->preparedStatement($sql, [], true);
+    
+    if ( !empty($response) && is_array($response) ) {
+        $server_ids = [];
+        
+        foreach ( $response as $server_id_ar ) {
+            if ( !empty($server_id_ar) && (0 < intval($server_id_ar['server_id'])) ) {
+                array_push($server_ids, intval($server_id_ar['server_id']) );
+            }
+        }
+        
+        $server_ids = array_unique($server_ids);
+        asort($server_ids);
+        $ret["server_ids"] = $server_ids;
+    }
+
     $services = [new BMLTServerInteraction()];
+    
     $services_response = [];
-    $server_ids = [];
     foreach ( $services as $service ) {
         $info = $service->service_info();
         
         if ( !empty($info) ) {
             $services_response[$info["service_name"]] = $info;
-            $server_ids_temp = array_map('intval', array_keys($info["servers"]));
-            $server_ids = array_merge($server_ids, $server_ids_temp);
         }
     }
 
-    $server_ids = array_unique($server_ids);
-    asort($server_ids);
-    
-    $ret["server_ids"] = array_values($server_ids);
     $ret["services"] = $services_response;
 
     return json_encode($ret);
