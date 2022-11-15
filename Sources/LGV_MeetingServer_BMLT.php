@@ -172,7 +172,11 @@ class BMLTServerInteraction extends AServiceInteraction {
                                 $format_ar["key"] = trim($format->key_string);
                                 $format_ar["name"] = trim($format->name_string);
                                 $format_ar["description"] = trim($format->description_string);
-                                $format_ar["language"] = strtolower(trim($format->lang));
+                                if ( isset($format->lang) && trim($format->lang) ) {
+                                    $format_ar["language"] = strtolower(trim($format->lang));
+                                } else {
+                                    $format_ar["language"] = "en";
+                                }
                                 array_push($meeting["formats"], $format_ar);
                             }
                         }
