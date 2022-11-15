@@ -185,6 +185,7 @@ Each query will result in a JSON response, consisting of two parts: `meta`, and 
 These are the refinements to the command requested by the `"query"` function.
 
 - **Paging**
+
   It is possible to "page" large query responses. This is the process of breaking up a very large response, into discrete "chunks." For example, if a query returned 3,000 meetings, it could be a lot of memory overhead to parse that much JSON, and you could also tie up the connection for a long time. That could be a problem, if there was "spotty" Internet service.
   
   Instead, what we do, is ask the server to break the response into "pages," and send us only the portion of the whole that is on a given "page."
@@ -202,7 +203,63 @@ These are the refinements to the command requested by the `"query"` function.
   **Just Getting the Paging Metrics**
   
   If you specify a `page_size` of 0, then only the "metrics" of the query response will be returned (how many meetings).
+  
+- **Organization Parameters**
+
+  We can search for meetings that have certain organization keys.
+  
+  - *org_key*
+  
+  This is a string, and specifies the organization we are filtering for. We can specify multiple values, separated by commas (,). Examples might be `org_key=na` (in-person NA meetings only), `org_key=virtual-na` (virtual NA meetings only), or `org_key=na,virtual-na` (both in-person, and virtual, NA meetings).
  
+- **Geographic Parameters**
+
+  You can search the database, based on a geographic center, and a prescribed (or implied) radius, around that center.
+  
+  - *geocenter_lng*
+  
+  This is the longitude of the geographic center. It is in degrees, as a floating-point number (-180.0 -> 180.0). If provided, you must also provide `geocenter_lat`.
+  
+  - *geocenter_lat*
+  
+  This is the latitude of the geographic center. It is in degrees, as a floating-point number (-90.0 -> 90.0). If provided, you must also provide `geocenter_lng`.
+  
+  Specifying these two coordinates will define a geographic search, but you still need to provide **at least one** of the following two parameters, in order to complete the geographic search specification:
+  
+  - *geo_radius*
+  
+  This is the radius of the search, as a fixed value, so every meeting that has its long/lat coordinates within this circle, will be returned. It is in kilometers, specified as a floating-point number.
+  
+  >**NOTE:** If you specify this, along with `minimum_found`, then this will be the maximum radius possible for an auto-radius search. If not provided, the maximum radius will be 10,000 Km.
+  
+  - *minimum_found*
+  
+  This will be a positive integer value, and will specify a "target" number of meetings to be found, by increasing the radius around the center, in steps, until at least this many meetings are found. The final radius will be returned in the "meta" object, in the search results.
+  
+  >**NOTE:** In most cases, this will be ***at least*** the number of meetings found, but, occasionally, there may be a few meetings not included. That is because there is a small amount of "slop" in the radius calculations.
+  
+  >**NOTE:** This minimum number will be applied ***after*** the other filter parameters, so, for example, if you are looking only for meetings on the weekend, the final radius is likely to be larger, than if you search for meetings that gather on any day.
+  
+- **Time And Day Parameters**
+
+  We have the ability to filter for meetings that occur only on certain weekdays, or that begin at certain times of the day. Times are integers (0 - 86399), given in seconds from midnight, this morning (00:00:00), and weekdays are integers (1-7) always 1 = Sunday, and 7 = Saturday, regardless of when the week starts, locally. You can specify more than one weekday (they are used in an "OR" fashion), and times are always *start* times (duration of a meeting is not taken into account).
+  
+  - *weekdays*
+  
+  This is one or more integers (1-7), separated by commas (,), if more than one weeekday is specified. An example of Sunday, Tuesday, and Thursday would be `weekdays=1,3,5`. In that case, any meeting that gathered on any of these days would be included, and meetings that gathered on other days, would be excluded.
+  
+  - *start_time*
+  
+  This means that meetings that start at, or after, the given time (seconds from midnight, this morning 0 - 86399), will be included in the found set.
+  
+  >**NOTE:** If `end_time` is specified, `end_time` must be greater than `start_time`, or it will be ignored (`start_time` is dominant).
+  
+  - *end_time*
+  
+  This means that meetings that start at, or before, the given time (seconds from midnight, this morning 0 - 86399), will be included in the found set.
+  
+  >**NOTE:** If `start_time` is specified, `end_time` must be greater than `start_time`, or it will be ignored (`start_time` is dominant).
+  
 ## License
 
 Copyright 2022 [Little Green Viper Software Development LLC](https://littlegreenviper.com)
