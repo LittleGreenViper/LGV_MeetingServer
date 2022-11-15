@@ -46,7 +46,7 @@ if ( isset($_GET["cli"]) ) { // A call from the CLI means just do an update (for
         $separate_virtual = isset($_GET['-sv']);
         echo intval(update_database($physical_only, $forced, $separate_virtual));
     }
-} else {
+} else if ( !isset($_GET["cli"]) ) {    // This is "stupid securiity." People can still force an update by mimicking the CLI parameters, but it prevents the casual idiots from messing us up, too much. It's not the end of the world, if they succeed, anyway.
     $query = explode("&", $_SERVER["QUERY_STRING"]);
     
     if ( isset($query) && is_array($query) && (0 < count($query)) ) {
