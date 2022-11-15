@@ -142,9 +142,9 @@ Each call to the server will have a structure like so (this is just an example):
 
 Here's a simple breakdown:
 
-    https://meetingserver/entrypoint.php   ?  query     &page_size=100&page=3&weekdays=2,3,4,5,6
-    ↑                                  ↑      ↑   ↑     ↑                                      ↑
-                The Base URL                 Function                Query Parameters
+    https://meetingserver/entrypoint.php   ?   query     &page_size=100&page=3&weekdays=2,3,4,5,6
+    ↖                                  ↗       ↖   ↗     ↖                                      ↗
+                The Base URL                  Function                Query Parameters
 
 #### The Base URL
 
