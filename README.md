@@ -184,6 +184,8 @@ Each query will result in a JSON response, consisting of two parts: `meta`, and 
 
 These are the refinements to the command requested by the `"query"` function.
 
+[The Live Test Page has examples of these.](https://littlegreenviper.com/LGV_MeetingServer/Tests/)
+
 - **Paging**
 
   It is possible to "page" large query responses. This is the process of breaking up a very large response, into discrete "chunks." For example, if a query returned 3,000 meetings, it could be a lot of memory overhead to parse that much JSON, and you could also tie up the connection for a long time. That could be a problem, if there was "spotty" Internet service.
@@ -259,6 +261,129 @@ These are the refinements to the command requested by the `"query"` function.
   This means that meetings that start at, or before, the given time (seconds from midnight, this morning 0 - 86399), will be included in the found set.
   
   >**NOTE:** If `start_time` is specified, `end_time` must be greater than `start_time`, or it will be ignored (`start_time` is dominant).
+  
+- **Individual (And Server) Meeting IDs**
+
+  It is possible to filter out an explicit (or "wildcard") IDs for meetings.
+  
+  - *ids*
+  
+  This will have integer pairs, given as "`(<SERVER ID>,<MEETING ID>)`". The parentheses are required, as is the `<SERVER ID>`. The `<MEETING ID>` is optional. If not provided, or set to 0 (or a non-integer chracter, such as "*"), then all meetings on that server are included in the found set. If provided, but the meeting is not available at that ID, the ID is considered invalid, and does not apply.
+  
+  These can be specified as multiple values, separated by commas (,). For example: `ids=(99,10),(99,11)` will target two meetings, on one server. `ids=(99,10),(100,10)` will target two meetings, on two different servers.
+  
+  **Server IDs and Meeting IDs**
+  
+  Every server that is queried for meetings, has a `server_id` column, which is a 1-based, positive integer ID, that is unique (but repeated for every meeting table row for that server). Every meeting has a `meeting_id` table column, which is unique, on the server. Between the two values, each meeting has a unique identifier on the server, and specifying "`(<SERVER ID>,<MEETING ID>)`" will target exactly one meeting row.
+  
+  **Wildcards**
+  
+  It is possible to specify "all the meetings provided by this server", by specifying only the `server_id` value. For exaple: `ids=(99)`,  `ids=(99,0)`,  `ids=(99,*)` all specify every meeting on the server identified by an ID of 99. `ids=(99),(100)` Will specify all the IDs in servers 99, and 100. Any servers and/or meetings, not mentioned in the `ids` parameter, will not be included in the found set.
+
+### The Response Data
+
+Data will always be returned as an optimized [JSON](https://json.org) object, with various formats, depending upon the request. If a field has no value, it is generally not included.
+
+Here are the schemas for the various responses, assigned to the function:
+
+- **`update`**
+
+  >**NOTE:** It is possible to prevent the `update` function from working from the HTTP invocation (only available via command line). This is so that we can regulate the updates, via things like [`cron`](https://en.wikipedia.org/wiki/Cron) tasks. This is done by setting the `$_use_cli_only_for_update` variable to `true`, in [the configuration file](https://github.com/LittleGreenViper/LGV_MeetingServer/blob/master/Tests/config/LGV_MeetingServer-Config.php).
+  
+  If an update is successful, it will return a respoonse like so:
+  
+```
+{
+  "number_of_meetings": 32790,
+  "time_in_seconds": 55.877379179001
+}
+```
+
+  The `number_of_meetings` value is the total number of meetings process, from all servers, in all services, and available for searching.
+  
+  The `time_in_seconds` value, is how long it took, to run the operation.
+  
+  If the update is ignored (like the elapsed time period, specified by the variable `$_updateIntervalInSeconds`, in [the configuration file](https://github.com/LittleGreenViper/LGV_MeetingServer/blob/master/Tests/config/LGV_MeetingServer-Config.php), has not passed, no output is returned (You get [an HTTP 204](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/204) response).
+
+- **`info`**
+
+  The `info` function returns a JSON object that looks (more or less) like this:
+```
+{
+    "last_update_timestamp": 1668520598,
+    "organizations": {
+        "total_meetings": 32689,
+        "na": 27908,
+        "virtual-na": 4781
+    },
+    "server_ids": [
+        99,
+         •
+         •
+         •
+        153
+    ],
+    "services": {
+        "BMLT": {
+          "service_name": "BMLT",
+          "servers": {
+            "99": {
+              "name": "Aotearoa New Zealand Region",
+              "url": "https://bmlt.nzna.org/bmlt/main_server/",
+              "num_meetings": 215
+            },
+                •
+                •
+                •
+            "153": {
+              "name": "Tri-State Region",
+              "url": "https://tsrscna.org/bmlt_dev/main_server/",
+              "num_meetings": 498
+            }
+          }
+        }
+    }
+}
+```
+
+  Here are the fields:
+
+*`last_update_timestamp`*
+  This is the [UNIX Timestamp](https://www.unixtimestamp.com) of the time that the last successful update of the database completed.
+
+*`organizations`*
+  This is a list of objects, reflecting the "organizations," within the server.
+  
+  `total_meetings` has the total number of meetings, between all organizations.
+
+  Under that, each organization is listed as a key (the `org_key` value), and the number of meetings in that organization.
+
+*`server_ids`*
+  This has the actual `server_id` values, amongst all the database table rows.
+  
+*`services`*
+  This lists each of the "reader module" services (currently, we only have [the BMLT](https://bmlt.app) supported). These list the service name, and each of the servers that it has accessed for meeting information, along with the server name, and how many meetings are assigned to that server. The key is the numerical server ID (as a string).
+
+- **query**
+
+  The query, itself, returns a JSON object that has the following main structure:
+  
+```
+{
+  "meta": {
+        •
+        •
+        •
+  },
+  "meetings": [
+        •
+        •
+        •
+  ]
+}
+```
+
+  We'll examine each of the two main objects, in detail, below.
   
 ## License
 
