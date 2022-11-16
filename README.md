@@ -330,7 +330,11 @@ Here are the schemas for the various responses, assigned to the function:
             "99": {
               "name": "Aotearoa New Zealand Region",
               "url": "https://bmlt.nzna.org/bmlt/main_server/",
-              "num_meetings": 215
+              "num_meetings": 215,
+              "organizations": [
+                 "na",
+                 "virtual-na"
+              ]
             },
                 •
                 •
@@ -380,6 +384,9 @@ Here are the schemas for the various responses, assigned to the function:
       
     - `num_meetings`
       The number of meetings, in the dataset, covered by this server.
+      
+    - `organizations`
+      The organizaions that the server contributes to.
 
 #### `query`
 

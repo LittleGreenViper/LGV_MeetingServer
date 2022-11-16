@@ -21,7 +21,7 @@
 
     [Little Green Viper Software Development LLC](https://littlegreenviper.com)
     
-    Version: 1.0.0
+    Version: 1.0.1
 */
 /***************************************************************************************************************************/
 /**
@@ -630,7 +630,7 @@ function get_server_info() {
         $total_meetings = intval($response[0]["count(*)"]);
     }
 
-    $sql = "SELECT DISTINCT `organization_key` FROM `".$_dbTableName."` WHERE 1";
+    $sql = "SELECT DISTINCT `organization_key` FROM `".$_dbTableName."` WHERE 1 ORDER BY `organization_key`";
     $response = $pdo_instance->preparedStatement($sql, [], true);
     
     if ( !empty($response) && is_array($response) ) {
@@ -680,13 +680,30 @@ function get_server_info() {
                 $servers = $info["servers"];
                 foreach ( $servers as $key => $value ) {
                     if ( 0 < intval($key) ) {
+                        $orgs = array();
                         $server_id = intval($key);
+                        $num_meetings = 0;
+
                         $sql = "SELECT COUNT(*) FROM (SELECT `id` FROM `".$_dbTableName."` WHERE `server_id`=$server_id) AS C";
                         $res_temp = $pdo_instance->preparedStatement($sql, [], true);
-                        $num_meetings = 0;
                         if ( isset($res_temp[0]["count(*)"]) ) {
                             $num_meetings = intval($res_temp[0]["count(*)"]);
                             $info["servers"][$server_id]["num_meetings"] = $num_meetings;
+                        }
+                        
+                        $sql = "SELECT DISTINCT `organization_key` FROM `".$_dbTableName."` WHERE `server_id`=$server_id ORDER BY `organization_key`";
+                        $response = $pdo_instance->preparedStatement($sql, [], true);
+                        if ( !empty($response) && is_array($response) ) {
+                            foreach ( $response as $org ) {
+                                if ( !empty($org["organization_key"]) ) {
+                                    $org_key = $org["organization_key"];
+                                    array_push($orgs, $org_key);
+                                }
+                            }
+                            
+                            if ( !empty($orgs) ) {
+                                $info["servers"][$server_id]["organizations"] = $orgs;
+                            }
                         }
                     }
                 }
