@@ -21,7 +21,7 @@
 
     [Little Green Viper Software Development LLC](https://littlegreenviper.com)
     
-    Version: 1.0.1
+    Version: 1.0.2
 */
 /***************************************************************************************************************************/
 /**
@@ -697,7 +697,13 @@ function get_server_info() {
                             foreach ( $response as $org ) {
                                 if ( !empty($org["organization_key"]) ) {
                                     $org_key = $org["organization_key"];
-                                    array_push($orgs, $org_key);
+                                    $sql = "SELECT COUNT(*) FROM (SELECT `id` FROM `".$_dbTableName."` WHERE `organization_key`=? AND `server_id`=?) AS C";
+                                    $res_temp_2 = $pdo_instance->preparedStatement($sql, [$org_key, $server_id], true);
+                                    $num_meetings = 0;
+                                    if ( isset($res_temp_2[0]["count(*)"]) ) {
+                                        $num_meetings = intval($res_temp_2[0]["count(*)"]);
+                                    }
+                                    $orgs[$org_key] = $num_meetings;
                                 }
                             }
                             

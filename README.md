@@ -331,10 +331,10 @@ Here are the schemas for the various responses, assigned to the function:
               "name": "Aotearoa New Zealand Region",
               "url": "https://bmlt.nzna.org/bmlt/main_server/",
               "num_meetings": 215,
-              "organizations": [
-                 "na",
-                 "virtual-na"
-              ]
+              "organizations": {
+                "na": 176,
+                "virtual-na": 39
+              }
             },
                 •
                 •
@@ -343,10 +343,10 @@ Here are the schemas for the various responses, assigned to the function:
               "name": "Tri-State Region",
               "url": "https://tsrscna.org/bmlt_dev/main_server/",
               "num_meetings": 498,
-              "organizations": [
-                 "na",
-                 "virtual-na"
-              ]
+              "organizations": {
+                "na": 484
+                "virtual-na": 14
+              }
             }
           }
         }
@@ -390,7 +390,7 @@ Here are the schemas for the various responses, assigned to the function:
       The number of meetings, in the dataset, covered by this server.
       
     - `organizations`
-      The organizaions that the server contributes to.
+      The organizaions that the server contributes to. Each is an array key, with the number of meetings assigned to it.
 
 #### `query`
 
