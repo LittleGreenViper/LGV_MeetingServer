@@ -21,7 +21,7 @@
 
     [Little Green Viper Software Development LLC](https://littlegreenviper.com)
     
-    Version: 1.0.2
+    Version: 1.0.3
 */
 /***************************************************************************************************************************/
 /**

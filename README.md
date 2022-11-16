@@ -651,7 +651,7 @@ Updates the LGV_MeetingServer Database.
 		-f: Force (Perform update, even if not scheduled)
 		-p: Physical Meetings Only (Virtual-only meetings are ignored)
 		-sv: Separate Organization for Virtual (Virtual meetings are stored, but given a different organization key. The -p flag is ignored)
-		If no arguments given, waits until the specified time has passed, and performs a -sv update of the database.
+		If no arguments given, waits until the specified time has passed, and performs a -p update of the database.
 ```
 
 >**NOTE:** It is possible to prevent the `update` function from working from the HTTP invocation (only available via command line). This is so that we can regulate the updates, via things like [`cron`](https://en.wikipedia.org/wiki/Cron) tasks. This is done by setting the `$_use_cli_only_for_update` variable to `true`, in [the configuration file](https://github.com/LittleGreenViper/LGV_MeetingServer/blob/master/Tests/config/LGV_MeetingServer-Config.php).
