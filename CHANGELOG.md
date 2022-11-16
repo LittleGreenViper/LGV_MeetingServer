@@ -1,4 +1,4 @@
-**1.0.2** *November 16, 2022*
+**1.0.3** *November 16, 2022*
 
 - No API change. Just corrected some documentation.
 
