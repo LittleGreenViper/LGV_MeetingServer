@@ -527,6 +527,8 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
                 $response = $pdo_instance->preparedStatement($sql, $params, true);
                 $current_step *= 1.1;
             }
+       
+            $current_step = min($geo_radius, $current_step);
         } else {
             $sql =  "";
         

@@ -118,10 +118,11 @@ include($config_file_path);
                         <li><a href="./entrypoint.php?query&org_key=na&geocenter_lng=-73.9442&geocenter_lat=40.6782&minimum_found=1000&page_size=100&page=3" target="_blank">Search for about 1000 meetings, Brooklyn (No Limit, Page Size: 100, Page 3)</a></li>
                     </ul></li>
                     <li><h4>Auto-Radius, Paging, Weekday Filtering</h4><ul>
-                        <li><a href="./entrypoint.php?query&org_key=na&weekdays=1,7&geocenter_lng=-73.9442&geocenter_lat=40.6782&minimum_found=1000&page_size=100&page=5" target="_blank">Search for about 1000 In-Person meetings on the Weekend, Brooklyn (No Limit, Page Size: 100, Page 5)</a></li>
-                        <li><h5>Weekday, Org, and Time Filtering</h5><ul>
-                            <li><a href="./entrypoint.php?query&geocenter_lng=-73.9442&geocenter_lat=40.6782&minimum_found=10&weekdays=2,3,4,5,6&start_time=64800&end_time=72000&org_key=na" target="_blank">Find Around 10 In-person meetings, during the week (Mon-Fri), starting between 6 - 8PM (Brooklyn)</a></li>
-                        </ul></li>
+                        <li><a href="./entrypoint.php?query&org_key=na&weekdays=1,7&geocenter_lng=-73.9442&geocenter_lat=40.6782&minimum_found=1000&page_size=100&page=5" target="_blank">Search for about 1000 In-Person meetings on the Weekend, Brooklyn</a> <em>(No Limit, Page Size: 100, Page 5)</em></li>
+                    </ul></li>
+                    <li><h4>Auto-Radius, Weekday, Org, and Time Filtering</h4><ul>
+                        <li><a href="./entrypoint.php?query&geocenter_lng=-73.9442&geocenter_lat=40.6782&minimum_found=100&weekdays=2,3,4,5,6&page_size=5&page=2&start_time=64800&end_time=72000&org_key=na" target="_blank">Find Around 100 In-person meetings, during the week (Mon-Fri), starting between 6 - 8PM (Brooklyn)</a> <em>(No Limit, Page Size: 10, Page 2)</em></li>
+                        <li><a href="./entrypoint.php?query&geo_radius=5&geocenter_lng=-73.9442&geocenter_lat=40.6782&minimum_found=100&weekdays=2,3,4,5,6&start_time=64800&end_time=72000&org_key=na" target="_blank">Find Around 100 In-person meetings, during the week (Mon-Fri), starting between 6 - 8PM (Brooklyn)</a> <em>(5Km Limit, No Paging)</em></li>
                     </ul></li>
                 </ul></li>
                 <li><h3>Individual IDs</h3><ul>
