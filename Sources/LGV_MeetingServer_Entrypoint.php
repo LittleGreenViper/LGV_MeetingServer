@@ -39,7 +39,7 @@ if ( isset($argv) ) {
 
 if ( isset($_GET["cli"]) ) { // A call from the CLI means just do an update (for cron jobs).
     if ( isset($_GET['-h']) ) {
-        echo("Updates the LGV_MeetingServer Database.\n\tUsage:\t-h: Help (This display)\n\t\t-f: Force (Perform update, even if not scheduled)\n\t\t-p: Physical Meetings Only (Virtual-only meetings are ignored)\n\t\t-sv: Separate Organization for Virtual (Virtual meetings are stored, but given a different organization key. The -p flag is ignored)\n\t\tIf no arguments given, waits until the specified time has passed, and performs a -p update of the database.\n");
+        echo("Updates the LGV_MeetingServer Database.\n\tUsage:\t-h: Help (This display)\n\t\t-f: Force (Perform update, even if not scheduled)\n\t\t-p: Physical Meetings Only (Virtual-only meetings are ignored)\n\t\t-sv: Separate Organization for Virtual (Virtual meetings are stored, but given a different organization key. The -p flag is ignored)\n\t\tIf no arguments given, waits until the specified time has passed, and performs an update of the database.\nIf no -p or -sv is presented, the entire server databse (both physical and virtual) is read, and stored as a single organization.\n");
     } else {
         $forced = isset($_GET['-f']);
         $physical_only = isset($_GET['-p']);

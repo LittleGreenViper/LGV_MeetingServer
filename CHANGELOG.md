@@ -1,3 +1,7 @@
+**1.0.5** *November 16, 2022*
+
+- The help text wasn't exactly right, for the update.
+
 **1.0.4** *November 16, 2022*
 
 - Added the server version to the server info response.
