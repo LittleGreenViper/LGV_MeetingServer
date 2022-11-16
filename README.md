@@ -310,6 +310,7 @@ Here are the schemas for the various responses, assigned to the function:
   The `info` function returns a JSON object that looks (more or less) like this:
 ```
 {
+    "server_version": "1.0.4",
     "last_update_timestamp": 1668520598,
     "organizations": {
         "total_meetings": 32689,
@@ -356,6 +357,9 @@ Here are the schemas for the various responses, assigned to the function:
 
   Here are the fields:
 
+- `server_version`
+  The server version, as a simple [semantic version](https://semver.org) (as a string).
+  
 - `last_update_timestamp`
   This is the [UNIX Timestamp](https://www.unixtimestamp.com) of the time that the last successful update of the database completed.
 

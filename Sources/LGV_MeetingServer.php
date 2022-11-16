@@ -20,8 +20,6 @@
     CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     [Little Green Viper Software Development LLC](https://littlegreenviper.com)
-    
-    Version: 1.0.3
 */
 /***************************************************************************************************************************/
 /**
@@ -34,6 +32,8 @@ require_once(dirname(__FILE__).'/LGV_MeetingServer_BMLT.php');
 defined( 'LGV_DB_CATCHER' ) or define( 'LGV_DB_CATCHER', 1 );
 
 require_once(dirname(__FILE__).'/LGV_MeetingServer_PDO.class.php');
+
+define('__SERVER_VERSION__', "1.0.4");  // The current server version.
 
 // MARK: - Internal Functions -
 
@@ -606,7 +606,7 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
 \returns a JSON object, with the server information.
  */
 function get_server_info() {
-    $ret = [];
+    $ret = ["server_version" => __SERVER_VERSION__];
     
     global $config_file_path;
     include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.

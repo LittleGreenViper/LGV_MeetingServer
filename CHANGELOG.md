@@ -1,3 +1,7 @@
+**1.0.4** *November 16, 2022*
+
+- Added the server version to the server info response.
+
 **1.0.3** *November 16, 2022*
 
 - No API change. Just corrected some documentation.
