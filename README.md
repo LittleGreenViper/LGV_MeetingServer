@@ -342,7 +342,11 @@ Here are the schemas for the various responses, assigned to the function:
             "153": {
               "name": "Tri-State Region",
               "url": "https://tsrscna.org/bmlt_dev/main_server/",
-              "num_meetings": 498
+              "num_meetings": 498,
+              "organizations": [
+                 "na",
+                 "virtual-na"
+              ]
             }
           }
         }
