@@ -163,6 +163,7 @@ class BMLTServerInteraction extends AServiceInteraction {
                         $meeting["formats"] = [];
                         foreach($format_objects as $format) {
                             if ( in_array($format->id, $id_list) ) {
+                                $format_ar["id"] = intval($format->id);
                                 $format_ar["key"] = trim($format->key_string);
                                 $format_ar["name"] = trim($format->name_string);
                                 $format_ar["description"] = trim($format->description_string);

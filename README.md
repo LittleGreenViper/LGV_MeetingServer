@@ -504,30 +504,35 @@ Here is a sample of a "full-featured" `meeting` object:
   "comments": "Zoom Meeting ID: 339 696 7992";
   "formats": [
     {
+      "id": 17,
       "key": "O",
       "name": "Open",
       "description": "This meeting is open to addicts and non-addicts alike. All are welcome.",
       "language": "en"
     },
     {
+      "id": 33,
       "key": "H",
       "name": "Handicapped accessible",
       "description": "Handicapped accessible",
       "language": "en"
     },
     {
+      "id": 36,
       "key": "BK",
       "name": "Book Study",
       "description": "Approved N.A. Books",
       "language": "en"
     },
     {
+      "id": 13,
       "key": "IW",
       "name": "It Works -How and Why",
       "description": "This meeting is focused on discussion of the It Works -How and Why text.",
       "language": "en"
     },
     {
+      "id": 3,
       "key": "BT",
       "name": "Basic Text",
       "description": "This meeting is focused on discussion of the Basic Text of Narcotics Anonymous.",
@@ -567,8 +572,11 @@ Here is a sample of a "full-featured" `meeting` object:
 - `formats`
   This is an array of format objects. It may be empty. Each format object is a simple JSON object, containing the following:
   
+  - `id`
+    This is the integer ID of the format. It should be consistent, throughout the found set.
+  
   - `key`
-    This is the string "key" of the format. It should be unique, within the format object.
+    This is the string "key" of the format. It should be consistent, throughout the found set.
     
   - `name`
     This is a short name for the format.

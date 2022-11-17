@@ -1,3 +1,7 @@
+**1.1.0** *November 17, 2022*
+
+- I needed to add the ID to each format. This is a slight API change.
+
 **1.0.5** *November 16, 2022*
 
 - The help text wasn't exactly right, for the update.

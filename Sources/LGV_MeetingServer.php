@@ -33,7 +33,7 @@ defined( 'LGV_DB_CATCHER' ) or define( 'LGV_DB_CATCHER', 1 );
 
 require_once(dirname(__FILE__).'/LGV_MeetingServer_PDO.class.php');
 
-define('__SERVER_VERSION__', "1.0.5");  // The current server version.
+define('__SERVER_VERSION__', "1.1.0");  // The current server version.
 
 // MARK: - Internal Functions -
 
