@@ -112,11 +112,13 @@ class BMLTServerInteraction extends AServiceInteraction {
                 if ( isset($meeting_object->comments) && trim($meeting_object->comments) ) {
                     $meeting["comments"] = trim($meeting_object->comments);
                 }
-        
-                if ( isset($meeting_object->location_street) && trim($meeting_object->location_street) && isset($meeting_object->longitude) && isset($meeting_object->latitude) ) {
+                
+                if ( (!isset($meeting_object->venue_type) || (isset($meeting_object->venue_type) && ("3" != $meeting_object->venue_type))) || (isset($meeting_object->location_street) && trim($meeting_object->location_street) && isset($meeting_object->longitude) && isset($meeting_object->latitude)) ) {
                     $meeting["physical_location"]["longitude"] = floatval($meeting_object->longitude);
                     $meeting["physical_location"]["latitude"] = floatval($meeting_object->latitude);
-                    $meeting["physical_location"]["street"] = trim($meeting_object->location_street);
+                    if ( isset($meeting_object->location_street) && trim($meeting_object->location_street) ) {
+                        $meeting["physical_location"]["street"] = trim($meeting_object->location_street);
+                    }
                     if ( isset($meeting_object->location_text) && trim($meeting_object->location_text) ) {
                         $meeting["physical_location"]["name"] = trim($meeting_object->location_text);
                     }
@@ -145,18 +147,20 @@ class BMLTServerInteraction extends AServiceInteraction {
                         $meeting["physical_location"]["info"] = trim($meeting_object->location_info);
                     }
                 }
-        
-                if ( isset($meeting_object->virtual_meeting_link) && trim($meeting_object->virtual_meeting_link) ) {
-                    $meeting["virtual_meeting_info"]["url"] = trim($meeting_object->virtual_meeting_link);
-                    if ( isset($meeting_object->virtual_meeting_additional_info) && trim($meeting_object->virtual_meeting_additional_info) ) {
-                        $meeting["virtual_meeting_info"]["info"] = trim($meeting_object->virtual_meeting_additional_info);
-                    }
+                
+                if ( !isset($meeting_object->venue_type) || (isset($meeting_object->venue_type) && "1" != $meeting_object->venue_type) ) {
+                    if ( isset($meeting_object->virtual_meeting_link) && trim($meeting_object->virtual_meeting_link) ) {
+                        $meeting["virtual_meeting_info"]["url"] = trim($meeting_object->virtual_meeting_link);
+                        if ( isset($meeting_object->virtual_meeting_additional_info) && trim($meeting_object->virtual_meeting_additional_info) ) {
+                            $meeting["virtual_meeting_info"]["info"] = trim($meeting_object->virtual_meeting_additional_info);
+                        }
             
-                    if ( isset($meeting_object->phone_meeting_number) && trim($meeting_object->phone_meeting_number) ) {
-                        $meeting["virtual_meeting_info"]["phone_number"] = trim($meeting_object->phone_meeting_number);
+                        if ( isset($meeting_object->phone_meeting_number) && trim($meeting_object->phone_meeting_number) ) {
+                            $meeting["virtual_meeting_info"]["phone_number"] = trim($meeting_object->phone_meeting_number);
+                        }
                     }
                 }
-        
+                
                 if ( isset($format_objects) && !empty($format_objects) && isset($meeting_object->format_shared_id_list) && !empty($meeting_object->format_shared_id_list) ) {
                     $id_list = array_map('intval', explode(",", $meeting_object->format_shared_id_list));
                     if ( !empty($id_list) ) {
