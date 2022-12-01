@@ -205,7 +205,7 @@ These are the refinements to the command requested by the `"query"` function.
   
   - *page*
   
-  This is which page to send. It is 0-based, so the pages are numbered as `0..<ceil(total_meetings/page_size)`, in range nomenclature. If `page_size` is not provided, or is 0, this is ignored.
+  This is which page to send. It is 0-based, so the pages are numbered as `0..<ceil(total_meetings/page_size)`, in range nomenclature. If `page_size` is not provided, or is 0, this is ignored. Leaving this query argument out, results in page 0 being returned (or all of the data, if `page_size` is also left out, or larger than the complete meeting database size).
   
   **Just Getting the Paging Metrics**
   
