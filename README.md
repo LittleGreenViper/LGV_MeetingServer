@@ -196,7 +196,7 @@ These are the refinements to the command requested by the `"query"` function.
   
   Instead, what we do, is ask the server to break the response into "pages," and send us only the portion of the whole that is on a given "page."
   
-  For example, we could break the 3,000 meeting response into 30 pages of 100 meetings, then ask for Page 0 (0 ... 299), Page 1 (300 ... 399), etc.
+  For example, we could break the 3,000 meeting response into 30 pages of 100 meetings, then ask for Page 0 (0 ... 99), Page 1 (100 ... 199), Page 2 (200 ... 299), etc.
   
   - *page_size*
   
