@@ -279,7 +279,7 @@ These are the refinements to the command requested by the `"query"` function.
   
   **Server IDs and Meeting IDs**
   
-  Every server that is queried for meetings, has a `server_id` column, which is a 1-based, positive integer ID, that is unique (but repeated for every meeting table row for that server). Every meeting has a `meeting_id` table column, which is unique, on the server. Between the two values, each meeting has a unique identifier on the server, and specifying "`(<SERVER ID>,<MEETING ID>)`" will target exactly one meeting row.
+  Every server that is queried for meetings, has a `server_id` column, which is a 1-based, positive integer ID, that is unique (but repeated for every meeting table row for that server). Every meeting has a `meeting_id` table column, which is unique, on the meeting's server. Between the two values, each meeting has a unique identifier on the `LGV_MeetingServer` database server, and specifying "`(<SERVER ID>,<MEETING ID>)`" will target exactly one meeting row.
   
   **Wildcards**
   
