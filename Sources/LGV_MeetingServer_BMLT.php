@@ -32,6 +32,9 @@
  */
 defined( 'LGV_MeetingServer_Files' ) or die ( 'Cannot Execute Directly' );	// Makes sure that this file is in the correct context.
 
+define( '__VENUE_TYPE_INPERSON', "1" );
+define( '__VENUE_TYPE_VIRTUAL', "2" );
+define( '__VENUE_TYPE_HYBRID', "3" );
 
 /***************************************************************************************************************************/
 /**
@@ -78,7 +81,7 @@ class BMLTServerInteraction extends AServiceInteraction {
                                                             $physical_only = false,     ///< OPTIONAL BOOLEAN: If true (default is false), then only meetings that have a physical location will be returned.
                                                             $separate_virtual = false   ///< OPTIONAL BOOLEAN: If true (default is false), then virtual-only meetings will be counted, but will be assigned a "virtual-%s" (with "%s" being the org key) org key.
                                                         ) {
-        $json_data = self::_call_URL("$url/client_interface/json/?switcher=GetSearchResults&get_used_formats=1");
+        $json_data = self::_call_URL($url);
         $decoded_json = json_decode($json_data);
         $meeting_objects = isset($decoded_json->meetings) ? $decoded_json->meetings : NULL;
         $format_objects = isset($decoded_json->formats) ? $decoded_json->formats : NULL;
@@ -113,7 +116,7 @@ class BMLTServerInteraction extends AServiceInteraction {
                     $meeting["comments"] = trim($meeting_object->comments);
                 }
                 
-                if ( (!isset($meeting_object->venue_type) || (isset($meeting_object->venue_type) && ("3" != $meeting_object->venue_type))) || (isset($meeting_object->location_street) && trim($meeting_object->location_street) && isset($meeting_object->longitude) && isset($meeting_object->latitude)) ) {
+                if ( (!isset($meeting_object->venue_type) || (isset($meeting_object->venue_type) && (__VENUE_TYPE_VIRTUAL != $meeting_object->venue_type))) || (isset($meeting_object->location_street) && trim($meeting_object->location_street) && isset($meeting_object->longitude) && isset($meeting_object->latitude)) ) {
                     $meeting["physical_location"]["longitude"] = floatval($meeting_object->longitude);
                     $meeting["physical_location"]["latitude"] = floatval($meeting_object->latitude);
                     if ( isset($meeting_object->location_street) && trim($meeting_object->location_street) ) {
@@ -148,7 +151,7 @@ class BMLTServerInteraction extends AServiceInteraction {
                     }
                 }
                 
-                if ( !isset($meeting_object->venue_type) || (isset($meeting_object->venue_type) && "1" != $meeting_object->venue_type) ) {
+                if ( !isset($meeting_object->venue_type) || (isset($meeting_object->venue_type) && __VENUE_TYPE_INPERSON != $meeting_object->venue_type) ) {
                     if ( isset($meeting_object->virtual_meeting_link) && trim($meeting_object->virtual_meeting_link) ) {
                         $meeting["virtual_meeting_info"]["url"] = trim($meeting_object->virtual_meeting_link);
                         if ( isset($meeting_object->virtual_meeting_additional_info) && trim($meeting_object->virtual_meeting_additional_info) ) {
@@ -277,7 +280,7 @@ class BMLTServerInteraction extends AServiceInteraction {
         $all_meetings = 0;
         $server_list = self::_read_bmlt_server_list();
         foreach ( $server_list as $server ) {
-            $dataURL = $server->rootURL."client_interface/json/?switcher=GetSearchResults&get_used_formats=1";
+            $dataURL = $server->rootURL."client_interface/json/?switcher=GetSearchResults&get_used_formats=1&callingApp=LGV_MeetingServer";
             $meetings = self::_read_bmlt_server_meetings($dataURL, intval($server->id), $physical_only, $separate_virtual);
             $all_meetings += self::_save_bmlt_meetings_into_db($pdo_instance, $table_name, $meetings);
         }

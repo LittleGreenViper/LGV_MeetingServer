@@ -1,3 +1,7 @@
+**1.1.2** *December 1, 2022*
+
+- Cleaned up the `venue_type` field parsing.
+
 **1.1.1** *December 1, 2022*
 
 - If the `venue_type` field is returned from a BMLT server, that is used to filter for in-person vs. virtual.

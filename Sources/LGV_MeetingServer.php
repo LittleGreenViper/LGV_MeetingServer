@@ -33,7 +33,7 @@ defined( 'LGV_DB_CATCHER' ) or define( 'LGV_DB_CATCHER', 1 );
 
 require_once(dirname(__FILE__).'/LGV_MeetingServer_PDO.class.php');
 
-define('__SERVER_VERSION__', "1.1.1");  // The current server version.
+define('__SERVER_VERSION__', "1.1.2");  // The current server version.
 
 // MARK: - Internal Functions -
 
@@ -365,9 +365,9 @@ function update_database(   $physical_only = false,     ///< OPTIONAL BOOLEAN: I
         $lapsed_time = time() - intval($lastupdate_response);
         if ( (!_data_table_exists($pdo_instance) || $force || ($_updateIntervalInSeconds < $lapsed_time)) && _initialize_main_database($pdo_instance, $_dbTempTableName) ) {
             $number_of_meetings = $bmltClass->process_all_meetings($pdo_instance, $_dbTempTableName, $physical_only, $separate_virtual);
-            $rename_sql = "DROP TABLE IF EXISTS `$_dbTableName`;RENAME TABLE `$_dbTempTableName` TO `$_dbTableName`;UPDATE `$_dbMetaTableName` SET `last_update`=? WHERE 1;";
-            $pdo_instance->preparedStatement($rename_sql, [time()]);
             if ( 0 < $number_of_meetings ) {
+                $rename_sql = "DROP TABLE IF EXISTS `$_dbTableName`;RENAME TABLE `$_dbTempTableName` TO `$_dbTableName`;UPDATE `$_dbMetaTableName` SET `last_update`=? WHERE 1;";
+                $pdo_instance->preparedStatement($rename_sql, [time()]);
                 return $number_of_meetings;
             }
         }
@@ -760,7 +760,7 @@ abstract class AServiceInteraction {
                                     $table_name,        ///< REQUIRED: The name of the table to be used. This will not be cleared or initialized.
                                     $physical_only,     ///< OPTIONAL BOOLEAN: If true (default is false), then only meetings that have a physical location will be returned.
                                     $separate_virtua    ///< OPTIONAL BOOLEAN: If true (default is false), then virtual-only meetings will be counted, but will be assigned a "virtual-%s" (with "%s" being the org key) org key.
-                                ) { }
+                                ) { return 0; }
                                 
     /***********************************************************************************************************************/
     /**
