@@ -201,6 +201,7 @@ These are the refinements to the command requested by the `"query"` function.
   - *page_size*
   
   This is the size of each page. It is 1-based. In the above example, this would be 100.
+  > NOTE: If you set this to 0, then no actual results will be returned, and the `meta` property will contain the number of meetings that would be returned, if it were not zero. If you do not send this query argument, then the results will not be paged.
   
   - *page*
   
