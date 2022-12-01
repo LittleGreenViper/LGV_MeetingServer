@@ -205,7 +205,7 @@ These are the refinements to the command requested by the `"query"` function.
   
   - *page*
   
-  This is which page to send. It is 0-based, so page 0, is 0 -> `page_size` - 1 meetings. If `page_size` is not provided, this is ignored.
+  This is which page to send. It is 0-based, so page 0, is 0 -> `page_size` - 1 meetings. If `page_size` is not provided, or is 0, this is ignored.
   
   **Just Getting the Paging Metrics**
   
