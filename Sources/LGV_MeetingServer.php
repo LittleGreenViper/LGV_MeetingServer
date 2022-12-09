@@ -742,6 +742,7 @@ abstract class AServiceInteraction {
         curl_setopt($curl, CURLOPT_HEADER, false);          // Do not return any headers, please.
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);   // Please return to sender as a function response.
         curl_setopt($curl, CURLOPT_VERBOSE, false);         // Let's keep this thing simple.
+        curl_setopt($curl, CURLOPT_USERAGENT, 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:105.0) Gecko/20100101 Firefox/105.0');
     
         $result = curl_exec($curl); // Do it to it.
 
