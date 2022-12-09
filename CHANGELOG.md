@@ -1,3 +1,7 @@
+**1.1.3** *December 9, 2022*
+
+- Added a user agent to the cURL call, as it was being blocked.
+
 **1.1.2** *December 1, 2022*
 
 - Cleaned up the `venue_type` field parsing.
