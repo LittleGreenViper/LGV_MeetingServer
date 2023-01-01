@@ -295,7 +295,7 @@ Here are the schemas for the various responses, assigned to the function:
 
   >**NOTE:** It is possible to prevent the `update` function from working from the HTTP invocation (only available via command line). This is so that we can regulate the updates, via things like [`cron`](https://en.wikipedia.org/wiki/Cron) tasks. This is done by setting the `$_use_cli_only_for_update` variable to `true`, in [the configuration file](https://github.com/LittleGreenViper/LGV_MeetingServer/blob/master/Tests/config/LGV_MeetingServer-Config.php).
   
-  If an update is successful, it will return a respoonse like so:
+  If an update is successful, it will return a response like so:
   
 ```
 {
