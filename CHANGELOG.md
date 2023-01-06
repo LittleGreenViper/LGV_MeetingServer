@@ -1,3 +1,7 @@
+**1.1.4** *January 6, 2023*
+
+- Small change to the user agent, to make it a generic Linux Firefox one, in a pathetic effort to avoid being put on naughty lists.
+
 **1.1.3** *December 9, 2022*
 
 - Added a user agent to the cURL call, as it was being blocked.
