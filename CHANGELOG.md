@@ -1,3 +1,7 @@
+**1.1.5** *March 20, 2023*
+
+- Some virtual meetings only provide a phone number (no URI), so I just look for that, if no URI is found.
+
 **1.1.4** *January 6, 2023*
 
 - Small change to the user agent, to make it a generic Linux Firefox one, in a pathetic effort to avoid being put on naughty lists.

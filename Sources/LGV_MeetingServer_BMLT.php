@@ -161,6 +161,8 @@ class BMLTServerInteraction extends AServiceInteraction {
                         if ( isset($meeting_object->phone_meeting_number) && trim($meeting_object->phone_meeting_number) ) {
                             $meeting["virtual_meeting_info"]["phone_number"] = trim($meeting_object->phone_meeting_number);
                         }
+                    } elseif ( isset($meeting_object->phone_meeting_number) && trim($meeting_object->phone_meeting_number) ) {
+                        $meeting["virtual_meeting_info"]["phone_number"] = trim($meeting_object->phone_meeting_number);
                     }
                 }
                 
