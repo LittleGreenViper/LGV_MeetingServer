@@ -164,6 +164,10 @@ class BMLTServerInteraction extends AServiceInteraction {
                     } elseif ( isset($meeting_object->phone_meeting_number) && trim($meeting_object->phone_meeting_number) ) {
                         $meeting["virtual_meeting_info"]["phone_number"] = trim($meeting_object->phone_meeting_number);
                     }
+                
+                    if ( isset($meeting_object->time_zone) && trim($meeting_object->time_zone) ) {
+                        $meeting["virtual_meeting_info"]["time_zone"] = trim($meeting_object->time_zone);
+                    }
                 }
                 
                 if ( isset($format_objects) && !empty($format_objects) && isset($meeting_object->format_shared_id_list) && !empty($meeting_object->format_shared_id_list) ) {
@@ -246,6 +250,7 @@ class BMLTServerInteraction extends AServiceInteraction {
             } else {
                 array_push($params, "");
             }
+            
             if ( isset($meeting["physical_location"]) && !empty($meeting["physical_location"]) ) {
                 $_json = serialize($meeting["physical_location"]);
                 array_push($params, $_json);
