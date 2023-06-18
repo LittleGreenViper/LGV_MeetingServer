@@ -81,6 +81,8 @@ class BMLTServerInteraction extends AServiceInteraction {
                                                             $physical_only = false,     ///< OPTIONAL BOOLEAN: If true (default is false), then only meetings that have a physical location will be returned.
                                                             $separate_virtual = false   ///< OPTIONAL BOOLEAN: If true (default is false), then virtual-only meetings will be counted, but will be assigned a "virtual-%s" (with "%s" being the org key) org key.
                                                         ) {
+        global $config_file_path;
+        include($config_file_path);
         $json_data = self::_call_URL($url);
         $decoded_json = json_decode($json_data);
         $meeting_objects = isset($decoded_json->meetings) ? $decoded_json->meetings : NULL;
@@ -190,6 +192,20 @@ class BMLTServerInteraction extends AServiceInteraction {
                         }
                     }
                 }
+                
+                $existing_timezone = isset($meeting_object->time_zone) ? trim(strval($meeting_object->time_zone)) : '';
+                
+                if (!empty($existing_timezone)) {
+                    $meeting["time_zone"] = $existing_timezone;
+                } elseif (isset($_timezoneServerURI) && !empty($_timezoneServerURI) && isset($meeting_object->longitude) && isset($meeting_object->latitude)) {
+                    $uri = $_timezoneServerURI.'?';
+                    if (isset($_timezoneServerSecret) && !empty($_timezoneServerSecret)) {
+                        $uri .= "secret=$_timezoneServerSecret&";
+                    }
+                    $uri .= 'll='.floatval($meeting_object->longitude).','.floatval($meeting_object->latitude);
+                    $new_tz = self::_call_URL($uri);
+                    $meeting["time_zone"] = $new_tz;
+                }
             
                 if ( isset($meeting["physical_location"]) || !$physical_only || $separate_virtual ) {
                     if ( $separate_virtual && !isset($meeting["physical_location"]) ) {
@@ -199,7 +215,7 @@ class BMLTServerInteraction extends AServiceInteraction {
                 }
             }
     
-            usort($meetings, "self::_sort_bmlt_meetings");
+            usort($meetings, "BMLTServerInteraction::_sort_bmlt_meetings");
         }
     
         return $meetings;
@@ -217,17 +233,18 @@ class BMLTServerInteraction extends AServiceInteraction {
                                                         ) {
         $counted_meetings = 0;
     
-        $sql = "INSERT INTO `$table_name` (`server_id`, `meeting_id`, `organization_key`, `name`, `start_time`, `weekday`, `single_occurrence_date`, `duration`, `longitude`, `latitude`, `tag0`, `tag1`, `tag2`, `tag3`, `tag4`, `tag5`, `tag6`, `tag7`, `tag8`, `tag9`, `comments`, `formats`, `physical_address`, `virtual_information`) VALUES\n";
+        $sql = "INSERT INTO `$table_name` (`server_id`, `meeting_id`, `organization_key`, `name`, `start_time`, `time_zone`, `weekday`, `single_occurrence_date`, `duration`, `longitude`, `latitude`, `tag0`, `tag1`, `tag2`, `tag3`, `tag4`, `tag5`, `tag6`, `tag7`, `tag8`, `tag9`, `comments`, `formats`, `physical_address`, `virtual_information`) VALUES\n";
         $params = [];
         $sql_rows = [];
         foreach ( $meetings as $meeting ) {
             $counted_meetings++;
-            array_push($sql_rows, "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            array_push($sql_rows, "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             array_push($params, $meeting["server_id"]);
             array_push($params, $meeting["meeting_id"]);
             array_push($params, $meeting["organization_key"]);
             array_push($params, (isset($meeting["name"]) ? $meeting["name"] : "NA Meeting"));
             array_push($params, (isset($meeting["start_time"]) ? $meeting["start_time"] : NULL));
+            array_push($params, (isset($meeting["time_zone"]) ? $meeting["time_zone"] : NULL));
             array_push($params, (isset($meeting["weekday"]) ? $meeting["weekday"] : NULL));
             array_push($params, (isset($meeting["single_occurrence_date"]) ? $meeting["single_occurrence_date"] : NULL));
             array_push($params, (isset($meeting["duration"]) ? $meeting["duration"] : NULL));

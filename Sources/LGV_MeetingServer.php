@@ -33,7 +33,7 @@ defined( 'LGV_DB_CATCHER' ) or define( 'LGV_DB_CATCHER', 1 );
 
 require_once(dirname(__FILE__).'/LGV_MeetingServer_PDO.class.php');
 
-define('__SERVER_VERSION__', "1.1.5");  // The current server version.
+define('__SERVER_VERSION__', "1.2.0");  // The current server version.
 
 // MARK: - Internal Functions -
 
@@ -195,15 +195,22 @@ function _clean_meeting($meeting    ///< REQUIRED: The meeting to be filtered (a
             }
         
             switch ( $key ) {
+                case "name":
+                case "time_zone":
+                    $value = strval($value);
+                    break;
+                    
                 case "server_id":
                 case "meeting_id":
                 case "weekday":
                 case "duration":
                     $value = intval($value);
-                
+                    break;
+                    
                 case "latitude":
                 case "longitude":
                     $value = floatval($value);
+                    break;
             }
         
             $ret[$key] = $value;
@@ -350,7 +357,7 @@ function update_database(   $physical_only = false,     ///< OPTIONAL BOOLEAN: I
                             $force = false,             ///< OPTIONAL BOOLEAN: If true (default is false), then the update occurs, even if not otherwise prescribed.
                             $separate_virtual = false   ///< OPTIONAL BOOLEAN: If true (default is false), then virtual-only meetings will be counted, but will be assigned a "virtual-%s" (with "%s" being the org key) org key.
                         ) {
-    set_time_limit(600);    // We give ourselves a ridiculous amount of time, as this may take a while.
+    set_time_limit(3600);    // We give ourselves a ridiculous amount of time, as this may take a while.
     
     $bmltClass = new BMLTServerInteraction();
     

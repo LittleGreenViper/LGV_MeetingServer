@@ -39,12 +39,41 @@ if ( isset($argv) ) {
 
 if ( isset($_GET["cli"]) ) { // A call from the CLI means just do an update (for cron jobs).
     if ( isset($_GET['-h']) ) {
-        echo("Updates the LGV_MeetingServer Database.\n\tReturns an integer, with the number of meetings processed.\n\tUsage:\t-h: Help (This display)\n\t\t-f: Force (Perform update, even if not scheduled)\n\t\t-p: Physical Meetings Only (Virtual-only meetings are ignored)\n\t\t-sv: Separate Organization for Virtual (Virtual meetings are stored, but given a different organization key. The -p flag is ignored)\n\t\tIf no arguments given, waits until the specified time has passed, and performs an update of the database.\nIf no -p or -sv is presented, the entire server databse (both physical and virtual) is read, and stored as a single organization.\n");
+        echo("Updates the LGV_MeetingServer Database.\n\tReturns a textual report, with the number of meetings processed, and the time taken to process them.\n\tUsage:\t-h: Help (This display)\n\t\t-f: Force (Perform update, even if not scheduled)\n\t\t-p: Physical Meetings Only (Virtual-only meetings are ignored)\n\t\t-sv: Separate Organization for Virtual (Virtual meetings are stored, but given a different organization key. The -p flag is ignored)\n\t\tIf no arguments given, waits until the specified time has passed, and performs an update of the database.\nIf no -p or -sv is presented, the entire server databse (both physical and virtual) is read, and stored as a single organization.\n");
     } else {
         $forced = isset($_GET['-f']);
         $physical_only = isset($_GET['-p']);
         $separate_virtual = isset($_GET['-sv']);
-        echo intval(update_database($physical_only, $forced, $separate_virtual));
+        $start_time = microtime(true);
+        $result = intval(update_database($physical_only, $forced, $separate_virtual));
+        $end_time = microtime(true);
+        
+        if (0 < $result) {
+            echo("$result meetings processed.\n");
+        
+            $seconds = intval($end_time - $start_time);
+            $minutes = intval($seconds / 60);
+            $hours = intval($minutes / 60);
+        
+            $minutes -= ($hours * 60);
+            $seconds -= (($minutes * 60) + ($hours * 3600));
+        
+            echo("\nTime to complete: ");
+            $time = [];
+            if (0 < $hours) {
+                $time[] = ($hours)." hours";
+            }
+            if (0 < $minutes) {
+                $time[] = ($minutes)." minutes";
+            }
+            if (0 < $seconds) {
+                $time[] = ($seconds)." seconds";
+            }
+        
+            echo(implode(', ', $time).".\n");
+        } else {
+            echo("No meetings processed.\n");
+        }
     }
 } else if ( !isset($_GET["cli"]) ) {    // This is "stupid securiity." People can still force an update by mimicking the CLI parameters, but it prevents the casual idiots from messing us up, too much. It's not the end of the world, if they succeed, anyway.
     $query = explode("&", $_SERVER["QUERY_STRING"]);

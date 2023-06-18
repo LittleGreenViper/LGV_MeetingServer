@@ -1,3 +1,7 @@
+**1.2.0** *June 18, 2023*
+
+- Added a connection to the LGV_TZ_Lookup server, so all meetings get a timezone. This considerably increases the time it takes to do an update.
+
 **1.1.5** *March 20, 2023*
 
 - Some virtual meetings only provide a phone number (no URI), so I just look for that, if no URI is found.
