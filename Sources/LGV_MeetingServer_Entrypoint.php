@@ -182,7 +182,7 @@ if ( isset($_GET["cli"]) ) { // A call from the CLI means just do an update (for
                             
                             case 'type':
                                 $type = intval(trim($value));
-                                if (2 < abs($type)) {
+                                if (3 < abs($type)) {
                                     $type = 0;
                                 }
                             break;

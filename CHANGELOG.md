@@ -1,3 +1,7 @@
+**1.4.0** *June 19, 2023*
+
+- Improved the meeting type filter.
+
 **1.3.0** *June 19, 2023*
 
 - Added a filter for venue type.

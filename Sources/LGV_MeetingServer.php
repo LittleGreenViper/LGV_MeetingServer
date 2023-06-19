@@ -33,7 +33,7 @@ defined( 'LGV_DB_CATCHER' ) or define( 'LGV_DB_CATCHER', 1 );
 
 require_once(dirname(__FILE__).'/LGV_MeetingServer_PDO.class.php');
 
-define('__SERVER_VERSION__', "1.3.0");  // The current server version.
+define('__SERVER_VERSION__', "1.4.0");  // The current server version.
 
 // MARK: - Internal Functions -
 
@@ -497,17 +497,27 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
             $predicate .= " AND ";
         }
         
-        $sql_predicate = '(';
-        $sql_predicate .= (0 > $type ? '(`virtual_information` IS NOT NULL)' : '(`physical_address` IS NOT NULL)');
-        if ( 1 == abs($type) ) {
-            $sql_predicate .= ' AND ('.(0 > $type ? '(`physical_address` IS NOT NULL)' : '(`virtual_information` IS NOT NULL)').')';
-        } elseif (2 == abs($type)) {
-            $sql_predicate .= ' AND ('.(0 > $type ? '(`physical_address` IS NULL)' : '(`virtual_information` IS NULL)').')';
+        switch ($type) {
+            case -2:
+                $predicate .= '((`virtual_information` IS NOT NULL) AND (`physical_address` IS NULL))';
+            break;
+            
+            case -1:
+                $predicate .= '(`virtual_information` IS NOT NULL)';
+            break;
+            case 1:
+                $predicate .= '(`physical_address` IS NOT NULL)';
+            break;
+            
+            case 2:
+                $predicate .= '((`virtual_information` IS NULL) AND (`physical_address` IS NOT NULL))';
+            break;
+            
+            case -3:
+            case 3:
+                $predicate .= '((`virtual_information` IS NOT NULL) AND (`physical_address` IS NOT NULL))';
+            break;
         }
-        
-        $sql_predicate .= ')';
-        
-        $predicate .= $sql_predicate;
     }
 
     if ( !empty($ids) ) {

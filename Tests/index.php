@@ -21,7 +21,7 @@
 
     [Little Green Viper Software Development LLC](https://littlegreenviper.com)
 */
-$config_file_path = dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/LGV_MeetingServer-Config/LGV_MeetingServer-Config.php';
+$config_file_path = dirname(__FILE__).'/LGV_MeetingServer-Config.php';
 include($config_file_path);
 
 ?><!DOCTYPE html>
@@ -182,10 +182,12 @@ include($config_file_path);
             </ul></li>
             <li><h2>Venue Type Test (Paged in Pages of 100)</h2><ul>
                 <li><a href="./entrypoint.php?query&type=0&page_size=100" target="_blank">All Meetings</a></li>
+                <li><a href="./entrypoint.php?query&type=-1&page_size=100" target="_blank">Virtual</a></li>
+                <li><a href="./entrypoint.php?query&type=1&page_size=100" target="_blank">Physical</a></li>
                 <li><a href="./entrypoint.php?query&type=-2&page_size=100" target="_blank">Virtual Only</a></li>
                 <li><a href="./entrypoint.php?query&type=2&page_size=100" target="_blank">Physical Only</a></li>
-                <li><a href="./entrypoint.php?query&type=-1&page_size=100" target="_blank">Hybrid (-1)</a></li>
-                <li><a href="./entrypoint.php?query&type=1&page_size=100" target="_blank">Hybrid (1)</a></li>
+                <li><a href="./entrypoint.php?query&type=-3&page_size=100" target="_blank">Hybrid (-3)</a></li>
+                <li><a href="./entrypoint.php?query&type=3&page_size=100" target="_blank">Hybrid (3)</a></li>
             </ul></li>
             <li><h2>Server Information</h2><ul>
                 <li><a href="./entrypoint.php?info" target="_blank">Get Server Info</a></li>
