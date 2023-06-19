@@ -1,3 +1,7 @@
+**1.3.0** *June 19, 2023*
+
+- Added a filter for venue type.
+
 **1.2.0** *June 18, 2023*
 
 - Added a connection to the LGV_TZ_Lookup server, so all meetings get a timezone. This considerably increases the time it takes to do an update.
