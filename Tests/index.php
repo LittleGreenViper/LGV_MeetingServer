@@ -180,6 +180,13 @@ include($config_file_path);
                     </ul></li>
                 </ul></li>
             </ul></li>
+            <li><h2>Venue Type Test (Paged in Pages of 100)</h2><ul>
+                <li><a href="./entrypoint.php?query&type=0&page_size=100" target="_blank">All Meetings</a></li>
+                <li><a href="./entrypoint.php?query&type=-2&page_size=100" target="_blank">Virtual Only</a></li>
+                <li><a href="./entrypoint.php?query&type=2&page_size=100" target="_blank">Physical Only</a></li>
+                <li><a href="./entrypoint.php?query&type=-1&page_size=100" target="_blank">Hybrid (-1)</a></li>
+                <li><a href="./entrypoint.php?query&type=1&page_size=100" target="_blank">Hybrid (1)</a></li>
+            </ul></li>
             <li><h2>Server Information</h2><ul>
                 <li><a href="./entrypoint.php?info" target="_blank">Get Server Info</a></li>
             </ul></li>

@@ -272,13 +272,13 @@ class BMLTServerInteraction extends AServiceInteraction {
                 $_json = serialize($meeting["physical_location"]);
                 array_push($params, $_json);
             } else {
-                array_push($params, "");
+                array_push($params, NULL);
             }
             if ( isset($meeting["virtual_meeting_info"]) && !empty($meeting["virtual_meeting_info"]) ) {
                 $_json = serialize($meeting["virtual_meeting_info"]);
                 array_push($params, $_json);
             } else {
-                array_push($params, "");
+                array_push($params, NULL);
             }
         }
     

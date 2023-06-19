@@ -33,7 +33,7 @@ defined( 'LGV_DB_CATCHER' ) or define( 'LGV_DB_CATCHER', 1 );
 
 require_once(dirname(__FILE__).'/LGV_MeetingServer_PDO.class.php');
 
-define('__SERVER_VERSION__', "1.2.0");  // The current server version.
+define('__SERVER_VERSION__', "1.3.0");  // The current server version.
 
 // MARK: - Internal Functions -
 
@@ -397,6 +397,7 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
                         $end_time = 0,          ///< OPTIONAL UNSIGNED INT: A maximum start time, in seconds (0 -> 86400, with 86399 being "One minute before midnight tonight," and 0 being "midnight, this morning"). Default is 0. This is inclusive (25200 is 7AM, or earlier). This must be greater than $start_time.
                         $org_key = NULL,        ///< OPTIONAL STRING ARRAY: The key[s] for one or more particular organization[s]. If not provided, all organizations are searched.
                         $ids = NULL,            ///< OPTIONAL ARRAY[(UNSIGNED INT, UNSIGNED INT)]: This can be an array of tuples (each being a server ID, and a meeting ID, in that order, as integers). These represent individual meetings. If these are provided, then ONLY those meetings will be returned, but any other parameters will still be applied.
+                        $type = 0,              ///< The type of meeting (physical, virtual, or hybrid). 0 is any meeting (all of the above). 1, is physical (with or without virtual), 2 is physical only, -1 is virtual (with or without physical), -2 is virtual only. Default is 0 (all meetings).
                         $page = 0,              ///< OPTIONAL UNSIGNED INTEGER: This is the 0-based page. Default is 0 (from the beginning).
                         $page_size = -1         ///< OPTIONAL INTEGER: The size of each page. 0, means return a count only. Negative values mean the whole search should be returned in one page, and $page is ignored (considered to be 0).
                         ) {
@@ -491,6 +492,24 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
         }
     }
     
+    if ( 0 != $type ) {
+        if ( $predicate ) {
+            $predicate .= " AND ";
+        }
+        
+        $sql_predicate = '(';
+        $sql_predicate .= (0 > $type ? '(`virtual_information` IS NOT NULL)' : '(`physical_address` IS NOT NULL)');
+        if ( 1 == abs($type) ) {
+            $sql_predicate .= ' AND ('.(0 > $type ? '(`physical_address` IS NOT NULL)' : '(`virtual_information` IS NOT NULL)').')';
+        } elseif (2 == abs($type)) {
+            $sql_predicate .= ' AND ('.(0 > $type ? '(`physical_address` IS NULL)' : '(`virtual_information` IS NULL)').')';
+        }
+        
+        $sql_predicate .= ')';
+        
+        $predicate .= $sql_predicate;
+    }
+
     if ( !empty($ids) ) {
         $plist = [];
         foreach ( $ids as $id ) {

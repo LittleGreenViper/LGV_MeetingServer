@@ -89,6 +89,7 @@ if ( isset($_GET["cli"]) ) { // A call from the CLI means just do an update (for
             $end_time = 0;
             $org_key = NULL;
             $ids = [];
+            $type = 0;
             $page = 0;
             $page_size = -1;
     
@@ -178,6 +179,13 @@ if ( isset($_GET["cli"]) ) { // A call from the CLI means just do an update (for
                                     exit("INVALID IDS");
                                 }
                             break;
+                            
+                            case 'type':
+                                $type = intval(trim($value));
+                                if (2 < abs($type)) {
+                                    $type = 0;
+                                }
+                            break;
                         
                             case "page":
                                 $page = max(0, intval($value));
@@ -198,7 +206,7 @@ if ( isset($_GET["cli"]) ) { // A call from the CLI means just do an update (for
             } else {
                 ob_start('ob_gzhandler');
             }
-            echo(query_database($geocenter_lng, $geocenter_lat, $geo_radius, $minimum_found, $weekdays, $start_time, $end_time, $org_key, $ids, $page, $page_size));
+            echo(query_database($geocenter_lng, $geocenter_lat, $geo_radius, $minimum_found, $weekdays, $start_time, $end_time, $org_key, $ids, $type, $page, $page_size));
             ob_end_flush();
             exit;
         } elseif ( "info" == strtolower($query[0]) ) {

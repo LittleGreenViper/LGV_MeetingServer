@@ -12,6 +12,13 @@ $_use_cli_only_for_update = < TRUE OR FALSE >;
 // Default is 4 hours.
 $_updateIntervalInSeconds = (4 * 3600);
 
+// This is a URI to our timezone lookup server. Leave it blank, for no lookup.
+// This must refer to an instance of [LGV_TZ_Lookup](https://github.com/LittleGreenViper/LGV_TZ_Lookup).
+$_timezoneServerURI = "https://littlegreenviper.com/tgz/src/index.php";
+
+// This is the "secret" for the timezone server.
+$_timezoneServerSecret = "HasAnyoneSeenMyIlludiumQ36ExplosiveSpaceModulator";
+
 // The declarations below this line are unlikely to be changed.
 // ------------------------------------------------------------
 

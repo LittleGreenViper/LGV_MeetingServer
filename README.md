@@ -86,6 +86,10 @@ Each meeting is designated to be part of an "organization," which is applied by 
 
 Organizations are not specific to any single source server. Multiple servers can provide data that is tagged as belonging to an organization.
 
+### Meeting Type Queries
+
+The type of meeting (physical, virtual, or combinations, thereof), can be filterd.
+
 ### Weekday
 
 Each meeting is designated as gathering weekly, on a specific day. 1 is always Sunday (regardless of the locale week start), and 7 is always Saturday. Multiple weekdays can be applied, in an "OR" fashion.
@@ -246,6 +250,18 @@ These are the refinements to the command requested by the `"query"` function.
   >**NOTE:** In most cases, this will be ***at least*** the number of meetings found, but, occasionally, there may be a few meetings not included. That is because there is a small amount of "slop" in the radius calculations.
   
   >**NOTE:** This minimum number will be applied ***after*** the other filter parameters, so, for example, if you are looking only for meetings on the weekend, the final radius is likely to be larger, than if you search for meetings that gather on any day.
+  
+- **Meeting Type Parameters**
+
+  There are basically four different choices, as to the meeting type. These are represented as integer values of the `type` query parameter.
+  
+  - *All Meetings (Regardless of type)* (0) This is default, if no `type` parameter is provided.
+  
+  - *Virtual and Physical (hybrid)* (-1, or 1)
+  
+  - *Virtual Only* (-2)
+  
+  - *Physical Only* (2)
   
 - **Time And Day Parameters**
 
@@ -500,6 +516,7 @@ Here is a sample of a "full-featured" `meeting` object:
   "organization_key": "na",
   "name": "Easy Does It",
   "start_time": "20:00:00",
+  "time_zone": "America/New_York",
   "weekday": 4,
   "duration": 5400,
   "longitude": -83.4139,
@@ -597,6 +614,9 @@ Here is a sample of a "full-featured" `meeting` object:
   
 - `start_time`
   The meeting start time, supplied as a string ("HH:MM:SS").
+  
+- `time_zone`
+  The local time zone [TZ](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) identifier for the meeting.
   
 - `weekday`
   The meeting weekday, expressed as a 1-based, positive integer, with 1 being Sunday, and 7 being Saturday. Any other value is not considered valid.

@@ -24,8 +24,8 @@ CREATE TABLE `TABLE-NAME` (
   `tag9` varchar(255) COLLATE utf8_bin DEFAULT NULL,
   `comments` text COLLATE utf8_bin,
   `formats` text COLLATE utf8_bin,
-  `physical_address` text COLLATE utf8_bin,
-  `virtual_information` text COLLATE utf8_bin,
+  `physical_address` text COLLATE utf8_bin DEFAULT NULL,
+  `virtual_information` text COLLATE utf8_bin DEFAULT NULL,
   `last_modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 ALTER TABLE `TABLE-NAME`
