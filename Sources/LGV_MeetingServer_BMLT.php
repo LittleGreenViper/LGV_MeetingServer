@@ -204,7 +204,7 @@ class BMLTServerInteraction extends AServiceInteraction {
                     }
                     $uri .= 'll='.floatval($meeting_object->longitude).','.floatval($meeting_object->latitude);
                     $new_tz = self::_call_URL($uri);
-                    $meeting["time_zone"] = $new_tz;
+                    $meeting["time_zone"] = trim($new_tz);
                 }
             
                 if ( isset($meeting["physical_location"]) || !$physical_only || $separate_virtual ) {
@@ -244,7 +244,7 @@ class BMLTServerInteraction extends AServiceInteraction {
             array_push($params, $meeting["organization_key"]);
             array_push($params, (isset($meeting["name"]) ? $meeting["name"] : "NA Meeting"));
             array_push($params, (isset($meeting["start_time"]) ? $meeting["start_time"] : NULL));
-            array_push($params, (isset($meeting["time_zone"]) ? $meeting["time_zone"] : NULL));
+            array_push($params, (isset($meeting["physical_location"]["time_zone"]) ? $meeting["physical_location"]["time_zone"] : isset($meeting["virtual_meeting_info"]["time_zone"]) ? $meeting["virtual_meeting_info"]["time_zone"] : isset($meeting["time_zone"]) ? $meeting["time_zone"] : NULL));
             array_push($params, (isset($meeting["weekday"]) ? $meeting["weekday"] : NULL));
             array_push($params, (isset($meeting["single_occurrence_date"]) ? $meeting["single_occurrence_date"] : NULL));
             array_push($params, (isset($meeting["duration"]) ? $meeting["duration"] : NULL));

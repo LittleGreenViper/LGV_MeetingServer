@@ -1,3 +1,7 @@
+**1.4.1** *June 19, 2023*
+
+- Some code cleanup and documentation.
+
 **1.4.0** *June 19, 2023*
 
 - Improved the meeting type filter.
