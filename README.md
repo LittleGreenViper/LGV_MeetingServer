@@ -12,6 +12,12 @@ This is a general-purpose aggregator server for various meeting lists.
 
 [The LGV_MeetingSDK](https://github.com/LittleGreenViper/LGV_MeetingSDK) is a generic Apple platform SDK that consumes this server.
 
+## What Problem Does This Solve?
+
+There are many solutions for listing meetings (weekly-repeating, singular events), and they all have different data formats. There has been some effort to "commoditize" these efforts, like [AA's TIAA](https://tiaa-forum.org), or [NA's BMLT](https://bmlt.app) (As of now, only the BMLT is supported), but there's still a great deal of variety.
+
+This project has "adapters" for various data sources, that read the data in their proprietary format, and stores the result in a simple common format, available for generic access.
+
 ## How It Works
 
 The server is designed to allow you to write "modules," that can connect to multiple servers, and reformat their meeting data, into a common format, which can then be read as a "unified" set, in a common format.
