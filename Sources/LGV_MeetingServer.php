@@ -33,7 +33,7 @@ defined( 'LGV_DB_CATCHER' ) or define( 'LGV_DB_CATCHER', 1 );
 
 require_once(dirname(__FILE__).'/LGV_MeetingServer_PDO.class.php');
 
-define('__SERVER_VERSION__', "1.4.0");  // The current server version.
+define('__SERVER_VERSION__', "1.4.2");  // The current server version.
 
 // MARK: - Internal Functions -
 
@@ -357,10 +357,8 @@ function update_database(   $physical_only = false,     ///< OPTIONAL BOOLEAN: I
                             $force = false,             ///< OPTIONAL BOOLEAN: If true (default is false), then the update occurs, even if not otherwise prescribed.
                             $separate_virtual = false   ///< OPTIONAL BOOLEAN: If true (default is false), then virtual-only meetings will be counted, but will be assigned a "virtual-%s" (with "%s" being the org key) org key.
                         ) {
-    set_time_limit(3600);    // We give ourselves a ridiculous amount of time, as this may take a while.
-    
     $bmltClass = new BMLTServerInteraction();
-    
+
     try {
         global $config_file_path;
         include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.

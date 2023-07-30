@@ -1,3 +1,7 @@
+**1.4.2** *July 30, 2023*
+
+- Bumped up the timeout.
+
 **1.4.1** *June 19, 2023*
 
 - Some code cleanup and documentation.

@@ -75,7 +75,7 @@ if ( isset($_GET["cli"]) ) { // A call from the CLI means just do an update (for
             echo("No meetings processed.\n");
         }
     }
-} else if ( !isset($_GET["cli"]) ) {    // This is "stupid securiity." People can still force an update by mimicking the CLI parameters, but it prevents the casual idiots from messing us up, too much. It's not the end of the world, if they succeed, anyway.
+} else if ( !isset($_GET["cli"]) ) {    // This is "stupid security." People can still force an update by mimicking the CLI parameters, but it prevents the casual idiots from messing us up, too much. It's not the end of the world, if they succeed, anyway.
     $query = explode("&", $_SERVER["QUERY_STRING"]);
     
     if ( isset($query) && is_array($query) && (0 < count($query)) ) {
@@ -214,6 +214,7 @@ if ( isset($_GET["cli"]) ) { // A call from the CLI means just do an update (for
             echo(get_server_info());
             exit;
         } elseif ( "update" == strtolower($query[0]) ) {
+            set_time_limit(7200);    // We give ourselves a ridiculous amount of time, as this may take a while.
             global $config_file_path;
             include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
             if ( !(isset($_use_cli_only_for_update) && $_use_cli_only_for_update) ) {
