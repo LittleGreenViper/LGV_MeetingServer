@@ -1,3 +1,7 @@
+**1.4.3** *July 31, 2023*
+
+- The temp table now uses a random string, to avoid the table being deleted by overruns.
+
 **1.4.2** *July 30, 2023*
 
 - Bumped up the timeout.

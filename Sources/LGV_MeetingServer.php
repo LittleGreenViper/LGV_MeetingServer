@@ -33,7 +33,9 @@ defined( 'LGV_DB_CATCHER' ) or define( 'LGV_DB_CATCHER', 1 );
 
 require_once(dirname(__FILE__).'/LGV_MeetingServer_PDO.class.php');
 
-define('__SERVER_VERSION__', "1.4.2");  // The current server version.
+define('__SERVER_VERSION__', "1.4.3");  // The current server version.
+
+global $tempDBName; // Used for an interim table.
 
 // MARK: - Internal Functions -
 
@@ -310,8 +312,9 @@ function _initialize_meta_database(  $pdo_instance   ///< REQUIRED: The PDO inst
                                 ) {
     global $config_file_path;
     include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
+    global $tempDBName;
 
-    $sql_init = file_get_contents(dirname(__FILE__).'/config/sql/LGV_MeetingServer-Meta-MySQL.sql') . ";DROP TABLE IF EXISTS `$_dbTableName`;DROP TABLE IF EXISTS `$_dbTempTableName`";;
+    $sql_init = file_get_contents(dirname(__FILE__).'/config/sql/LGV_MeetingServer-Meta-MySQL.sql') . ";DROP TABLE IF EXISTS `$_dbTableName`;DROP TABLE IF EXISTS `$tempDBName`";;
 
     try {
         $pdo_instance->preparedStatement($sql_init);
@@ -326,7 +329,7 @@ function _initialize_meta_database(  $pdo_instance   ///< REQUIRED: The PDO inst
 /**
 \returns true, if successful.
 */
-function _initialize_main_database(  $pdo_instance,  ///< REQUIRED: The PDO instance for this transaction.
+function _initialize_main_database( $pdo_instance,  ///< REQUIRED: The PDO instance for this transaction.
                                     $dbTableName    ///< REQUIRED: The name of the table to receive the initialization
                                 ) {
     $sql_init = file_get_contents(dirname(__FILE__).'/config/sql/LGV_MeetingServer-MySQL.sql');
@@ -339,6 +342,23 @@ function _initialize_main_database(  $pdo_instance,  ///< REQUIRED: The PDO inst
     }
     
     return false;
+}
+
+    
+/***********************/
+/**
+Generates a cryptographically secure string.
+    
+\returns a random string.
+ */
+function _random_str($length, $keyspace = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
+{
+    $pieces = [];
+    $max = mb_strlen($keyspace, '8bit') - 1;
+    for ($i = 0; $i < $length; ++$i) {
+        $pieces []= $keyspace[random_int(0, $max)];
+    }
+    return implode('', $pieces);
 }
 
 // MARK: - Exposed Functions -
@@ -357,8 +377,13 @@ function update_database(   $physical_only = false,     ///< OPTIONAL BOOLEAN: I
                             $force = false,             ///< OPTIONAL BOOLEAN: If true (default is false), then the update occurs, even if not otherwise prescribed.
                             $separate_virtual = false   ///< OPTIONAL BOOLEAN: If true (default is false), then virtual-only meetings will be counted, but will be assigned a "virtual-%s" (with "%s" being the org key) org key.
                         ) {
+    global $config_file_path;
+    include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
     $bmltClass = new BMLTServerInteraction();
-
+    
+    global $tempDBName;
+    $tempDBName = $_dbTempTableName.'-'._random_str(16);
+    
     try {
         global $config_file_path;
         include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
@@ -368,10 +393,10 @@ function update_database(   $physical_only = false,     ///< OPTIONAL BOOLEAN: I
         }
         $lastupdate_response = $pdo_instance->preparedStatement("SELECT `last_update` FROM `$_dbMetaTableName`", [], true)[0]["last_update"];
         $lapsed_time = time() - intval($lastupdate_response);
-        if ( (!_data_table_exists($pdo_instance) || $force || ($_updateIntervalInSeconds < $lapsed_time)) && _initialize_main_database($pdo_instance, $_dbTempTableName) ) {
-            $number_of_meetings = $bmltClass->process_all_meetings($pdo_instance, $_dbTempTableName, $physical_only, $separate_virtual);
+        if ( (!_data_table_exists($pdo_instance) || $force || ($_updateIntervalInSeconds < $lapsed_time)) && _initialize_main_database($pdo_instance, $tempDBName) ) {
+            $number_of_meetings = $bmltClass->process_all_meetings($pdo_instance, $tempDBName, $physical_only, $separate_virtual);
             if ( 0 < $number_of_meetings ) {
-                $rename_sql = "DROP TABLE IF EXISTS `$_dbTableName`;RENAME TABLE `$_dbTempTableName` TO `$_dbTableName`;UPDATE `$_dbMetaTableName` SET `last_update`=? WHERE 1;";
+                $rename_sql = "DROP TABLE IF EXISTS `$_dbTableName`;RENAME TABLE `$tempDBName` TO `$_dbTableName`;UPDATE `$_dbMetaTableName` SET `last_update`=? WHERE 1;";
                 $pdo_instance->preparedStatement($rename_sql, [time()]);
                 return $number_of_meetings;
             }
