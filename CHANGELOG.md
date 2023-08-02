@@ -1,3 +1,7 @@
+**1.4.4** *August 2, 2023*
+
+- The meta table now sets the time at the start of processing. This helps to avoid collisions.
+
 **1.4.3** *July 31, 2023*
 
 - The temp table now uses a random string, to avoid the table being deleted by overruns.
