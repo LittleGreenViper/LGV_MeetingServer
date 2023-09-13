@@ -33,7 +33,7 @@ defined( 'LGV_DB_CATCHER' ) or define( 'LGV_DB_CATCHER', 1 );
 
 require_once(dirname(__FILE__).'/LGV_MeetingServer_PDO.class.php');
 
-define('__SERVER_VERSION__', "1.4.4");  // The current server version.
+define('__SERVER_VERSION__', "1.4.5");  // The current server version.
 
 global $tempDBName; // Used for an interim table.
 
@@ -391,11 +391,11 @@ function update_database(   $physical_only = false,     ///< OPTIONAL BOOLEAN: I
         if (!_meta_table_exists($pdo_instance) ) {
             _initialize_meta_database($pdo_instance);
         }
-        $rename_sql = "UPDATE `$_dbMetaTableName` SET `last_update`=? WHERE 1;";
-        $pdo_instance->preparedStatement($rename_sql, [time()]);
         $lastupdate_response = $pdo_instance->preparedStatement("SELECT `last_update` FROM `$_dbMetaTableName`", [], true)[0]["last_update"];
         $lapsed_time = time() - intval($lastupdate_response);
         if ( (!_data_table_exists($pdo_instance) || $force || ($_updateIntervalInSeconds < $lapsed_time)) && _initialize_main_database($pdo_instance, $tempDBName) ) {
+            $rename_sql = "UPDATE `$_dbMetaTableName` SET `last_update`=? WHERE 1;";
+            $pdo_instance->preparedStatement($rename_sql, [time()]);
             $number_of_meetings = $bmltClass->process_all_meetings($pdo_instance, $tempDBName, $physical_only, $separate_virtual);
             if ( 0 < $number_of_meetings ) {
                 $rename_sql = "DROP TABLE IF EXISTS `$_dbTableName`;RENAME TABLE `$tempDBName` TO `$_dbTableName`;";
