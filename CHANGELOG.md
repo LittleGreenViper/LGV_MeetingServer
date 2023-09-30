@@ -1,3 +1,7 @@
+**1.4.6** *September 30, 2023*
+
+- Just a tiny addition, to allow the server to detect no query string, and, instead of puking with an error, ir returns a teapot (CLI only).
+
 **1.4.4** *August 2, 2023*
 
 - The meta table now sets the time at the start of processing. This helps to avoid collisions.
