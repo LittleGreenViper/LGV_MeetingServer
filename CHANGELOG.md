@@ -1,3 +1,7 @@
+**1.4.7** *October 3, 2023*
+
+- Changed the UA, to hopefully discourage bounces.
+
 **1.4.6** *September 30, 2023*
 
 - Just a tiny addition, to allow the server to detect no query string, and, instead of puking with an error, ir returns a teapot (CLI only).

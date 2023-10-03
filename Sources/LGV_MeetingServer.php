@@ -33,7 +33,7 @@ defined( 'LGV_DB_CATCHER' ) or define( 'LGV_DB_CATCHER', 1 );
 
 require_once(dirname(__FILE__).'/LGV_MeetingServer_PDO.class.php');
 
-define('__SERVER_VERSION__', "1.4.6");  // The current server version.
+define('__SERVER_VERSION__', "1.4.7");  // The current server version.
 
 global $tempDBName; // Used for an interim table.
 
@@ -803,7 +803,7 @@ abstract class AServiceInteraction {
         curl_setopt($curl, CURLOPT_HEADER, false);          // Do not return any headers, please.
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);   // Please return to sender as a function response.
         curl_setopt($curl, CURLOPT_VERBOSE, false);         // Let's keep this thing simple.
-        curl_setopt($curl, CURLOPT_USERAGENT, 'Mozilla/5.0 (X11; Linux i686; rv:108.0) Gecko/20100101 Firefox/108.0');
+        curl_setopt($curl, CURLOPT_USERAGENT, 'Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0 +aggregator');
     
         $result = curl_exec($curl); // Do it to it.
 
