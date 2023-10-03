@@ -305,8 +305,13 @@ class BMLTServerInteraction extends AServiceInteraction {
         $server_list = self::_read_bmlt_server_list();
         foreach ( $server_list as $server ) {
             $dataURL = $server->rootURL."client_interface/json/?switcher=GetSearchResults&get_used_formats=1&callingApp=LGV_MeetingServer";
-            $meetings = self::_read_bmlt_server_meetings($dataURL, intval($server->id), $physical_only, $separate_virtual);
-            $all_meetings += self::_save_bmlt_meetings_into_db($pdo_instance, $table_name, $meetings);
+            for ($index = 0; $index < 3; $index++) {
+                $meetings = self::_read_bmlt_server_meetings($dataURL, intval($server->id), $physical_only, $separate_virtual);
+                if (0 < count($meetings)) {
+                    $all_meetings += self::_save_bmlt_meetings_into_db($pdo_instance, $table_name, $meetings);
+                    break;
+                }
+            }
         }
     
         return $all_meetings;
