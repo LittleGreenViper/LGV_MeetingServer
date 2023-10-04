@@ -33,7 +33,7 @@ defined( 'LGV_DB_CATCHER' ) or define( 'LGV_DB_CATCHER', 1 );
 
 require_once(dirname(__FILE__).'/LGV_MeetingServer_PDO.class.php');
 
-define('__SERVER_VERSION__', "1.4.7");  // The current server version.
+define('__SERVER_VERSION__', "1.4.8");  // The current server version.
 
 global $tempDBName; // Used for an interim table.
 
@@ -347,15 +347,14 @@ function _initialize_main_database( $pdo_instance,  ///< REQUIRED: The PDO insta
     
 /***********************/
 /**
-Generates a cryptographically secure string.
-    
 \returns a random string.
  */
-function _random_str($length, $keyspace = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
-{
+function _random_str(   $length,                                                                        ///< REQUIRED UNSIGNED INT: The length of the string, in characters.
+                        $keyspace = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'    ///< OPTIONAL CHARACTER ARRAY: This is the pool of characters from which to choose. Default is basic Roman ASCII alphanumeric.
+                    ) {
     $pieces = [];
     $max = mb_strlen($keyspace, '8bit') - 1;
-    for ($i = 0; $i < $length; ++$i) {
+    for ( $i = 0; $i < $length; ++$i ) {
         $pieces []= $keyspace[random_int(0, $max)];
     }
     return implode('', $pieces);
@@ -388,7 +387,7 @@ function update_database(   $physical_only = false,     ///< OPTIONAL BOOLEAN: I
         global $config_file_path;
         include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
         $pdo_instance = new LGV_MeetingServer_PDO($_dbName, $_dbLogin, $_dbPassword, $_dbType, $_dbHost, $_dbPort);
-        if (!_meta_table_exists($pdo_instance) ) {
+        if ( !_meta_table_exists($pdo_instance) ) {
             _initialize_meta_database($pdo_instance);
         }
         $lastupdate_response = $pdo_instance->preparedStatement("SELECT `last_update` FROM `$_dbMetaTableName`", [], true)[0]["last_update"];
@@ -404,6 +403,10 @@ function update_database(   $physical_only = false,     ///< OPTIONAL BOOLEAN: I
             }
         }
     } catch (Exception $exception) {
+        echo("Error updating the data!\n");
+        var_dump($exception);
+        // Clean up after ourselves.
+        $pdo_instance->preparedStatement("DROP TABLE IF EXISTS `$tempDBName`", []);
     }
    
     return NULL;

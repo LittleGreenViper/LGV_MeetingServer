@@ -85,6 +85,7 @@ class BMLTServerInteraction extends AServiceInteraction {
         include($config_file_path);
         $json_data = self::_call_URL($url);
         $decoded_json = json_decode($json_data);
+
         $meeting_objects = isset($decoded_json->meetings) ? $decoded_json->meetings : NULL;
         $format_objects = isset($decoded_json->formats) ? $decoded_json->formats : NULL;
         $meetings = [];
@@ -195,11 +196,11 @@ class BMLTServerInteraction extends AServiceInteraction {
                 
                 $existing_timezone = isset($meeting_object->time_zone) ? trim(strval($meeting_object->time_zone)) : '';
                 
-                if (!empty($existing_timezone)) {
+                if ( !empty($existing_timezone) ) {
                     $meeting["time_zone"] = $existing_timezone;
-                } elseif (isset($_timezoneServerURI) && !empty($_timezoneServerURI) && isset($meeting_object->longitude) && isset($meeting_object->latitude)) {
+                } elseif ( isset($_timezoneServerURI) && !empty($_timezoneServerURI) && isset($meeting_object->longitude) && isset($meeting_object->latitude) ) {
                     $uri = $_timezoneServerURI.'?';
-                    if (isset($_timezoneServerSecret) && !empty($_timezoneServerSecret)) {
+                    if ( isset($_timezoneServerSecret) && !empty($_timezoneServerSecret) ) {
                         $uri .= "secret=$_timezoneServerSecret&";
                     }
                     $uri .= 'll='.floatval($meeting_object->longitude).','.floatval($meeting_object->latitude);
@@ -209,7 +210,7 @@ class BMLTServerInteraction extends AServiceInteraction {
             
                 if ( isset($meeting["physical_location"]) || !$physical_only || $separate_virtual ) {
                     if ( $separate_virtual && !isset($meeting["physical_location"]) ) {
-                        $meeting["organization_key"] = "virtual-na";
+                        $meeting["organization_key"] = "virtual-".$meeting["organization_key"];
                     }
                     array_push($meetings, $meeting);
                 }
@@ -305,9 +306,9 @@ class BMLTServerInteraction extends AServiceInteraction {
         $server_list = self::_read_bmlt_server_list();
         foreach ( $server_list as $server ) {
             $dataURL = $server->rootURL."client_interface/json/?switcher=GetSearchResults&get_used_formats=1&callingApp=LGV_MeetingServer";
-            for ($index = 0; $index < 3; $index++) {
+            for ( $index = 0; $index < 3; $index++ ) {
                 $meetings = self::_read_bmlt_server_meetings($dataURL, intval($server->id), $physical_only, $separate_virtual);
-                if (0 < count($meetings)) {
+                if ( 0 < count($meetings) ) {
                     $all_meetings += self::_save_bmlt_meetings_into_db($pdo_instance, $table_name, $meetings);
                     break;
                 }

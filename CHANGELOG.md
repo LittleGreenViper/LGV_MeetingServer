@@ -1,3 +1,7 @@
+**1.4.8** *October 3, 2023*
+
+- Code cleanup, and improved error trapping.
+
 **1.4.7** *October 3, 2023*
 
 - Changed the UA, to hopefully discourage bounces.

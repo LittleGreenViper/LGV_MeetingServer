@@ -105,6 +105,9 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <p><a href="https://github.com/LittleGreenViper/LGV_MeetingServer">The source code is available at this GitHub repo.</a></p>
 <p><a href="https://littlegreenviper.com/LGV_MeetingServer/Tests/">This is a Live Example (Test Harness)</a></p>
 <p><a href="https://github.com/LittleGreenViper/LGV_MeetingSDK">The LGV_MeetingSDK</a> is a generic Apple platform SDK that consumes this server.</p>
+<h1>What Problem Does This Solve?</h1>
+<p>There are many solutions for listing meetings (weekly-repeating, singular events), and they all have different data formats. There has been some effort to "commoditize" these efforts, like <a href="https://tiaa-forum.org">AA's TIAA</a>, or <a href="https://bmlt.app">NA's BMLT</a> (As of now, only the BMLT is supported), but there's still a great deal of variety.</p>
+<p>This project has "adapters" for various data sources, that read the data in their proprietary format, and stores the result in a simple common format, available for generic access.</p>
 <h1>How It Works</h1>
 <p>The server is designed to allow you to write "modules," that can connect to multiple servers, and reformat their meeting data, into a common format, which can then be read as a "unified" set, in a common format.</p>
 <p>The aggregator maintains a very simple SQL database, with a defined format (regardless of the format of its origins). Queries are then executed against that data.</p>
