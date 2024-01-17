@@ -33,7 +33,7 @@ defined( 'LGV_DB_CATCHER' ) or define( 'LGV_DB_CATCHER', 1 );
 
 require_once(dirname(__FILE__).'/LGV_MeetingServer_PDO.class.php');
 
-define('__SERVER_VERSION__', "1.4.8");  // The current server version.
+define('__SERVER_VERSION__', "1.4.9");  // The current server version.
 
 global $tempDBName; // Used for an interim table.
 
@@ -397,7 +397,7 @@ function update_database(   $physical_only = false,     ///< OPTIONAL BOOLEAN: I
             $pdo_instance->preparedStatement($rename_sql, [time()]);
             $number_of_meetings = $bmltClass->process_all_meetings($pdo_instance, $tempDBName, $physical_only, $separate_virtual);
             if ( 0 < $number_of_meetings ) {
-                $rename_sql = "DROP TABLE IF EXISTS `$_dbTableName`;RENAME TABLE `$tempDBName` TO `$_dbTableName`;";
+                $rename_sql = "DROP TABLE IF EXISTS `$_dbTableName`;RENAME TABLE `$tempDBName` TO `$_dbTableName`;DROP TABLE IF EXISTS `$tempDBName`;";
                 $pdo_instance->preparedStatement($rename_sql, []);
                 return $number_of_meetings;
             }

@@ -1,3 +1,7 @@
+**1.4.9** *January 17, 2024*
+
+- The temp table was not being deleted, after a run. It is, now. TODO: This only happens after a successful run, but the temp table would be empty after an unsuccessful run. It may be a good idea to add a "garbage collector."
+
 **1.4.8** *October 3, 2023*
 
 - Code cleanup, and improved error trapping.
