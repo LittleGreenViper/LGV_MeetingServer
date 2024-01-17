@@ -397,7 +397,7 @@ function update_database(   $physical_only = false,     ///< OPTIONAL BOOLEAN: I
             $pdo_instance->preparedStatement($rename_sql, [time()]);
             $number_of_meetings = $bmltClass->process_all_meetings($pdo_instance, $tempDBName, $physical_only, $separate_virtual);
             if ( 0 < $number_of_meetings ) {
-                $rename_sql = "DROP TABLE IF EXISTS `$_dbTableName`;RENAME TABLE `$tempDBName` TO `$_dbTableName`;DROP TABLE IF EXISTS `$tempDBName`;";
+                $rename_sql = "DROP TABLE IF EXISTS `$_dbTableName`;RENAME TABLE `$tempDBName` TO `$_dbTableName`;";
                 $pdo_instance->preparedStatement($rename_sql, []);
                 return $number_of_meetings;
             }
@@ -405,9 +405,10 @@ function update_database(   $physical_only = false,     ///< OPTIONAL BOOLEAN: I
     } catch (Exception $exception) {
         echo("Error updating the data!\n");
         var_dump($exception);
-        // Clean up after ourselves.
-        $pdo_instance->preparedStatement("DROP TABLE IF EXISTS `$tempDBName`", []);
     }
+    
+    // Clean up after ourselves.
+    $pdo_instance->preparedStatement("DROP TABLE IF EXISTS `$tempDBName`", []);
    
     return NULL;
 }
