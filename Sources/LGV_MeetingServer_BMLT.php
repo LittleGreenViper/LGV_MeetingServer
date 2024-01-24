@@ -35,6 +35,7 @@ defined( 'LGV_MeetingServer_Files' ) or die ( 'Cannot Execute Directly' );	// Ma
 define( '__VENUE_TYPE_INPERSON', "1" );
 define( '__VENUE_TYPE_VIRTUAL', "2" );
 define( '__VENUE_TYPE_HYBRID', "3" );
+define( '__TC_FORMAT_KEY', "TC" );
 
 /***************************************************************************************************************************/
 /**
@@ -188,7 +189,7 @@ class BMLTServerInteraction extends AServiceInteraction {
                                 } else {
                                     $format_ar["language"] = "en";
                                 }
-                                if ("TC" == $format_ar["key"]) {
+                                if ( __TC_FORMAT_KEY == $format_ar["key"] ) {
                                     unset($meeting["physical_location"]);
                                 }
                                 array_push($meeting["formats"], $format_ar);
