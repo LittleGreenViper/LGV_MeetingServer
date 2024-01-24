@@ -188,6 +188,9 @@ class BMLTServerInteraction extends AServiceInteraction {
                                 } else {
                                     $format_ar["language"] = "en";
                                 }
+                                if ("TC" == $format_ar["key"]) {
+                                    unset($meeting["physical_location"]);
+                                }
                                 array_push($meeting["formats"], $format_ar);
                             }
                         }
