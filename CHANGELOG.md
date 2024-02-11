@@ -1,3 +1,7 @@
+**1.4.11** *February 11, 2024*
+
+- Some meetings are listed as having durations of 86400 (24 hours). I had to make these 86399.
+
 **1.4.10** *January 24, 2024*
 
 - The temp table should be getting deleted properly, now.
