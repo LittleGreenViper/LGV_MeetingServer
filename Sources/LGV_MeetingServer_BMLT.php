@@ -113,7 +113,7 @@ class BMLTServerInteraction extends AServiceInteraction {
                 if ( isset($meeting_object->duration_time) && trim($meeting_object->duration_time) ) {
                     $duration_array = explode(":", trim($meeting_object->duration_time));
                     $duration = (intval($duration_array[0]) * (60 * 60)) + (intval($duration_array[1]) * 60) + intval($duration_array[2]);
-                    if ( 86400 >= $duration ) {
+                    if ( 86400 <= $duration ) {
                         $meeting["duration"] = 86399;
                     } else {
                         $meeting["duration"] = $duration;

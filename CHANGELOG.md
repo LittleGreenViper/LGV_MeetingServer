@@ -1,3 +1,7 @@
+**1.4.12** *February 21, 2024*
+
+- The 24-hour fix went the wrong way. That has been fixed.
+
 **1.4.11** *February 11, 2024*
 
 - Some meetings are listed as having durations of 86400 (24 hours). I had to make these 86399.
