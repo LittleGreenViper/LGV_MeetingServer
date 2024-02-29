@@ -1,3 +1,7 @@
+**1.4.13** *February 29, 2024*
+
+- There are now hard cutoffs for the number of results, and maximum page numbers, in the meta response.
+
 **1.4.12** *February 21, 2024*
 
 - The 24-hour fix went the wrong way. That has been fixed.

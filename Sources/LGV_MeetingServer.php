@@ -33,7 +33,7 @@ defined( 'LGV_DB_CATCHER' ) or define( 'LGV_DB_CATCHER', 1 );
 
 require_once(dirname(__FILE__).'/LGV_MeetingServer_PDO.class.php');
 
-define('__SERVER_VERSION__', "1.4.12");  // The current server version.
+define('__SERVER_VERSION__', "1.4.13");  // The current server version.
 
 global $tempDBName; // Used for an interim table.
 
@@ -645,16 +645,18 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
         $count = count($ret);
         $total_pages = intval((0 > $page_size) ? 1 : ((0 == $page_size) ? 0 : (($count + ($page_size - 1)) / $page_size)));
         
-        $starting_index = max(0, $page * $page_size);
+        $starting_index = min($count, max(0, $page * $page_size));
 
         if ( 0 > $page_size ) {
             $page_size = $count;
             $page = 0;
         }
         
+        $page = min($total_pages, $page);
+        
         $page_end_index = min($count, ($page + 1) * $page_size);
         
-        $slice_size = $page_end_index - $starting_index;
+        $slice_size = max(0, $page_end_index - $starting_index);
         
         $json_meetings = "\"meetings\": ".json_encode(array_slice($ret, $starting_index, $slice_size));
         
