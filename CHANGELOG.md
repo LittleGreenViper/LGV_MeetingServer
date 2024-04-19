@@ -1,3 +1,7 @@
+**1.4.14** *April 19, 2024*
+
+- Had to remove the random name for the temp table, as some hosting services were failing to properly drop the table. This means that we need to be careful to not call the loader too often.
+
 **1.4.13** *February 29, 2024*
 
 - There are now hard cutoffs for the number of results, and maximum page numbers, in the meta response.

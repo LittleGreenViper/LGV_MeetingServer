@@ -33,7 +33,7 @@ defined( 'LGV_DB_CATCHER' ) or define( 'LGV_DB_CATCHER', 1 );
 
 require_once(dirname(__FILE__).'/LGV_MeetingServer_PDO.class.php');
 
-define('__SERVER_VERSION__', "1.4.13");  // The current server version.
+define('__SERVER_VERSION__', "1.4.14");  // The current server version.
 
 global $tempDBName; // Used for an interim table.
 
@@ -344,22 +344,6 @@ function _initialize_main_database( $pdo_instance,  ///< REQUIRED: The PDO insta
     return false;
 }
 
-    
-/***********************/
-/**
-\returns a random string.
- */
-function _random_str(   $length,                                                                        ///< REQUIRED UNSIGNED INT: The length of the string, in characters.
-                        $keyspace = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'    ///< OPTIONAL CHARACTER ARRAY: This is the pool of characters from which to choose. Default is basic Roman ASCII alphanumeric.
-                    ) {
-    $pieces = [];
-    $max = mb_strlen($keyspace, '8bit') - 1;
-    for ( $i = 0; $i < $length; ++$i ) {
-        $pieces []= $keyspace[random_int(0, $max)];
-    }
-    return implode('', $pieces);
-}
-
 // MARK: - Exposed Functions -
 
 /*******************************************************************/
@@ -381,7 +365,7 @@ function update_database(   $physical_only = false,     ///< OPTIONAL BOOLEAN: I
     $bmltClass = new BMLTServerInteraction();
     
     global $tempDBName;
-    $tempDBName = $_dbTempTableName.'-'._random_str(16);
+    $tempDBName = $_dbTempTableName;
     
     try {
         global $config_file_path;
