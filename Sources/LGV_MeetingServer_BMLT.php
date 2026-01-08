@@ -52,7 +52,7 @@ class BMLTServerInteraction extends AServiceInteraction {
      */
     protected static function _read_bmlt_server_list() {
         /// This is the "master list" of all the BMLT servers that TOMATO (the BMLT aggregator) uses. It is a JSON file.
-        return json_decode(self::_call_URL("https://raw.githubusercontent.com/bmlt-enabled/tomato/master/rootServerList.json"));
+        return json_decode(self::_call_URL("https://raw.githubusercontent.com/bmlt-enabled/aggregator/refs/heads/main/rootServerList.json"));
     }
 
     /***********************************************************************************************************************/

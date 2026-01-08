@@ -1,3 +1,7 @@
+**1.4.15** *January 7, 2026*
+
+- Updated the URL for the JSON source.
+
 **1.4.14** *April 19, 2024*
 
 - Had to remove the random name for the temp table, as some hosting services were failing to properly drop the table. This means that we need to be careful to not call the loader too often.
