@@ -52,7 +52,7 @@ class BMLTServerInteraction extends AServiceInteraction {
      */
     protected static function _read_bmlt_server_list() {
         /// This is the "master list" of all the BMLT servers that TOMATO (the BMLT aggregator) uses. It is a JSON file.
-        return json_decode(self::_call_URL("https://raw.githubusercontent.com/bmlt-enabled/aggregator/refs/heads/main/rootServerList.json"));
+        return json_decode(self::_call_URL("https://raw.githubusercontent.com/bmlt-enabled/aggregator/refs/heads/main/serverList.json"));
     }
 
     /***********************************************************************************************************************/
@@ -313,7 +313,12 @@ class BMLTServerInteraction extends AServiceInteraction {
         $all_meetings = 0;
         $server_list = self::_read_bmlt_server_list();
         foreach ( $server_list as $server ) {
-            $dataURL = $server->rootURL."client_interface/json/?switcher=GetSearchResults&get_used_formats=1&callingApp=LGV_MeetingServer";
+        if (isset($server->rootURL)) {
+            $rootURL = $server->rootURL;
+        } elseif (isset($server->url)) {
+            $rootURL = $server->url;
+        }
+            $dataURL = $rootURL."client_interface/json/?switcher=GetSearchResults&get_used_formats=1&callingApp=LGV_MeetingServer";
             for ( $index = 0; $index < 3; $index++ ) {
                 $meetings = self::_read_bmlt_server_meetings($dataURL, intval($server->id), $physical_only, $separate_virtual);
                 if ( 0 < count($meetings) ) {

@@ -1,3 +1,7 @@
+**1.4.16** *January 8, 2026*
+
+- Updated the URL for the JSON source (again), and also accounted for different JSON, in the two server lists.
+
 **1.4.15** *January 7, 2026*
 
 - Updated the URL for the JSON source.
