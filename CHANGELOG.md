@@ -1,3 +1,7 @@
+**1.5.0** *TBD*
+
+- Performance improvement work.
+
 **1.4.16** *January 8, 2026*
 
 - Updated the URL for the JSON source (again), and also accounted for different JSON, in the two server lists.

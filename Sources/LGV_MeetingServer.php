@@ -33,7 +33,7 @@ defined( 'LGV_DB_CATCHER' ) or define( 'LGV_DB_CATCHER', 1 );
 
 require_once(dirname(__FILE__).'/LGV_MeetingServer_PDO.class.php');
 
-define('__SERVER_VERSION__', "1.4.16");  // The current server version.
+define('__SERVER_VERSION__', "1.5.0");  // The current server version.
 
 global $tempDBName; // Used for an interim table.
 
@@ -230,46 +230,82 @@ The Haversine formula is not as accurate as the Vincenty Calculation, but is a l
 
 \returns an SQL query that will specify a Haversine search. It will include any given WHERE predicate. This adds no placeholders to the predicate.
  */
+/*******************************************************************/
+/**
+ * Returns a geo (bounding-box + great-circle) SQL predicate query.
+ *
+ * NOTE: This uses a fast approximate distance in SQL (triage).
+ * IMPORTANT: $predicate MUST be parameterized or otherwise sanitized.
+ */
 function _location_predicate(   $geo_center_lng,    ///< REQUIRED FLOAT: The search center longitude, in degrees.
                                 $geo_center_lat,    ///< REQUIRED FLOAT: The search center latitude, in degrees.
                                 $geo_radius,        ///< REQUIRED FLOAT: The search radius, in Kilometers.
-                                $predicate = "",    ///< OPTIONAL STRING: A WHERE predicate to be anded to the location predicate. Default is empty string. WARNING: Possible security issue! Make sure it's parameterized (or otherwise cleaned)!
-                                $count_only = false ///< OPTIONAL BOOLEAN: If true (default is false), then only a single integer will be returned, with the count of items that fit the search.
+                                $predicate = "",    ///< OPTIONAL STRING: A WHERE predicate to be ANDed to the location predicate.
+                                $count_only = false,///< OPTIONAL BOOLEAN: If true, returns only a COUNT(*).
+                                $select_list = "z.*",///< OPTIONAL STRING: Column list for SELECT (default "z.*").
+                                $order_by = "",     ///< OPTIONAL STRING: ORDER BY clause (without the "ORDER BY").
+                                $limit = null,      ///< OPTIONAL INT: LIMIT
+                                $offset = null      ///< OPTIONAL INT: OFFSET
                             ) {
-    if ( $predicate ) {
+    if ($predicate) {
         $predicate = "($predicate) AND";
     }
-    
-    global $config_file_path;
-    include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
 
-    $ret =  "SELECT * FROM (
-                SELECT z.*,
-                    p.radius,
-                    p.distance_unit
-                             * DEGREES(ACOS(COS(RADIANS(p.latpoint))
-                             * COS(RADIANS(z.latitude))
-                             * COS(RADIANS(p.longpoint - z.longitude))
-                             + SIN(RADIANS(p.latpoint))
-                             * SIN(RADIANS(z.latitude)))) AS distance
-                FROM `".$_dbTableName."` AS z
-                JOIN (   /* these are the query parameters */
-                    SELECT  ".floatval($geo_center_lat)." AS latpoint, ".floatval($geo_center_lng)." AS longpoint,".floatval($geo_radius)." AS radius, 111.045 AS distance_unit
-                ) AS p ON 1=1
-                WHERE z.latitude
-                 BETWEEN p.latpoint  - (p.radius / p.distance_unit)
-                     AND p.latpoint  + (p.radius / p.distance_unit)
-                AND z.longitude
-                 BETWEEN p.longpoint - (p.radius / (p.distance_unit * COS(RADIANS(p.latpoint))))
-                     AND p.longpoint + (p.radius / (p.distance_unit * COS(RADIANS(p.latpoint))))
-                ) AS d
-                WHERE $predicate (distance <= radius)";
-    
-    if ( $count_only ) {
-        $ret = "SELECT COUNT(*) FROM ($ret)";
+    global $config_file_path;
+    include($config_file_path);
+
+    $center_lat = floatval($geo_center_lat);
+    $center_lng = floatval($geo_center_lng);
+    $radius_km  = abs(floatval($geo_radius));
+
+    // Approximate distance in KM (kept from your original).
+    $distance_expr = "p.distance_unit
+                      * DEGREES(ACOS(COS(RADIANS(p.latpoint))
+                      * COS(RADIANS(z.latitude))
+                      * COS(RADIANS(p.longpoint - z.longitude))
+                      + SIN(RADIANS(p.latpoint))
+                      * SIN(RADIANS(z.latitude))))";
+
+    // Keep the subquery so we can filter on the "distance" alias.
+    $inner = "
+        SELECT
+            $select_list,
+            p.radius,
+            p.distance_unit,
+            ($distance_expr) AS distance
+        FROM `".$_dbTableName."` AS z
+        JOIN (
+            SELECT
+                $center_lat AS latpoint,
+                $center_lng AS longpoint,
+                $radius_km  AS radius,
+                111.045     AS distance_unit
+        ) AS p ON 1=1
+        WHERE z.latitude
+            BETWEEN p.latpoint  - (p.radius / p.distance_unit)
+                AND p.latpoint  + (p.radius / p.distance_unit)
+          AND z.longitude
+            BETWEEN p.longpoint - (p.radius / (p.distance_unit * COS(RADIANS(p.latpoint))))
+                AND p.longpoint + (p.radius / (p.distance_unit * COS(RADIANS(p.latpoint))))
+    ";
+
+    $sql = "SELECT * FROM ( $inner ) AS d WHERE $predicate (distance <= radius)";
+
+    if ($count_only) {
+        return "SELECT COUNT(*) FROM ( $sql ) AS c";
     }
-    
-    return $ret;
+
+    if ($order_by) {
+        $sql .= " ORDER BY $order_by";
+    }
+    if (null !== $limit) {
+        $sql .= " LIMIT ".intval($limit);
+        if (null !== $offset) {
+            $sql .= " OFFSET ".intval($offset);
+        }
+    }
+
+    return $sql;
 }
 
 /***********************/
