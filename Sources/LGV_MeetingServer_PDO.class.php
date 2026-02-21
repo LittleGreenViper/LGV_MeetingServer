@@ -70,7 +70,30 @@ class LGV_MeetingServer_PDO {
 			throw new Exception(__METHOD__ . '() ' . $exception->getMessage());
         }
 	}
-
+	
+    /***********************/
+	/**
+	*/
+    public function execSqlScript(string $sql): void
+    {
+        if (NULL === $this->_pdo) {
+            throw new Exception(__METHOD__ . "() No PDO object!");
+        }
+    
+        // Basic comment stripping
+        $sql = preg_replace('~^\s*--.*$~m', '', $sql);
+        $sql = preg_replace('~/\*.*?\*/~s', '', $sql);
+    
+        // Split by semicolon (works for simple DDL scripts like yours)
+        $parts = array_filter(array_map('trim', explode(';', $sql)));
+    
+        foreach ($parts as $stmtSql) {
+            if ($stmtSql !== '') {
+                $this->_pdo->exec($stmtSql);
+            }
+        }
+    }
+    
     /***********************/
 	/**
 		\brief Wrapper for preparing and executing a PDOStatement

@@ -33,7 +33,7 @@ defined( 'LGV_DB_CATCHER' ) or define( 'LGV_DB_CATCHER', 1 );
 
 require_once(dirname(__FILE__).'/LGV_MeetingServer_PDO.class.php');
 
-define('__SERVER_VERSION__', "1.5.0");  // The current server version.
+define('__SERVER_VERSION__', "1.4.16");  // The current server version.
 
 global $tempDBName; // Used for an interim table.
 
@@ -350,10 +350,16 @@ function _initialize_meta_database(  $pdo_instance   ///< REQUIRED: The PDO inst
     include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
     global $tempDBName;
 
-    $sql_init = file_get_contents(dirname(__FILE__).'/config/sql/LGV_MeetingServer-Meta-MySQL.sql') . ";DROP TABLE IF EXISTS `$_dbTableName`;DROP TABLE IF EXISTS `$tempDBName`";;
+    $sql_init = file_get_contents(dirname(__FILE__).'/config/sql/LGV_MeetingServer-Meta-MySQL.sql');
 
     try {
-        $pdo_instance->preparedStatement($sql_init);
+        // Create meta table from script
+        $pdo_instance->execSqlScript($sql_init);
+    
+        // Separate statements (no multi-statement strings)
+        $pdo_instance->preparedStatement("DROP TABLE IF EXISTS `$_dbTableName`");
+        $pdo_instance->preparedStatement("DROP TABLE IF EXISTS `$tempDBName`");
+    
         return true;
     } catch (Exception $exception) {
     }
@@ -372,7 +378,7 @@ function _initialize_main_database( $pdo_instance,  ///< REQUIRED: The PDO insta
 
     try {
         $sql_init = str_replace("`TABLE-NAME`", "`$dbTableName`", $sql_init);
-        $pdo_instance->preparedStatement($sql_init);
+        $pdo_instance->execSqlScript($sql_init);
         return true;
     } catch (Exception $exception) {
     }
@@ -401,7 +407,7 @@ function update_database(   $physical_only = false,     ///< OPTIONAL BOOLEAN: I
     $bmltClass = new BMLTServerInteraction();
     
     global $tempDBName;
-    $tempDBName = $_dbTempTableName;
+    $tempDBName = $_dbTempTableName . '_' . time() . '_' . getmypid();
     
     try {
         global $config_file_path;
@@ -417,8 +423,8 @@ function update_database(   $physical_only = false,     ///< OPTIONAL BOOLEAN: I
             $pdo_instance->preparedStatement($rename_sql, [time()]);
             $number_of_meetings = $bmltClass->process_all_meetings($pdo_instance, $tempDBName, $physical_only, $separate_virtual);
             if ( 0 < $number_of_meetings ) {
-                $rename_sql = "DROP TABLE IF EXISTS `$_dbTableName`;RENAME TABLE `$tempDBName` TO `$_dbTableName`;";
-                $pdo_instance->preparedStatement($rename_sql, []);
+                $pdo_instance->preparedStatement("DROP TABLE IF EXISTS `$_dbTableName`");
+                $pdo_instance->preparedStatement("RENAME TABLE `$tempDBName` TO `$_dbTableName`");
                 return $number_of_meetings;
             }
         }
