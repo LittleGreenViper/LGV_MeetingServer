@@ -416,7 +416,7 @@ function update_database(   $physical_only = false,     ///< OPTIONAL BOOLEAN: I
         if ( !_meta_table_exists($pdo_instance) ) {
             _initialize_meta_database($pdo_instance);
         }
-        $lastupdate_response = $pdo_instance->preparedStatement("SELECT `last_update` FROM `$_dbMetaTableName`", [], true)[0]["last_update"];
+        $lastupdate_response = $pdo_instance->preparedStatement("SELECT `last_update` FROM `$_dbMetaTableName`", [], true, true)[0]["last_update"];
         $lapsed_time = time() - intval($lastupdate_response);
         if ( (!_data_table_exists($pdo_instance) || $force || ($_updateIntervalInSeconds < $lapsed_time)) && _initialize_main_database($pdo_instance, $tempDBName) ) {
             $rename_sql = "UPDATE `$_dbMetaTableName` SET `last_update`=? WHERE 1;";
@@ -437,6 +437,42 @@ function update_database(   $physical_only = false,     ///< OPTIONAL BOOLEAN: I
     $pdo_instance->preparedStatement("DROP TABLE IF EXISTS `$tempDBName`", []);
    
     return NULL;
+}
+
+/*******************************************************************/
+/**
+ * Fetch full meeting rows by primary key IDs.
+ *
+ * Returns an associative array keyed by id.
+ */
+function _fetch_full_meetings_by_ids($pdo_instance, array $ids): array
+{
+    global $config_file_path;
+    include($config_file_path);
+
+    $ids = array_values(array_unique(array_map('intval', $ids)));
+    $ids = array_filter($ids, static function($v) { return $v > 0; });
+
+    if (empty($ids)) {
+        return [];
+    }
+
+    $placeholders = implode(',', array_fill(0, count($ids), '?'));
+    $sql = "SELECT * FROM `".$_dbTableName."` WHERE `id` IN ($placeholders)";
+
+    $rows = $pdo_instance->preparedStatement($sql, $ids, true);
+    if (empty($rows) || !is_array($rows)) {
+        return [];
+    }
+
+    $byId = [];
+    foreach ($rows as $r) {
+        if (!empty($r['id'])) {
+            $byId[intval($r['id'])] = $r;
+        }
+    }
+
+    return $byId;
 }
 
 /*******************************************************************/
@@ -622,10 +658,158 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
             $current_step = min($geo_radius, $current_step);
         } else {
             $sql =  "";
-        
             if ( $geo_search ) {
                 $current_step = $geo_radius;
-                $sql = _location_predicate($geo_center_lng, $geo_center_lat, $geo_radius * 1.05, $predicate, false);
+            
+                // -----------------------------
+                // Phase 1: TRIAGE fetch (small row payload), paged
+                // -----------------------------
+                // IMPORTANT: predicate is applied in the OUTER query of _location_predicate(),
+                // so any referenced columns must be present in select_list.
+                // Your predicate can reference: weekday, start_time, organization_key, server_id, meeting_id,
+                // plus virtual_information/physical_address for "type" filtering.
+                $triage_select = implode(", ", [
+                    "z.id",
+                    "z.latitude",
+                    "z.longitude",
+                    "z.weekday",
+                    "z.start_time",
+                    "z.organization_key",
+                    "z.server_id",
+                    "z.meeting_id",
+                    "z.virtual_information",
+                    "z.physical_address"
+                ]);
+            
+                // If page_size == 0 => "count only" (but you currently count AFTER Vincenty refinement),
+                // so we still need to run Vincenty, just not fetch full rows.
+                $want_count_only = (0 == $page_size);
+            
+                // If page_size < 0 => all results in one page
+                $want_all = (0 > $page_size);
+            
+                $wanted_start = $want_all ? 0 : max(0, $page * $page_size);
+                $wanted_end   = $want_all ? PHP_INT_MAX : ($wanted_start + max(0, $page_size));
+            
+                // Tuning knobs:
+                // - chunk size controls DB round-trips vs. memory
+                // - bigger chunks => fewer queries, more memory
+                $chunk_size = 500;
+                if (!$want_all && $page_size > 0) {
+                    $chunk_size = max(200, $page_size * 5);
+                }
+            
+                $triage_offset = 0;
+            
+                // We collect accepted IDs + accurate distances (Vincenty).
+                // Store as array of ["id"=>int, "distance"=>float, "server_id"=>int, "meeting_id"=>int]
+                $accepted = [];
+            
+                while (true) {
+                    $sql = _location_predicate(
+                        $geo_center_lng,
+                        $geo_center_lat,
+                        $geo_radius * 1.05,
+                        $predicate,
+                        false,
+                        $triage_select,
+                        "distance ASC",          // approximate distance sort in SQL
+                        $chunk_size,
+                        $triage_offset
+                    );
+            
+                    $triage_rows = $pdo_instance->preparedStatement($sql, $params, true);
+                    if (empty($triage_rows) || !is_array($triage_rows)) {
+                        break;
+                    }
+            
+                    foreach ($triage_rows as $row) {
+                        if (!isset($row['id'], $row['latitude'], $row['longitude'])) {
+                            continue;
+                        }
+            
+                        $id  = intval($row['id']);
+                        $lat = floatval($row['latitude']);
+                        $lng = floatval($row['longitude']);
+            
+                        // Accurate distance refinement (Vincenty)
+                        $dist = _get_accurate_distance($geo_center_lat, $geo_center_lng, $lat, $lng);
+            
+                        if ($geo_radius >= $dist) {
+                            $accepted[] = [
+                                "id"        => $id,
+                                "distance"  => $dist,
+                                "server_id" => isset($row['server_id']) ? intval($row['server_id']) : 0,
+                                "meeting_id"=> isset($row['meeting_id']) ? intval($row['meeting_id']) : 0
+                            ];
+                        }
+                    }
+            
+                    // Stop once we have enough to serve the requested page (or count).
+                    if (!$want_count_only && !$want_all && count($accepted) >= $wanted_end) {
+                        break;
+                    }
+            
+                    $triage_offset += $chunk_size;
+            
+                    // If DB returned less than requested chunk, we're done.
+                    if (count($triage_rows) < $chunk_size) {
+                        break;
+                    }
+                }
+            
+                // Sort by accurate distance, then stable by id (your existing sort does server+meeting;
+                // distance ties are rare, but we can preserve stability).
+                usort($accepted, static function($a, $b) {
+                    if ($a["distance"] == $b["distance"]) {
+                        if ($a["server_id"] == $b["server_id"]) {
+                            return ($a["meeting_id"] <=> $b["meeting_id"]);
+                        }
+                        return ($a["server_id"] <=> $b["server_id"]);
+                    }
+                    return ($a["distance"] < $b["distance"]) ? -1 : 1;
+                });
+            
+                // If "count only" requested, do NOT fetch full rows.
+                if ($want_count_only) {
+                    $count = count($accepted);
+                    $meta = "\"meta\": {\"total\": $count, \"total_pages\": 0, \"page_size\": 0, \"page\": 0, \"starting_index\": 0, \"actual_size\": 0, \"search_time\": ".(microtime(true) - $initial_time).", \"center_lat\": $geo_center_lat, \"center_lng\": $geo_center_lng, \"radius_in_km\": $current_step }";
+                    return "{".$meta.", \"meetings\": []}";
+                }
+            
+                // Slice to requested page
+                $slice = $want_all ? $accepted : array_slice($accepted, $wanted_start, $page_size);
+            
+                // Phase 2: Fetch full rows only for page IDs
+                $page_ids = array_map(static function($x) { return $x["id"]; }, $slice);
+                $full_by_id = _fetch_full_meetings_by_ids($pdo_instance, $page_ids);
+            
+                // Build final result array in the same order as $slice
+                $ret = [];
+                foreach ($slice as $entry) {
+                    $id = $entry["id"];
+                    if (empty($full_by_id[$id])) {
+                        continue;
+                    }
+                    $meeting = $full_by_id[$id];
+                    $meeting["distance"] = $entry["distance"];
+            
+                    if (0 != $page_size) {
+                        $ret[] = _clean_meeting($meeting);
+                    } else {
+                        $ret[] = $meeting;
+                    }
+                }
+            
+                // NOTE: total is the count of all accepted (not just page)
+                $count = count($accepted);
+                $effective_page_size = $want_all ? $count : $page_size;
+                $total_pages = $want_all ? 1 : intval(($count + ($page_size - 1)) / $page_size);
+            
+                $json_meetings = "\"meetings\": ".json_encode($ret);
+                $meta = "\"meta\": {\"total\": $count, \"total_pages\": $total_pages, \"page_size\": $effective_page_size, \"page\": ".($want_all ? 0 : $page).", \"starting_index\": ".($want_all ? 0 : $wanted_start).", \"actual_size\": ".count($ret).", \"search_time\": ".(microtime(true) - $initial_time).", \"center_lat\": $geo_center_lat, \"center_lng\": $geo_center_lng, \"radius_in_km\": $current_step }";
+            
+                return "{".$meta.", ".$json_meetings."}";
             } else {
                 $current_step = 0;
                 $sql = "SELECT * FROM `".$_dbTableName."`";
@@ -634,6 +818,7 @@ function query_database($geo_center_lng = NULL, ///< OPTIONAL FLOAT: The longitu
                 }
             
             }
+            
             $response = $pdo_instance->preparedStatement($sql, $params, true);
         }
     }
