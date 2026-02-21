@@ -1,4 +1,4 @@
-**1.5.0** *TBD*
+**1.5.0** *February 21, 2026*
 
 - Performance improvement work.
 
