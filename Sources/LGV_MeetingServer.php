@@ -33,7 +33,7 @@ defined( 'LGV_DB_CATCHER' ) or define( 'LGV_DB_CATCHER', 1 );
 
 require_once(dirname(__FILE__).'/LGV_MeetingServer_PDO.class.php');
 
-define('__SERVER_VERSION__', "1.4.16");  // The current server version.
+define('__SERVER_VERSION__', "1.5.1");  // The current server version.
 
 global $tempDBName; // Used for an interim table.
 
@@ -386,6 +386,69 @@ function _initialize_main_database( $pdo_instance,  ///< REQUIRED: The PDO insta
     return false;
 }
 
+
+/***********************/
+/**
+\returns a safely quoted MySQL identifier.
+
+This is intentionally strict, because MySQL identifiers cannot be bound as prepared-statement parameters.
+*/
+function _quote_mysql_identifier( $identifier ///< REQUIRED STRING: The table or column name to quote.
+                                ) {
+    $identifier = strval($identifier);
+
+    if ( !preg_match('/\A[A-Za-z0-9_]+\z/', $identifier) ) {
+        throw new InvalidArgumentException('Unsafe MySQL identifier: '.$identifier);
+    }
+
+    return '`'.$identifier.'`';
+}
+
+/***********************/
+/**
+Drop one table by name, after validating the identifier.
+*/
+function _drop_table_if_exists( $pdo_instance,  ///< REQUIRED: The PDO instance for this transaction.
+                                $table_name     ///< REQUIRED STRING: The table name.
+                            ) {
+    $pdo_instance->preparedStatement('DROP TABLE IF EXISTS '._quote_mysql_identifier($table_name));
+}
+
+/***********************/
+/**
+Clean up abandoned update temp tables from earlier failed, timed-out, or killed update runs.
+
+\returns the number of temp tables dropped.
+*/
+function _cleanup_stale_temp_tables( $pdo_instance,              ///< REQUIRED: The PDO instance for this transaction.
+                                     $stale_after_seconds = 21600///< OPTIONAL INT: Default is 6 hours.
+                                ) {
+    global $config_file_path;
+    include($config_file_path);
+
+    $prefix = $_dbTempTableName.'_';
+    $like = str_replace(['\\', '_', '%'], ['\\\\', '\\_', '\\%'], $prefix).'%';
+    $stale_after_seconds = max(60, intval($stale_after_seconds));
+
+    $sql = "SELECT `table_name`
+            FROM `information_schema`.`tables`
+            WHERE `table_schema` = ?
+              AND `table_name` LIKE ? ESCAPE '\\\\'
+              AND (`create_time` IS NULL OR `create_time` < DATE_SUB(NOW(), INTERVAL ? SECOND))";
+
+    $tables = $pdo_instance->preparedStatement($sql, [$_dbName, $like, $stale_after_seconds], true);
+    $drop_count = 0;
+
+    foreach ( $tables as $table_info ) {
+        if ( isset($table_info['table_name']) ) {
+            _drop_table_if_exists($pdo_instance, $table_info['table_name']);
+            $drop_count++;
+        }
+    }
+
+    return $drop_count;
+}
+
 // MARK: - Exposed Functions -
 
 /*******************************************************************/
@@ -400,42 +463,88 @@ This checks if the data table exists. If it does, and if the elapsed time has pa
  */
 function update_database(   $physical_only = false,     ///< OPTIONAL BOOLEAN: If true (default is false), then only meetings that have a physical location will be stored.
                             $force = false,             ///< OPTIONAL BOOLEAN: If true (default is false), then the update occurs, even if not otherwise prescribed.
-                            $separate_virtual = false   ///< OPTIONAL BOOLEAN: If true (default is false), then virtual-only meetings will be counted, but will be assigned a "virtual-%s" (with "%s" being the org key) org key.
+                            $separate_virtual = false   ///< OPTIONAL BOOLEAN: If true (default is false), then virtual-only meetings will be counted, but will be assigned a "virtual-%s" (with "%s" being the org key.
                         ) {
     global $config_file_path;
     include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
-    $bmltClass = new BMLTServerInteraction();
-    
+
     global $tempDBName;
-    $tempDBName = $_dbTempTableName . '_' . time() . '_' . getmypid();
-    
+    $tempDBName = $_dbTempTableName.'_'.time().'_'.getmypid();
+
+    $pdo_instance = NULL;
+    $temp_table_exists = false;
+    $temp_table_was_promoted = false;
+    $old_table_name = NULL;
+
     try {
-        global $config_file_path;
-        include($config_file_path);    // Config file path is defined in the calling context. This won't work, without it.
+        $bmltClass = new BMLTServerInteraction();
         $pdo_instance = new LGV_MeetingServer_PDO($_dbName, $_dbLogin, $_dbPassword, $_dbType, $_dbHost, $_dbPort);
+
+        // Opportunistically remove temp tables abandoned by previous failed/killed runs.
+        _cleanup_stale_temp_tables($pdo_instance);
+
         if ( !_meta_table_exists($pdo_instance) ) {
             _initialize_meta_database($pdo_instance);
         }
+
         $lastupdate_response = $pdo_instance->preparedStatement("SELECT `last_update` FROM `$_dbMetaTableName`", [], true, true)[0]["last_update"];
         $lapsed_time = time() - intval($lastupdate_response);
-        if ( (!_data_table_exists($pdo_instance) || $force || ($_updateIntervalInSeconds < $lapsed_time)) && _initialize_main_database($pdo_instance, $tempDBName) ) {
-            $rename_sql = "UPDATE `$_dbMetaTableName` SET `last_update`=? WHERE 1;";
-            $pdo_instance->preparedStatement($rename_sql, [time()]);
+        $main_table_exists = _data_table_exists($pdo_instance);
+        $should_update = !$main_table_exists || $force || ($_updateIntervalInSeconds < $lapsed_time);
+
+        if ( $should_update ) {
+            if ( !_initialize_main_database($pdo_instance, $tempDBName) ) {
+                throw new RuntimeException('Could not initialize temp data table: '.$tempDBName);
+            }
+
+            $temp_table_exists = true;
             $number_of_meetings = $bmltClass->process_all_meetings($pdo_instance, $tempDBName, $physical_only, $separate_virtual);
+
             if ( 0 < $number_of_meetings ) {
-                $pdo_instance->preparedStatement("DROP TABLE IF EXISTS `$_dbTableName`");
-                $pdo_instance->preparedStatement("RENAME TABLE `$tempDBName` TO `$_dbTableName`");
+                if ( $main_table_exists ) {
+                    $old_table_name = $_dbTableName.'_old_'.time().'_'.getmypid();
+                    _drop_table_if_exists($pdo_instance, $old_table_name);
+
+                    // Atomic table swap: either both renames happen, or neither does.
+                    $pdo_instance->preparedStatement(
+                        'RENAME TABLE '._quote_mysql_identifier($_dbTableName).' TO '._quote_mysql_identifier($old_table_name).', '._quote_mysql_identifier($tempDBName).' TO '._quote_mysql_identifier($_dbTableName)
+                    );
+                } else {
+                    $pdo_instance->preparedStatement(
+                        'RENAME TABLE '._quote_mysql_identifier($tempDBName).' TO '._quote_mysql_identifier($_dbTableName)
+                    );
+                }
+
+                $temp_table_exists = false;
+                $temp_table_was_promoted = true;
+
+                // Do this only after the new table is live.
+                $pdo_instance->preparedStatement("UPDATE `$_dbMetaTableName` SET `last_update`=? WHERE 1;", [time()]);
+
+                if ( !empty($old_table_name) ) {
+                    try {
+                        _drop_table_if_exists($pdo_instance, $old_table_name);
+                    } catch (Throwable $ignored) {
+                        // The old table is not dangerous to the correctness of the now-live replacement.
+                        // A later maintenance pass can remove it if this drop fails.
+                    }
+                }
+
                 return $number_of_meetings;
             }
         }
-    } catch (Exception $exception) {
+    } catch (Throwable $throwable) {
         echo("Error updating the data!\n");
-        var_dump($exception);
+        var_dump($throwable);
+    } finally {
+        if ( !$temp_table_was_promoted && $temp_table_exists && (NULL !== $pdo_instance) ) {
+            try {
+                _drop_table_if_exists($pdo_instance, $tempDBName);
+            } catch (Throwable $ignored) {
+            }
+        }
     }
-    
-    // Clean up after ourselves.
-    $pdo_instance->preparedStatement("DROP TABLE IF EXISTS `$tempDBName`", []);
-   
+
     return NULL;
 }
 

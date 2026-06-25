@@ -1,3 +1,7 @@
+**1.5.1** *June 25, 2026*
+
+- Fixed a bug, where the temporary tables were not being deleted every time.
+
 **1.5.0** *February 21, 2026*
 
 - Performance improvement work.
