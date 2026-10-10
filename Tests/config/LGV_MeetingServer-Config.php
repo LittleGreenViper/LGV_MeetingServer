@@ -12,12 +12,23 @@ $_use_cli_only_for_update = < TRUE OR FALSE >;
 // Default is 4 hours.
 $_updateIntervalInSeconds = (4 * 3600);
 
-// This is a URI to our timezone lookup server. Leave it blank, for no lookup.
-// This must refer to an instance of [LGV_TZ_Lookup](https://github.com/LittleGreenViper/LGV_TZ_Lookup).
-$_timezoneServerURI = < URL TO THE TZ SERVER >;
+// Use the existing LGV_TZ_Lookup instance's private config.php (database settings only).
+// PHP must be able to read this file. Leave NULL to disable geographic timezone lookup.
+// Composer dependencies belong at the meeting server root, beside Sources/.
+$_timezoneConfigFile = NULL; // Example: '/var/www/lgv-tz-server/config.php';
 
-// This is the "secret" for the timezone server.
-$_timezoneServerSecret = <TZ SERVER SECRET>;
+// Alternatively, set this array and leave $_timezoneConfigFile as NULL.
+// This database is independent of the meeting database: it can use PostgreSQL while meetings use MySQL.
+// The existing timezones table must already be loaded. Only SELECT access is needed.
+$_timezoneDatabase = NULL;
+// $_timezoneDatabase = [
+//     'database' => 'tz_database',
+//     'user' => 'tz_reader',
+//     'password' => 'your-tz-db-password',
+//     'driver' => 'pgsql',
+//     'host' => '127.0.0.1',
+//     'port' => 5432
+// ];
 
 // The declarations below this line are unlikely to be changed.
 // ------------------------------------------------------------

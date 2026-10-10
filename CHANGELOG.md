@@ -1,3 +1,11 @@
+**1.6.0** *October 9, 2026*
+
+- Replaced HTTP timezone lookups with the `littlegreenviper/lgv_tz_lookup` Composer library.
+- Reuse an independent connection to an existing MySQL or PostgreSQL timezone database across each meeting import, with bounded caching for repeated coordinates.
+- Accept the existing timezone installation's private configuration or separate database credentials. Preserve upstream timezones and leave timezone boundaries unchanged.
+- Added a dependency lock file, a runtime ZIP builder, deployment instructions, and tests for MySQL meetings with PostgreSQL or MySQL timezone databases.
+- PHP 8.0 or greater is now required. Existing HTTP timezone configuration must be migrated to database settings.
+
 **1.5.1** *June 25, 2026*
 
 - Fixed a bug, where the temporary tables were not being deleted every time.

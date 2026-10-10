@@ -120,19 +120,26 @@ The configuration file, which contains the databse information, can be stored ou
 
 ### Setting Up the Server 
 
-You'll need to have about the same kind of "raw materials" as you would need, to set up a [WordPress](https://wordpress.org/support/article/before-you-install/) server: A MySQL database, and a PHP server that is running late-version (8.0 or greater is recommended, but it will probably work fine with 7.4) PHP.
+You'll need **PHP 8.0 or greater**, a **MySQL meeting database**, the **PDO MySQL** and **cURL** PHP extensions, and **Composer** to install dependencies. For geographic timezone lookup, use an existing, populated [LGV_TZ_Lookup](https://github.com/LittleGreenViper/LGV_TZ_Lookup) database. That database can use MySQL or PostgreSQL independently of the meeting database; PostgreSQL also requires the PDO PostgreSQL extension.
 
-Most of the server files can be stored outside the HTTP path. They are all included. The only file that needs to be in the HTTP path, is the entrypoint file that you write. An example, is the [`entrypoint.php`](https://github.com/LittleGreenViper/LGV_MeetingServer/blob/master/Tests/entrypoint.php) file, in the testing directory of the project.
+From the meeting server repository root, install the timezone library:
 
-In your entrypoint file, you'll need to declare `$config_file_path` as a global variable, and set it to reference the configuration file:
+```bash
+composer install --no-dev --optimize-autoloader
+```
 
-    global $config_file_path;
-    $config_file_path = '< PATH TO CONFIG FILE >';
+Keep `composer.json`, `composer.lock`, and the resulting `vendor/` directory beside `Sources/`. The server loads the library automatically when an import needs a geographic timezone. The lock file pins the tested timezone package release for repeatable installations.
 
-You will then need to include the `LGV_MeetingServer_Entrypoint.php` file of the server, from the source directory:
+Most of the server files can be stored outside the HTTP path. Keep your existing public `entrypoint.php`, including its configuration and source references. The package also includes an editable `entrypoint.php` for a new installation. Its configuration remains in the entrypoint, as before:
 
-    define( 'LGV_MeetingServer_Files', 1 );
-    require_once('< PATH TO SERVER DIRECTORY >/Sources/LGV_MeetingServer_Entrypoint.php');
+```php
+global $config_file_path;
+$config_file_path = '/absolute/path/to/private/LGV_MeetingServer-Config.php';
+define('LGV_MeetingServer_Files', 1);
+require_once '/absolute/path/to/private/LGV_MeetingServer/Sources/LGV_MeetingServer_Entrypoint.php';
+```
+
+`$config_file_path` points to the **meeting configuration**. Inside that configuration, set `$_timezoneConfigFile` to the **timezone configuration**, as shown below. The resulting chain is `entrypoint.php` → meeting configuration → timezone configuration. The included entrypoint uses `__DIR__.'/Sources/LGV_MeetingServer_Entrypoint.php'` when it sits beside `Sources/`; retain your existing source path if your public entrypoint is elsewhere.
 
 That's all you need to do. If the configuration file is set up correctly, the server will set itself up, the first time an update is run. You should have one successful update performed, before applying queries.
 
@@ -141,6 +148,76 @@ That's all you need to do. If the configuration file is set up correctly, the se
 [Here is a sample entrypoint file.](https://github.com/LittleGreenViper/LGV_MeetingServer/blob/master/Tests/entrypoint.php)
 
 Note that the `LGV_MeetingServer_Files` macro is declared (and set to 1). This is a simple macro that prevents individual files from being run, unless they are part of the hierarchy, defined by the entrypoint.
+
+### Connecting the Existing Timezone Database
+
+In the **meeting server's private configuration**, point to the existing timezone installation's **private `config.php`**:
+
+```php
+$_timezoneConfigFile = '/var/www/lgv-tz-server/config.php';
+$_timezoneDatabase = NULL;
+```
+
+The meeting server reads the timezone database settings (`$g_dbName`, `$g_dbUserName`, `$g_dbPassword`, `$g_dbType`, `$g_dbHost`, and `$g_dbPort`) in a separate scope. PHP must be able to read that file. Use the configuration file path, rather than the timezone installation's `index.php` or its public URL. The HTTP service secret is unnecessary for internal lookups.
+
+Alternatively, give the meeting server its own timezone database credentials. A user with only `SELECT` permission on the populated `timezones` table is sufficient:
+
+```php
+// Meeting database settings remain MySQL.
+$_dbType = 'mysql';
+$_dbPort = 3306;
+
+// Timezone database settings are independent.
+$_timezoneConfigFile = NULL;
+$_timezoneDatabase = [
+    'database' => 'tz_database',
+    'user' => 'tz_reader',
+    'password' => 'your-tz-db-password',
+    'driver' => 'pgsql',
+    'host' => '127.0.0.1',
+    'port' => 5432
+];
+```
+
+Use `mysql` and port `3306` for a MySQL timezone database. If `port` is omitted, the library uses the default for the selected driver. Set both timezone options to `NULL` to disable geographic lookup.
+
+During each meeting import, BMLT-supplied timezones take precedence. Meetings without a timezone are looked up by longitude and latitude through the Composer library. One independent database connection is reused across BMLT servers. Repeated coordinates share a cached result during that import, with a maximum of 10,000 cached locations. Missing, invalid, or unmatched coordinates leave the timezone unset.
+
+The existing boundary table is queried only. Installing or importing meetings does not load or replace timezone boundaries. Continue maintaining that database with the existing timezone installation's updater. A timezone connection or query failure stops the meeting update before the staged table is promoted, retaining the current meeting data.
+
+**Upgrading from HTTP lookup:** replace `$_timezoneServerURI` and `$_timezoneServerSecret` with one of the configurations above, install the Composer dependencies, and run a forced meeting update. A configuration that still enables only the old URI produces a migration error.
+
+### Publishing or Copying the Server
+
+Keep the existing public entrypoint and private configuration arrangement. For a manual deployment, copy these items into the private meeting application directory, preserving their relative paths:
+
+- `Sources/`, including its `config/sql/` directory.
+- `composer.json`, `composer.lock`, `vendor/`, and `LICENSE`.
+
+You can run Composer on the destination server, or install dependencies before copying them. PHP on the destination must have the extensions listed above. The public entrypoint continues to include `Sources/LGV_MeetingServer_Entrypoint.php`.
+
+The ZIP includes the original browser test files in their existing locations: `Tests/index.php`, `Tests/entrypoint.php`, and `Tests/GitHub-Mark-64px.png`. Their configuration and source references are unchanged; keep the paths you already use for your installation. `Tests/index.php` is the browser test page, and `Tests/entrypoint.php` serves its API links. Individual API tests need a successful meeting import.
+
+To build a ZIP that already contains the runtime dependencies, run from a checkout:
+
+```bash
+./package.sh
+# Or select the output file:
+./package.sh /absolute/path/LGV_MeetingServer.zip
+```
+
+This requires Composer, PHP, and `zip` on the build machine. The default output is `dist/LGV_MeetingServer-1.6.0.zip`. The build installs the locked production dependencies in a temporary directory and includes `entrypoint.php`, the original browser test files, the sources, license, README, changelog, and sample configuration. It excludes your private configuration, the command-line development tests, and the Git checkout. Update the application files while preserving your existing entrypoint, test-file path settings, and private configuration. For a new installation, set the configuration and source paths directly in the included `entrypoint.php`. Set the timezone configuration inside the meeting configuration before the first import. The meeting query/read path remains unchanged.
+
+### Development Checks
+
+```bash
+composer install
+composer test                  # Import behavior and caching; no database service required.
+composer test:databases        # MySQL meetings with a PostgreSQL timezone database.
+composer test:databases:mysql  # MySQL meetings with a separate MySQL timezone database.
+```
+
+Database checks use synthetic boundaries in disposable databases and create a temporary timezone user with only `SELECT` permission. The test administrator accounts need permission to create and drop databases and users. Defaults are `127.0.0.1:3306` with MySQL user `root`, and `127.0.0.1:5432` with the current user for PostgreSQL, both with empty passwords. Override connections with `LGV_MEETING_TEST_HOST`, `LGV_MEETING_TEST_PORT`, `LGV_MEETING_TEST_USER`, `LGV_MEETING_TEST_PASSWORD`, and the equivalent `LGV_TZ_TEST_*` variables. PostgreSQL's administrative database defaults to `postgres`; override it with `LGV_TZ_TEST_ADMIN_DATABASE`. Tests remove their own databases, users, and configuration files afterward.
 
 ## Server API
 

@@ -32,6 +32,8 @@
  */
 defined( 'LGV_MeetingServer_Files' ) or die ( 'Cannot Execute Directly' );	// Makes sure that this file is in the correct context.
 
+require_once __DIR__.'/LGV_MeetingServer_TimezoneLookup.class.php';
+
 define( '__VENUE_TYPE_INPERSON', "1" );
 define( '__VENUE_TYPE_VIRTUAL', "2" );
 define( '__VENUE_TYPE_HYBRID', "3" );
@@ -52,7 +54,17 @@ class BMLTServerInteraction extends AServiceInteraction {
      */
     protected static function _read_bmlt_server_list() {
         /// This is the "master list" of all the BMLT servers that TOMATO (the BMLT aggregator) uses. It is a JSON file.
-        return json_decode(self::_call_URL("https://raw.githubusercontent.com/bmlt-enabled/aggregator/refs/heads/main/serverList.json"));
+        return json_decode(static::_call_URL("https://raw.githubusercontent.com/bmlt-enabled/aggregator/refs/heads/main/serverList.json"));
+    }
+
+    /** Build one lazy timezone lookup for the import, independently of the meeting database settings. */
+    protected static function _make_timezone_lookup() {
+        global $config_file_path;
+        include($config_file_path);
+        if (!isset($_timezoneDatabase) && empty($_timezoneConfigFile) && !empty($_timezoneServerURI)) {
+            throw new RuntimeException('HTTP timezone lookup has been replaced. Set $_timezoneConfigFile or $_timezoneDatabase in the meeting server configuration.');
+        }
+        return new LGV_MeetingServer_TimezoneLookup($_timezoneDatabase ?? NULL, $_timezoneConfigFile ?? NULL);
     }
 
     /***********************************************************************************************************************/
@@ -80,11 +92,11 @@ class BMLTServerInteraction extends AServiceInteraction {
     protected static function _read_bmlt_server_meetings(   $url,                       ///< REQIRED:   This is the base URL for the server's API.
                                                             $server_id,                 ///< REQUIRED: The integer ID of the server.
                                                             $physical_only = false,     ///< OPTIONAL BOOLEAN: If true (default is false), then only meetings that have a physical location will be returned.
-                                                            $separate_virtual = false   ///< OPTIONAL BOOLEAN: If true (default is false), then virtual-only meetings will be counted, but will be assigned a "virtual-%s" (with "%s" being the org key) org key.
+                                                            $separate_virtual = false,  ///< OPTIONAL BOOLEAN: If true (default is false), then virtual-only meetings will be counted, but will be assigned a "virtual-%s" (with "%s" being the org key) org key.
+                                                            $timezone_lookup = NULL     ///< OPTIONAL: Reuse the same internal timezone lookup for every server in an import.
                                                         ) {
-        global $config_file_path;
-        include($config_file_path);
-        $json_data = self::_call_URL($url);
+        $timezone_lookup = $timezone_lookup ?? static::_make_timezone_lookup();
+        $json_data = static::_call_URL($url);
         $decoded_json = json_decode($json_data);
 
         $meeting_objects = isset($decoded_json->meetings) ? $decoded_json->meetings : NULL;
@@ -217,14 +229,11 @@ class BMLTServerInteraction extends AServiceInteraction {
                 
                 if ( !empty($existing_timezone) ) {
                     $meeting["time_zone"] = $existing_timezone;
-                } elseif ( isset($_timezoneServerURI) && !empty($_timezoneServerURI) && isset($meeting_object->longitude) && isset($meeting_object->latitude) ) {
-                    $uri = $_timezoneServerURI.'?';
-                    if ( isset($_timezoneServerSecret) && !empty($_timezoneServerSecret) ) {
-                        $uri .= "secret=$_timezoneServerSecret&";
+                } elseif ( isset($meeting_object->longitude) && isset($meeting_object->latitude) ) {
+                    $new_tz = $timezone_lookup->get_tz($meeting_object->longitude, $meeting_object->latitude);
+                    if ( '' !== $new_tz ) {
+                        $meeting["time_zone"] = $new_tz;
                     }
-                    $uri .= 'll='.floatval($meeting_object->longitude).','.floatval($meeting_object->latitude);
-                    $new_tz = self::_call_URL($uri);
-                    $meeting["time_zone"] = trim($new_tz);
                 }
             
                 if ( isset($meeting["physical_location"]) || !$physical_only || $separate_virtual ) {
@@ -322,7 +331,8 @@ class BMLTServerInteraction extends AServiceInteraction {
                                     $separate_virtual = false   ///< OPTIONAL BOOLEAN: If true (default is false), then virtual-only meetings will be counted, but will be assigned a "virtual-%s" (with "%s" being the org key) org key.
                                 ) {
         $all_meetings = 0;
-        $server_list = self::_read_bmlt_server_list();
+        $timezone_lookup = static::_make_timezone_lookup();
+        $server_list = static::_read_bmlt_server_list();
         foreach ( $server_list as $server ) {
         if (isset($server->rootURL)) {
             $rootURL = $server->rootURL;
@@ -331,7 +341,7 @@ class BMLTServerInteraction extends AServiceInteraction {
         }
             $dataURL = $rootURL."client_interface/json/?switcher=GetSearchResults&get_used_formats=1&callingApp=LGV_MeetingServer";
             for ( $index = 0; $index < 3; $index++ ) {
-                $meetings = self::_read_bmlt_server_meetings($dataURL, intval($server->id), $physical_only, $separate_virtual);
+                $meetings = static::_read_bmlt_server_meetings($dataURL, intval($server->id), $physical_only, $separate_virtual, $timezone_lookup);
                 if ( 0 < count($meetings) ) {
                     $all_meetings += self::_save_bmlt_meetings_into_db($pdo_instance, $table_name, $meetings);
                     break;
