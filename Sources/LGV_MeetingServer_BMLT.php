@@ -366,7 +366,7 @@ class BMLTServerInteraction extends AServiceInteraction {
         foreach ( $rawServerList as $server ) {
             $key = intval($server->id);
             $name = $server->name;
-            $url = $server->rootURL;
+            $url = $server->rootURL ?? $server->url ?? NULL;
             
             $servers[$key] = ["name" => $name, "url" => $url];
         }
