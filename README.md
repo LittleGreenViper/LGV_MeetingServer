@@ -790,3 +790,9 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
+
+### Meeting format flags
+
+After a fresh BMLT import, meeting JSON includes `wheelchair_accessible: true` for World ID `WCHR`, `is_open: true` for `OPEN`, and `is_closed: true` for `CLOSED`. These are JSON booleans. Local format keys, names, and descriptions are not used to infer these flags. Absent fields mean unconfirmed, not false; in particular, absence of `is_open` does not establish that a meeting is closed. If upstream marks both OPEN and CLOSED, both flags are returned so the conflict remains visible.
+
+The importer reserves `tag0` value `bmlt:wheelchair_accessible` and `tag1` values `bmlt:open`, `bmlt:closed`, and `bmlt:open,closed`. Recognized values become the named JSON flags; unrelated tag values are returned unchanged. No schema migration is required. Existing rows need a fresh import before flags become available. Filtering is performed by the client using these fields; query parameters are unchanged.

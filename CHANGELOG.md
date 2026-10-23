@@ -1,5 +1,6 @@
 **1.6.1** *October 23, 2026*
 
+- Added wheelchair accessibility and open/closed JSON flags derived from BMLT World IDs, stored in the existing tag columns. A fresh import is required.
 - Removed the obsolete `curl_close()` call to prevent PHP 8.5 deprecation notices from corrupting JSON responses.
 
 **1.6.0** *October 9, 2026*

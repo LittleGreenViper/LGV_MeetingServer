@@ -219,6 +219,18 @@ class BMLTServerInteraction extends AServiceInteraction {
                                 if ( __TC_FORMAT_KEY == $format_ar["key"] ) {
                                     unset($meeting["physical_location"]);
                                 }
+                                // Local keys and names may be customized; only World IDs define these flags.
+                                $world_id = strtoupper(trim(strval($format->world_id ?? '')));
+                                if ('WCHR' === $world_id) {
+                                    $meeting['tag0'] = 'bmlt:wheelchair_accessible';
+                                } elseif ('OPEN' === $world_id || 'CLOSED' === $world_id) {
+                                    $status = 'OPEN' === $world_id ? 'bmlt:open' : 'bmlt:closed';
+                                    // Preserve both assertions if upstream supplies conflicting formats.
+                                    if (isset($meeting['tag1']) && $meeting['tag1'] !== $status) {
+                                        $status = 'bmlt:open,closed';
+                                    }
+                                    $meeting['tag1'] = $status;
+                                }
                                 array_push($meeting["formats"], $format_ar);
                             }
                         }

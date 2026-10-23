@@ -165,6 +165,22 @@ This "scrubs" a meeting array, so that unused fields are removed. It will help t
  */
 function _clean_meeting($meeting    ///< REQUIRED: The meeting to be filtered (an Array).
                         ) {
+    // Consume only reserved flag values, preserving unrelated legacy tag contents.
+    if ('bmlt:wheelchair_accessible' === ($meeting['tag0'] ?? NULL)) {
+        $meeting['wheelchair_accessible'] = true;
+        unset($meeting['tag0']);
+    }
+    $status = $meeting['tag1'] ?? NULL;
+    if (in_array($status, ['bmlt:open', 'bmlt:closed', 'bmlt:open,closed'], true)) {
+        if ('bmlt:closed' !== $status) {
+            $meeting['is_open'] = true;
+        }
+        if ('bmlt:open' !== $status) {
+            $meeting['is_closed'] = true;
+        }
+        unset($meeting['tag1']);
+    }
+
     $keys = array_keys($meeting) ;
     $ret = Array();
     
