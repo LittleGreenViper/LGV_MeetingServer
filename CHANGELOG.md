@@ -1,3 +1,7 @@
+**1.6.1** *October 23, 2026*
+
+- Removed the obsolete `curl_close()` call to prevent PHP 8.5 deprecation notices from corrupting JSON responses.
+
 **1.6.0** *October 9, 2026*
 
 - Replaced HTTP timezone lookups with the `littlegreenviper/lgv_tz_lookup` Composer library.

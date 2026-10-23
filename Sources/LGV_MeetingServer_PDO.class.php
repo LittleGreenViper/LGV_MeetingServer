@@ -59,7 +59,7 @@ class LGV_MeetingServer_PDO {
 		$this->_pdo = NULL;
 		$this->driver_type = strtolower($driver);
 		
-        $dsn = $driver . ':host=' . $host . ';dbname=' . $database . ';charset=utf8;port=' . strval($port);
+        $dsn = $driver . ':host=' . $host . ';dbname=' . $database . ';charset=utf8mb4;port=' . strval($port);
         
 		try {
             $this->_pdo = new PDO($dsn, $user, $password);

@@ -206,7 +206,7 @@ To build a ZIP that already contains the runtime dependencies, run from a checko
 ./package.sh /absolute/path/LGV_MeetingServer.zip
 ```
 
-This requires Composer, PHP, and `zip` on the build machine. The default output is `dist/LGV_MeetingServer-1.6.0.zip`. The build installs the locked production dependencies in a temporary directory and includes `entrypoint.php`, the original browser test files, the sources, license, README, changelog, and sample configuration. It excludes your private configuration, the command-line development tests, and the Git checkout. Update the application files while preserving your existing entrypoint, test-file path settings, and private configuration. For a new installation, set the configuration and source paths directly in the included `entrypoint.php`. Set the timezone configuration inside the meeting configuration before the first import. The meeting query/read path remains unchanged.
+This requires Composer, PHP, and `zip` on the build machine. The default output is `dist/LGV_MeetingServer-1.6.1.zip`. The build installs the locked production dependencies in a temporary directory and includes `entrypoint.php`, the original browser test files, the sources, license, README, changelog, and sample configuration. It excludes your private configuration, the command-line development tests, and the Git checkout. Update the application files while preserving your existing entrypoint, test-file path settings, and private configuration. For a new installation, set the configuration and source paths directly in the included `entrypoint.php`. Set the timezone configuration inside the meeting configuration before the first import. The meeting query/read path remains unchanged.
 
 ### Development Checks
 

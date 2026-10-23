@@ -75,8 +75,8 @@ if ( isset($_GET["cli"]) ) { // A call from the CLI means just do an update (for
             echo("No meetings processed.\n");
         }
     }
-} else if ( !empty($_SERVER["QUERY_STRING"]) && !isset($_GET["cli"]) ) {    // This is "stupid security." People can still force an update by mimicking the CLI parameters, but it prevents the casual idiots from messing us up, too much. It's not the end of the world, if they succeed, anyway.
-    $query = explode("&", $_SERVER["QUERY_STRING"]);
+} else if ( !isset($_GET["cli"]) ) {    // This is "stupid security." People can still force an update by mimicking the CLI parameters, but it prevents the casual idiots from messing us up, too much. It's not the end of the world, if they succeed, anyway.
+    $query = explode("&", $_SERVER["QUERY_STRING"] ?? "");
     
     if ( isset($query) && is_array($query) && (0 < count($query)) ) {
         if ( "query" == strtolower($query[0]) ) { 
