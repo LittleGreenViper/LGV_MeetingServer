@@ -1,3 +1,7 @@
+**1.6.2** *October 26, 2026*
+
+- Force the timezone to `Etc/UTC` for virtual-only meetings within 100 meters of the NA World Services placeholder location (latitude 34.2359868, longitude -118.5634847), overriding any upstream timezone. A fresh import is required.
+
 **1.6.1** *October 23, 2026*
 
 - Added wheelchair accessibility and open/closed JSON flags derived from BMLT World IDs, stored in the existing tag columns. A fresh import is required.

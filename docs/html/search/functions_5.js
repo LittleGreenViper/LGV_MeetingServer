@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['update_5fdatabase_0',['update_database',['../a00011.html#a469d06d76d28a0ffb60101f09ee5d9a4',1,'LGV_MeetingServer.php']]]
+  ['service_5finfo_0',['service_info',['../a00026.html#a854257da4475f905d96a502caf99ff73',1,'AServiceInteraction\\service_info()'],['../a00030.html#a854257da4475f905d96a502caf99ff73',1,'BMLTServerInteraction\\service_info()']]]
 ];

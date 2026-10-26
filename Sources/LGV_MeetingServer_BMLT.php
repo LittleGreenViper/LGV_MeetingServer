@@ -57,6 +57,30 @@ class BMLTServerInteraction extends AServiceInteraction {
         return json_decode(static::_call_URL("https://raw.githubusercontent.com/bmlt-enabled/aggregator/refs/heads/main/serverList.json"));
     }
 
+    /** NAWS coordinates are a placeholder for virtual-only meetings, not their local timezone. */
+    protected static function _uses_naws_placeholder($meeting_object, array $meeting): bool {
+        $virtual_only = isset($meeting_object->venue_type)
+            ? __VENUE_TYPE_VIRTUAL == $meeting_object->venue_type
+            : !isset($meeting['physical_location']);
+        // TC formats also identify virtual-only meetings in older BMLT data.
+        $virtual_only = $virtual_only || !isset($meeting['physical_location']);
+        if (!$virtual_only || !is_numeric($meeting_object->latitude ?? NULL) ||
+            !is_numeric($meeting_object->longitude ?? NULL)) {
+            return false;
+        }
+        $latitude = floatval($meeting_object->latitude);
+        $longitude = floatval($meeting_object->longitude);
+        if (!is_finite($latitude) || !is_finite($longitude) || abs($latitude) > 90 || abs($longitude) > 180) {
+            return false;
+        }
+        $latitude_delta = deg2rad($latitude - 34.2359868);
+        $longitude_delta = deg2rad($longitude - (-118.5634847));
+        $a = sin($latitude_delta / 2) ** 2 + cos(deg2rad(34.2359868)) *
+            cos(deg2rad($latitude)) * sin($longitude_delta / 2) ** 2;
+        $distance_meters = 6371000 * 2 * asin(sqrt(min(1, max(0, $a))));
+        return $distance_meters <= 100;
+    }
+
     /** Build one lazy timezone lookup for the import, independently of the meeting database settings. */
     protected static function _make_timezone_lookup() {
         global $config_file_path;
@@ -239,7 +263,10 @@ class BMLTServerInteraction extends AServiceInteraction {
                 
                 $existing_timezone = isset($meeting_object->time_zone) ? trim(strval($meeting_object->time_zone)) : '';
                 
-                if ( !empty($existing_timezone) ) {
+                if ( static::_uses_naws_placeholder($meeting_object, $meeting) ) {
+                    $meeting["time_zone"] = 'Etc/UTC';
+                    $meeting["virtual_meeting_info"]["time_zone"] = 'Etc/UTC';
+                } elseif ( !empty($existing_timezone) ) {
                     $meeting["time_zone"] = $existing_timezone;
                 } elseif ( isset($meeting_object->longitude) && isset($meeting_object->latitude) ) {
                     $new_tz = $timezone_lookup->get_tz($meeting_object->longitude, $meeting_object->latitude);

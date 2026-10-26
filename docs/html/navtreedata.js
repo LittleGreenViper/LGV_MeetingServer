@@ -25,8 +25,7 @@
 var NAVTREE =
 [
   [ "LGV_MeetingServer", "index.html", [
-    [ "<tt>LGV_MeetingServer</tt>", "index.html", null ],
-    [ "CHANGELOG", "a00032.html", null ],
+    [ "CHANGELOG", "a00039.html", null ],
     [ "Data Structures", "annotated.html", [
       [ "Data Structures", "annotated.html", "annotated_dup" ],
       [ "Data Structure Index", "classes.html", null ],
@@ -53,5 +52,6 @@ var NAVTREEINDEX =
 "a00002.html"
 ];
 
-var SYNCONMSG = 'click to disable panel synchronisation';
-var SYNCOFFMSG = 'click to enable panel synchronisation';
+const SYNCONMSG = 'click to disable panel synchronization';
+const SYNCOFFMSG = 'click to enable panel synchronization';
+const LISTOFALLMEMBERS = 'List of all members';

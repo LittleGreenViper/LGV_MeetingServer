@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['preparedstatement_0',['preparedStatement',['../a00031.html#a21dcb240eb367478316b63359415183c',1,'LGV_MeetingServer_PDO']]],
-  ['process_5fall_5fmeetings_1',['process_all_meetings',['../a00023.html#a581f55f5d24ceaef4ecbafe22b43bfbd',1,'AServiceInteraction\process_all_meetings()'],['../a00027.html#afe4635b72ce8fc6d76be6c5c8349c5fb',1,'BMLTServerInteraction\process_all_meetings()']]]
+  ['get_5fserver_5finfo_0',['get_server_info',['../a00014.html#a4d6dd5a0ccbff3f50559cbf613cf8f54',1,'LGV_MeetingServer.php']]],
+  ['get_5ftz_1',['get_tz',['../a00038.html#a487438e4a915991c2a26f0b2562ed00c',1,'LGV_MeetingServer_TimezoneLookup']]]
 ];

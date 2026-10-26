@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['changelog_0',['CHANGELOG',['../a00032.html',1,'']]],
-  ['changelog_2emd_1',['CHANGELOG.md',['../a00017.html',1,'']]]
+  ['defined_0',['defined',['../a00014.html#af0c7f28ccc4d9e483f17007aff10b070',1,'LGV_MeetingServer.php']]]
 ];
