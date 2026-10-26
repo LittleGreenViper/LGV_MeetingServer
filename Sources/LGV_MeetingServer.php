@@ -1145,6 +1145,12 @@ abstract class AServiceInteraction {
         curl_setopt($curl, CURLOPT_HEADER, false);          // Do not return any headers, please.
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);   // Please return to sender as a function response.
         curl_setopt($curl, CURLOPT_VERBOSE, false);         // Let's keep this thing simple.
+        // Fail unreachable servers quickly, but allow large meeting datasets to download.
+        curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 5);
+        curl_setopt($curl, CURLOPT_TIMEOUT, 180);
+        // Stop responses that never start or stop making progress for 20 seconds.
+        curl_setopt($curl, CURLOPT_LOW_SPEED_LIMIT, 1);
+        curl_setopt($curl, CURLOPT_LOW_SPEED_TIME, 20);
         curl_setopt($curl, CURLOPT_USERAGENT, 'Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0 +aggregator');
     
         $result = curl_exec($curl); // Do it to it.

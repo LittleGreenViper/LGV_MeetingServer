@@ -183,6 +183,8 @@ Use `mysql` and port `3306` for a MySQL timezone database. If `port` is omitted,
 
 During each meeting import, BMLT-supplied timezones take precedence. Meetings without a timezone are looked up by longitude and latitude through the Composer library. One independent database connection is reused across BMLT servers. Repeated coordinates share a cached result during that import, with a maximum of 10,000 cached locations. Missing, invalid, or unmatched coordinates leave the timezone unset.
 
+Upstream HTTP requests allow 5 seconds to establish a connection and up to 180 seconds for the complete response. Transfers averaging less than 1 byte per second for 20 seconds are stopped, so unresponsive servers do not hold up an import indefinitely while large datasets have time to download. The loader retries servers returning no meetings up to three times, including failed requests; an unreachable server can therefore take about 15 seconds across all attempts. A server that fails all attempts contributes no meetings to that import.
+
 The existing boundary table is queried only. Installing or importing meetings does not load or replace timezone boundaries. Continue maintaining that database with the existing timezone installation's updater. A timezone connection or query failure stops the meeting update before the staged table is promoted, retaining the current meeting data.
 
 **Upgrading from HTTP lookup:** replace `$_timezoneServerURI` and `$_timezoneServerSecret` with one of the configurations above, install the Composer dependencies, and run a forced meeting update. A configuration that still enables only the old URI produces a migration error.
